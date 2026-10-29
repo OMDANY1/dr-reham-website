@@ -2,14 +2,15 @@ import React from "react";
 import { homeContent } from "@/content/ar/home";
 import { Container } from "@/components/ui/Container";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import type { HomePageCmsData } from "@/lib/cms/types";
 
-/**
- * قسم «قبل الاستشارة» في الصفحة الرئيسية:
- * يعرض ثلاث خطوات تحضيرية عامة بتصميم متصل ومرتب يساعد الزائر على الاستعداد للزيارة الطبية،
- * دون تقديم وعود علاجية أو افتراض نظام عمل غير مؤكد داخل العيادة.
- */
-export function BeforeConsultation() {
-  const { beforeConsultationSection } = homeContent;
+export interface BeforeConsultationProps {
+  data?: HomePageCmsData["beforeConsultationSection"];
+}
+
+export function BeforeConsultation({ data }: BeforeConsultationProps = {}) {
+  const beforeConsultationSection =
+    data ?? homeContent.beforeConsultationSection;
 
   return (
     <section

@@ -2,14 +2,18 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
-import { articlesRecords, journalPageCopy } from "@/content/ar/articles";
-import { getVisibleArticles, isSupportedLocale } from "@/lib/content-gates";
+import { journalPageCopy } from "@/content/ar/articles";
+import { isSupportedLocale } from "@/lib/content-gates";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
+import { getPublicOrPreviewArticles } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { JournalExplorer } from "@/components/journal/JournalExplorer";
 import { BookingPanel } from "@/components/sections/BookingPanel";
+import { PreviewBanner } from "@/components/cms/PreviewBanner";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildRouteMetadata({
   title: journalPageCopy.meta.title,
@@ -19,19 +23,25 @@ export const metadata: Metadata = buildRouteMetadata({
 
 export default async function JournalIndexPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) {
     notFound();
   }
 
-  const visibleArticles = getVisibleArticles(articlesRecords);
+  const sp = await searchParams;
+  const { articles: visibleArticles, isPreviewSession } =
+    await getPublicOrPreviewArticles(sp?.preview === "1");
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
 
   return (
     <>
+      {isPreviewSession ? <PreviewBanner /> : null}
+
       <header className="page-header page-header--compact">
         <Container>
           <span className="eyebrow">{journalPageCopy.eyebrow}</span>

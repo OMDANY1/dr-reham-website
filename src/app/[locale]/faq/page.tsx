@@ -2,19 +2,21 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
-import { faqPageCopy, faqRecords } from "@/content/ar/faq";
+import { faqPageCopy } from "@/content/ar/faq";
 import {
-  getPublicFaqs,
   isLiveBookingReady,
   isSupportedLocale,
   type FaqCategory,
 } from "@/lib/content-gates";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
+import { getPublicOrPreviewFaqs } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
 import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
 import { BookingPanel } from "@/components/sections/BookingPanel";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildRouteMetadata({
   title: faqPageCopy.meta.title,
@@ -30,15 +32,18 @@ const CATEGORY_ORDER: FaqCategory[] = [
 
 export default async function FaqPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) {
     notFound();
   }
 
-  const publicFaqs = getPublicFaqs(faqRecords);
+  const sp = await searchParams;
+  const publicFaqs = await getPublicOrPreviewFaqs(sp?.preview === "1");
   const liveReady = isLiveBookingReady(siteConfig);
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
   const inquiryHref = liveReady ? "/ar/book" : instagramHref ?? "/ar/book";

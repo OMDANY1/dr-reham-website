@@ -1,17 +1,23 @@
 import type { MetadataRoute } from "next";
 import { siteConfig } from "@/config/site";
 import { servicesRecords } from "@/content/ar/services";
-import { articlesRecords } from "@/content/ar/articles";
-import { getPublicArticles, getPublicServices } from "@/lib/content-gates";
+import { getPublicServices } from "@/lib/content-gates";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
+import { getStrictlyPublishedArticlesForSitemap } from "@/lib/cms/public-data";
+import { getCmsSiteSettings } from "@/lib/cms/repository";
+
+export const dynamic = "force-dynamic";
 
 /**
  * خريطة الموقع (Sitemap):
- * تتضمن فقط المسارات العامة المعتمدة ولا تسرّب أي سجل بحالة مسودة (draft).
+ * تتضمن فقط المسارات العامة المعتمدة والمقالات المنشورة فعليًا،
+ * ولا تسرّب أي سجل بحالة مسودة (draft) أو بانتظار المراجعة أو مؤرشف.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const validDomain = validateExternalHttpsUrl(siteConfig.domain);
-  // عند عدم تحديد نطاق رسمي بعد، نستخدم مسارات نسبية آمنة أو قاعدة محلية بدون اختراع example.com
+  const settings = getCmsSiteSettings();
+  const validDomain = validateExternalHttpsUrl(
+    settings.domain ?? siteConfig.domain
+  );
   const baseUrl = validDomain
     ? validDomain.replace(/\/$/, "")
     : "http://localhost:3000";
@@ -27,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   const publicServices = getPublicServices(servicesRecords);
-  const publicArticles = getPublicArticles(articlesRecords);
+  const publicArticles = getStrictlyPublishedArticlesForSitemap();
 
   return [
     ...staticRoutes.map((route) => ({

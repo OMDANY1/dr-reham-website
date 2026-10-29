@@ -13,11 +13,13 @@ import {
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import type { HomePageCmsData } from "@/lib/cms/types";
 
 export interface BookingPanelProps {
   mode?: "cta-banner" | "full-selector";
   clinics?: Clinic[];
   initialClinicParam?: string | null;
+  finalInquiryData?: HomePageCmsData["finalInquiry"];
 }
 
 /**
@@ -29,6 +31,7 @@ export function BookingPanel({
   mode = "cta-banner",
   clinics = siteConfig.clinics,
   initialClinicParam = null,
+  finalInquiryData,
 }: BookingPanelProps) {
   const resolution = resolveSelectedClinic(clinics, initialClinicParam);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -40,12 +43,22 @@ export function BookingPanel({
   }, [resolution.selectedClinic?.id]);
 
   const liveReady = isLiveBookingReady(siteConfig, clinics);
-  const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
+  const finalInquiry = finalInquiryData ?? {
+    ...homeContent.finalInquiry,
+    primaryHref: siteConfig.instagramUrl,
+  };
+  const instagramHref = validateExternalHttpsUrl(
+    finalInquiry.primaryHref || siteConfig.instagramUrl
+  );
 
   if (mode === "cta-banner") {
-    const primaryHref = liveReady
-      ? "/ar/book"
-      : instagramHref ?? "/ar/book";
+    const primaryHref =
+      finalInquiry.primaryHref && finalInquiry.primaryHref.startsWith("/")
+        ? finalInquiry.primaryHref
+        : liveReady
+        ? "/ar/book"
+        : instagramHref ?? "/ar/book";
+    const isExternal = primaryHref.startsWith("https://");
 
     return (
       <section
@@ -57,13 +70,13 @@ export function BookingPanel({
             <div className="final-inquiry-grid">
               <div>
                 <span className="eyebrow eyebrow--on-sky">
-                  {homeContent.finalInquiry.eyebrow}
+                  {finalInquiry.eyebrow}
                 </span>
                 <h2 id="final-inquiry-heading" className="final-inquiry__title">
-                  {homeContent.finalInquiry.heading}
+                  {finalInquiry.heading}
                 </h2>
                 <p className="final-inquiry__support">
-                  {homeContent.finalInquiry.support}
+                  {finalInquiry.support}
                 </p>
               </div>
 
@@ -71,13 +84,13 @@ export function BookingPanel({
                 <Button
                   href={primaryHref}
                   variant="white"
-                  external={!liveReady && Boolean(instagramHref)}
+                  external={isExternal}
                 >
-                  {homeContent.finalInquiry.primaryCta} ↗
+                  {finalInquiry.primaryCta} ↗
                 </Button>
                 {!liveReady && instagramHref ? (
                   <p className="final-inquiry__caption">
-                    {homeContent.finalInquiry.destinationCaption}
+                    {finalInquiry.destinationCaption}
                   </p>
                 ) : null}
               </div>

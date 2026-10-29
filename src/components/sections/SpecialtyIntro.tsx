@@ -2,14 +2,20 @@ import React from "react";
 import { homeContent } from "@/content/ar/home";
 import { Container } from "@/components/ui/Container";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import type { HomePageCmsData } from "@/lib/cms/types";
 
-/**
- * قسم التخصص:
- * يعتمد على صورة تحريرية مقرّبة ثانية ومختلفة عن الافتتاحية
- * بتكوين معماري غير مماثل للـ Hero ونص موجز وواضح.
- */
-export function SpecialtyIntro() {
-  const { specialtySection } = homeContent;
+export interface SpecialtyIntroProps {
+  data?: HomePageCmsData["specialtySection"];
+}
+
+export function SpecialtyIntro({ data }: SpecialtyIntroProps = {}) {
+  const specialtySection = data ?? homeContent.specialtySection;
+  const img = specialtySection.image as {
+    src: string;
+    alt: string;
+    focalX?: number;
+    focalY?: number;
+  };
 
   return (
     <section
@@ -21,22 +27,27 @@ export function SpecialtyIntro() {
       <Container>
         <ScrollReveal>
           <div className="specialty-showcase-grid">
-            {/* عمود الصورة التحريرية الثانية بإطار سماوي معماري خلفها */}
             <div className="specialty-photo-column editorial-photo-wrap">
               <div className="specialty-photo-frame">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={specialtySection.image.src}
-                  alt={specialtySection.image.alt}
+                  src={img.src}
+                  alt={img.alt}
                   width={1200}
                   height={1400}
                   loading="lazy"
+                  style={
+                    img.focalX !== undefined && img.focalY !== undefined
+                      ? {
+                          objectPosition: `${img.focalX}% ${img.focalY}%`,
+                        }
+                      : undefined
+                  }
                   className="specialty-photo-img editorial-photo-zoom"
                 />
               </div>
             </div>
 
-            {/* عمود النص التحريري الموجز */}
             <div className="specialty-copy-column">
               <span className="eyebrow">{specialtySection.eyebrow}</span>
               <h2 id="specialty-heading" className="specialty-copy-column__title">

@@ -46,3 +46,8 @@ coverage/
 Thumbs.db
 .vercel
 **/.vercel
+
+
+# Local CMS runtime store & uploaded media
+data/
+website/data/

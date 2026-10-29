@@ -5,7 +5,10 @@ import { siteConfig } from "@/config/site";
 import { privacyPageCopy } from "@/content/ar/privacy";
 import { isSupportedLocale } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
+import { getCmsSiteSettings } from "@/lib/cms/repository";
 import { Container } from "@/components/ui/Container";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildRouteMetadata({
   title: privacyPageCopy.meta.title,
@@ -23,6 +26,12 @@ export default async function PrivacyPage({
   if (!isSupportedLocale(locale)) {
     notFound();
   }
+
+  const settings = getCmsSiteSettings();
+  const sections =
+    settings.privacySections && settings.privacySections.length > 0
+      ? settings.privacySections
+      : privacyPageCopy.sections;
 
   return (
     <>
@@ -50,7 +59,7 @@ export default async function PrivacyPage({
               gap: "var(--space-6)",
             }}
           >
-            {privacyPageCopy.sections.map((section) => (
+            {sections.map((section) => (
               <section
                 key={section.id}
                 id={section.id}

@@ -263,7 +263,9 @@ export function getVisibleArticleBySlug(
 /**
  * يحسب عدد الكلمات الفعلي للمقال من العنوان والملخص وجميع الفقرات والقوائم.
  */
-export function calculateArticleWordCount(article: ArticleRecord): number {
+export function calculateArticleWordCount(
+  article: Pick<ArticleRecord, "title" | "excerpt" | "body">
+): number {
   const chunks: string[] = [article.title, article.excerpt ?? ""];
   for (const section of article.body) {
     chunks.push(section.heading);
@@ -283,7 +285,9 @@ export function calculateArticleWordCount(article: ArticleRecord): number {
 /**
  * يحسب وقت القراءة التقديري بالدقائق بناءً على المحتوى الفعلي للمقال (~150 كلمة/دقيقة للقراءة الطبية المتأنية).
  */
-export function calculateReadingTimeMinutes(article: ArticleRecord): number {
+export function calculateReadingTimeMinutes(
+  article: Pick<ArticleRecord, "title" | "excerpt" | "body">
+): number {
   const words = calculateArticleWordCount(article);
   return Math.max(1, Math.round(words / 150));
 }

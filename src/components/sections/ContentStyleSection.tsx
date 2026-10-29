@@ -6,15 +6,21 @@ import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import type { HomePageCmsData } from "@/lib/cms/types";
 
-/**
- * قسم «تعرّف على أسلوب المحتوى» في الصفحة الرئيسية:
- * يعرّف الزائر بطبيعة الطرح التوعوي الهادئ وحساب إنستجرام الرسمي الموثق (@dr.rehamdq)
- * بتكوين بصري أنيق ومختلف، دون اختلاق منشورات أو أعداد مشاهدات أو أيقونات تشغيل وهمية.
- */
-export function ContentStyleSection() {
-  const { contentStyleSection } = homeContent;
-  const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
+export interface ContentStyleSectionProps {
+  data?: HomePageCmsData["contentStyleSection"];
+  instagramUrlOverride?: string;
+}
+
+export function ContentStyleSection({
+  data,
+  instagramUrlOverride,
+}: ContentStyleSectionProps = {}) {
+  const contentStyleSection = data ?? homeContent.contentStyleSection;
+  const instagramHref = validateExternalHttpsUrl(
+    instagramUrlOverride ?? siteConfig.instagramUrl
+  );
 
   return (
     <section

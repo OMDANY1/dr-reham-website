@@ -2,31 +2,38 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
 import { notFoundCopy } from "@/content/ar/not-found";
-import { articlesRecords, journalPageCopy } from "@/content/ar/articles";
+import { journalPageCopy } from "@/content/ar/articles";
 import { servicesRecords } from "@/content/ar/services";
 import {
   calculateArticleWordCount,
   calculateReadingTimeMinutes,
   formatReadingTimeAr,
   getPublicServices,
-  getVisibleArticleBySlug,
-  getVisibleArticles,
   isSupportedLocale,
 } from "@/lib/content-gates";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
+import {
+  getPublicOrPreviewArticleBySlug,
+  getPublicOrPreviewArticles,
+} from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ArticleShareBar } from "@/components/journal/ArticleShareBar";
+import { PreviewBanner } from "@/components/cms/PreviewBanner";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!isSupportedLocale(locale)) {
@@ -38,7 +45,11 @@ export async function generateMetadata({
     });
   }
 
-  const article = getVisibleArticleBySlug(articlesRecords, slug);
+  const sp = await searchParams;
+  const { article } = await getPublicOrPreviewArticleBySlug(
+    slug,
+    sp?.preview === "1"
+  );
   if (!article) {
     return buildRouteMetadata({
       title: notFoundCopy.meta.title,
@@ -54,22 +65,32 @@ export async function generateMetadata({
       : `${article.title} | د. ريهام القحطاني`,
     description: article.seo.description ?? article.excerpt ?? "",
     pathname: `/ar/journal/${article.slug}`,
-    // المسودات لا تُفهرس أبدًا حتى لو كانت معروضة في وضع المعاينة
     forceNoIndex: article.status === "draft",
   });
 }
 
 export default async function ArticleDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { locale, slug } = await params;
   if (!isSupportedLocale(locale)) {
     notFound();
   }
 
-  const article = getVisibleArticleBySlug(articlesRecords, slug);
+  const sp = await searchParams;
+  const isPreviewParam = sp?.preview === "1";
+
+  const { article, cmsArticle, redirectToSlug, isPreviewSession } =
+    await getPublicOrPreviewArticleBySlug(slug, isPreviewParam);
+
+  if (redirectToSlug && redirectToSlug !== slug) {
+    permanentRedirect(`/ar/journal/${redirectToSlug}`);
+  }
+
   if (!article) {
     notFound();
   }
@@ -78,7 +99,10 @@ export default async function ArticleDetailPage({
   const wordCount = calculateArticleWordCount(article);
   const showTableOfContents = article.body.length >= 3 || wordCount >= 350;
 
-  const allVisibleArticles = getVisibleArticles(articlesRecords).filter(
+  const { articles: allVisible } = await getPublicOrPreviewArticles(
+    isPreviewParam
+  );
+  const allVisibleArticles = allVisible.filter(
     (item) => item.slug !== article.slug
   );
   const sameCategoryArticles = allVisibleArticles.filter(
@@ -103,6 +127,8 @@ export default async function ArticleDetailPage({
 
   return (
     <>
+      {isPreviewSession ? <PreviewBanner /> : null}
+
       <header className="article-detail-header">
         <Container>
           <nav aria-label="مسار الصفحة" className="article-breadcrumb-nav">
@@ -148,7 +174,6 @@ export default async function ArticleDetailPage({
               <p className="article-detail-header__lead">{article.excerpt}</p>
             ) : null}
 
-            {/* لا تُعرض بيانات الكاتب أو المراجع أو تاريخ النشر إلا إذا كانت حقيقية ومعتمدة */}
             {hasRealAttribution ? (
               <div className="article-attribution-row">
                 {article.author ? (
@@ -179,6 +204,14 @@ export default async function ArticleDetailPage({
                 src={article.image.src}
                 alt={article.image.alt}
                 className="article-hero-figure__img"
+                style={
+                  cmsArticle?.image?.focalX !== undefined &&
+                  cmsArticle?.image?.focalY !== undefined
+                    ? {
+                        objectPosition: `${cmsArticle.image.focalX}% ${cmsArticle.image.focalY}%`,
+                      }
+                    : undefined
+                }
                 width={1120}
                 height={640}
               />
@@ -190,7 +223,6 @@ export default async function ArticleDetailPage({
       <article className="article-detail-body">
         <Container>
           <div className="article-detail-layout">
-            {/* فهرس التنقل الداخلي للمقالات الطويلة */}
             {showTableOfContents ? (
               <aside
                 className="article-toc"
@@ -220,10 +252,19 @@ export default async function ArticleDetailPage({
               </aside>
             ) : null}
 
-            {/* عمود القراءة المريح */}
             <div className="article-reading-column">
-              {article.body.map((section, idx) => {
+              {(cmsArticle?.body ?? article.body).map((section, idx) => {
                 const sectionId = section.id ?? `section-${idx + 1}`;
+                const cmsSec = section as {
+                  id?: string;
+                  heading: string;
+                  paragraphs: string[];
+                  bullets?: string[];
+                  linkLabel?: string;
+                  linkUrl?: string;
+                  imageSrc?: string;
+                  imageAlt?: string;
+                };
                 return (
                   <section
                     key={sectionId}
@@ -231,30 +272,71 @@ export default async function ArticleDetailPage({
                     className="article-content-section"
                   >
                     <h2 className="article-content-section__heading">
-                      {section.heading}
+                      {cmsSec.heading}
                     </h2>
-                    {section.paragraphs.map((p, pIdx) => (
+                    {cmsSec.paragraphs.map((p, pIdx) => (
                       <p key={pIdx} className="article-content-section__para">
                         {p}
                       </p>
                     ))}
-                    {section.bullets && section.bullets.length > 0 ? (
+                    {cmsSec.bullets && cmsSec.bullets.length > 0 ? (
                       <ul className="article-content-section__bullets">
-                        {section.bullets.map((bullet, bIdx) => (
+                        {cmsSec.bullets.map((bullet, bIdx) => (
                           <li key={bIdx}>{bullet}</li>
                         ))}
                       </ul>
+                    ) : null}
+                    {cmsSec.imageSrc ? (
+                      <figure
+                        style={{
+                          marginBlock: "var(--space-4)",
+                          borderRadius: "var(--control-radius)",
+                          overflow: "hidden",
+                          border: "1.5px solid var(--color-border)",
+                        }}
+                      >
+                        <img
+                          src={cmsSec.imageSrc}
+                          alt={cmsSec.imageAlt || cmsSec.heading}
+                          style={{
+                            inlineSize: "100%",
+                            blockSize: "auto",
+                            display: "block",
+                          }}
+                        />
+                      </figure>
+                    ) : null}
+                    {cmsSec.linkUrl && cmsSec.linkLabel ? (
+                      <p style={{ marginBlockStart: "var(--space-2)" }}>
+                        <a
+                          href={cmsSec.linkUrl}
+                          className="text-link"
+                          target={
+                            cmsSec.linkUrl.startsWith("https://")
+                              ? "_blank"
+                              : undefined
+                          }
+                          rel={
+                            cmsSec.linkUrl.startsWith("https://")
+                              ? "noopener noreferrer"
+                              : undefined
+                          }
+                        >
+                          {cmsSec.linkLabel} ←
+                        </a>
+                      </p>
                     ) : null}
                   </section>
                 );
               })}
 
-              {/* تنبيه التوعية العامة */}
               <div className="article-disclaimer-box">
-                <p>{journalPageCopy.articleLabels.disclaimer}</p>
+                <p>
+                  {cmsArticle?.disclaimer ??
+                    journalPageCopy.articleLabels.disclaimer}
+                </p>
               </div>
 
-              {/* المصادر الفعلية في نهاية المقال */}
               {article.sources && article.sources.length > 0 ? (
                 <section
                   className="article-sources"
@@ -296,7 +378,6 @@ export default async function ArticleDetailPage({
                 </section>
               ) : null}
 
-              {/* شريط المشاركة ونسخ الرابط وعودة للمقالات */}
               <div className="article-footer-bar">
                 <ArticleShareBar
                   title={article.title}
@@ -333,7 +414,6 @@ export default async function ArticleDetailPage({
                 </section>
               ) : null}
 
-              {/* دعوة هادئة للاستفسار عبر القناة الرسمية */}
               <aside
                 className="article-calm-inquiry"
                 aria-labelledby="article-calm-inquiry-heading"
@@ -369,7 +449,6 @@ export default async function ArticleDetailPage({
         </Container>
       </article>
 
-      {/* مقالات مرتبطة بحسب التصنيف مع استبعاد المقال الحالي */}
       {relatedArticles.length > 0 ? (
         <section
           className="section section--tinted"

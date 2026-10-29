@@ -4,15 +4,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { homeContent } from "@/content/ar/home";
 import { servicesRecords } from "@/content/ar/services";
-import { articlesRecords } from "@/content/ar/articles";
-import { faqRecords } from "@/content/ar/faq";
 import {
-  getPublicFaqs,
   getPublicServices,
-  getVisibleArticles,
   isSupportedLocale,
 } from "@/lib/content-gates";
 import { buildPhysicianJsonLd, buildRouteMetadata } from "@/lib/metadata";
+import {
+  getPublicClinicsFromCms,
+  getPublicOrPreviewArticles,
+  getPublicOrPreviewFaqs,
+  getPublicOrPreviewHomeData,
+} from "@/lib/cms/public-data";
+import type { HomeSectionKey } from "@/lib/cms/types";
 import { Hero } from "@/components/sections/Hero";
 import { SpecialtyIntro } from "@/components/sections/SpecialtyIntro";
 import { BeforeConsultation } from "@/components/sections/BeforeConsultation";
@@ -20,9 +23,12 @@ import { ServiceRows } from "@/components/sections/ServiceRows";
 import { KnowledgeTeaser } from "@/components/sections/KnowledgeTeaser";
 import { ContentStyleSection } from "@/components/sections/ContentStyleSection";
 import { BookingPanel } from "@/components/sections/BookingPanel";
+import { PreviewBanner } from "@/components/cms/PreviewBanner";
 import { Container } from "@/components/ui/Container";
 import { Accordion } from "@/components/ui/Accordion";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildRouteMetadata({
   title: homeContent.meta.title,
@@ -32,144 +38,211 @@ export const metadata: Metadata = buildRouteMetadata({
 
 export default async function HomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ preview?: string }>;
 }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) {
     notFound();
   }
 
+  const sp = await searchParams;
+  const previewParam = sp?.preview === "1";
+
+  const { homeData, isPreviewSession, previewUser } =
+    await getPublicOrPreviewHomeData(previewParam);
+  const { articles: visibleArticles } =
+    await getPublicOrPreviewArticles(previewParam);
+  const publicFaqs = (await getPublicOrPreviewFaqs(previewParam)).slice(0, 4);
+  const cmsClinics = getPublicClinicsFromCms();
   const publicServices = getPublicServices(servicesRecords);
-  const visibleArticles = getVisibleArticles(articlesRecords);
-  const publicFaqs = getPublicFaqs(faqRecords).slice(0, 4);
   const physicianJsonLd = buildPhysicianJsonLd();
+
+  const renderSection = (key: HomeSectionKey) => {
+    if (!homeData.sectionVisibility?.[key]) {
+      return null;
+    }
+
+    switch (key) {
+      case "doctorIntro":
+        return (
+          <section
+            key="doctorIntro"
+            id={homeData.doctorIntro.id}
+            className="doctor-brief-section"
+            style={{ scrollMarginBlockStart: "5.5rem" }}
+            aria-labelledby="doctor-brief-heading"
+          >
+            <Container>
+              <ScrollReveal>
+                <div className="doctor-brief-grid">
+                  <div className="doctor-brief-identity">
+                    <div>
+                      <span className="eyebrow">
+                        {homeData.doctorIntro.eyebrow}
+                      </span>
+                      <h2
+                        id="doctor-brief-heading"
+                        className="doctor-brief-identity__name"
+                      >
+                        {homeData.doctorIntro.name}
+                      </h2>
+                      <p className="doctor-brief-identity__role">
+                        {homeData.doctorIntro.specialty}
+                      </p>
+                      {homeData.doctorIntro.professionalRank ? (
+                        <p
+                          style={{
+                            fontSize: "var(--text-small)",
+                            color: "var(--color-secondary)",
+                            marginBlockStart: "0.25rem",
+                          }}
+                        >
+                          {homeData.doctorIntro.professionalRank}
+                        </p>
+                      ) : null}
+                      <span className="doctor-brief-identity__city">
+                        {homeData.doctorIntro.city}
+                      </span>
+                    </div>
+
+                    <div>
+                      <Link
+                        href={homeData.doctorIntro.moreLinkHref}
+                        className="text-link"
+                      >
+                        {homeData.doctorIntro.moreLinkLabel} ←
+                      </Link>
+                    </div>
+                  </div>
+
+                  <div className="doctor-brief-narrative">
+                    <p className="doctor-brief-statement">
+                      {homeData.doctorIntro.leadStatement}
+                    </p>
+
+                    <div className="doctor-brief-pillars">
+                      {homeData.doctorIntro.pillars.map((pillar) => (
+                        <div key={pillar.title}>
+                          <h3 className="doctor-brief-pillar__title">
+                            {pillar.title}
+                          </h3>
+                          <p className="doctor-brief-pillar__text">
+                            {pillar.text}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            </Container>
+          </section>
+        );
+
+      case "specialtySection":
+        return (
+          <React.Fragment key="specialtySection">
+            <SpecialtyIntro data={homeData.specialtySection} />
+            <ServiceRows services={publicServices} context="home" />
+          </React.Fragment>
+        );
+
+      case "beforeConsultationSection":
+        return (
+          <BeforeConsultation
+            key="beforeConsultationSection"
+            data={homeData.beforeConsultationSection}
+          />
+        );
+
+      case "knowledgeSection":
+        return (
+          <KnowledgeTeaser
+            key="knowledgeSection"
+            articles={visibleArticles}
+            sectionCopy={homeData.knowledgeSection}
+          />
+        );
+
+      case "contentStyleSection":
+        return (
+          <ContentStyleSection
+            key="contentStyleSection"
+            data={homeData.contentStyleSection}
+          />
+        );
+
+      case "faqSection":
+        return publicFaqs.length > 0 ? (
+          <section
+            key="faqSection"
+            id={homeData.faqSection.id}
+            className="practical-faq-section"
+            aria-labelledby="home-faq-heading"
+          >
+            <Container>
+              <ScrollReveal>
+                <div className="editorial-split">
+                  <div className="editorial-split__lead">
+                    <span className="eyebrow">
+                      {homeData.faqSection.eyebrow}
+                    </span>
+                    <h2 id="home-faq-heading" className="section-title">
+                      {homeData.faqSection.title}
+                    </h2>
+                    <p className="section-lead">{homeData.faqSection.intro}</p>
+                  </div>
+
+                  <div className="editorial-split__content">
+                    <Accordion
+                      items={publicFaqs.map((item, idx) => ({
+                        id: item.id,
+                        question: item.question,
+                        answer: item.answer ?? "",
+                        defaultOpen: idx === 0,
+                      }))}
+                    />
+                  </div>
+                </div>
+              </ScrollReveal>
+            </Container>
+          </section>
+        ) : null;
+
+      case "finalInquiry":
+        return (
+          <BookingPanel
+            key="finalInquiry"
+            mode="cta-banner"
+            clinics={cmsClinics}
+            finalInquiryData={homeData.finalInquiry}
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
+      {isPreviewSession ? (
+        <PreviewBanner userName={previewUser?.name} />
+      ) : null}
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(physicianJsonLd) }}
       />
 
-      {/* ١. الافتتاحية الفوتوغرافية الحالية */}
-      <Hero />
+      {/* ١. الافتتاحية الفوتوغرافية (ثابتة في أعلى الصفحة) */}
+      <Hero data={homeData.hero} />
 
-      {/* ٢. التعريف الموجز بالدكتورة والتخصص */}
-      <section
-        id={homeContent.doctorIntro.id}
-        className="doctor-brief-section"
-        style={{ scrollMarginBlockStart: "5.5rem" }}
-        aria-labelledby="doctor-brief-heading"
-      >
-        <Container>
-          <ScrollReveal>
-            <div className="doctor-brief-grid">
-              <div className="doctor-brief-identity">
-                <div>
-                  <span className="eyebrow">
-                    {homeContent.doctorIntro.eyebrow}
-                  </span>
-                  <h2
-                    id="doctor-brief-heading"
-                    className="doctor-brief-identity__name"
-                  >
-                    {homeContent.doctorIntro.name}
-                  </h2>
-                  <p className="doctor-brief-identity__role">
-                    {homeContent.doctorIntro.specialty}
-                  </p>
-                  <span className="doctor-brief-identity__city">
-                    {homeContent.doctorIntro.city}
-                  </span>
-                </div>
-
-                <div>
-                  <Link
-                    href={homeContent.doctorIntro.moreLinkHref}
-                    className="text-link"
-                  >
-                    {homeContent.doctorIntro.moreLinkLabel} ←
-                  </Link>
-                </div>
-              </div>
-
-              <div className="doctor-brief-narrative">
-                <p className="doctor-brief-statement">
-                  {homeContent.doctorIntro.leadStatement}
-                </p>
-
-                <div className="doctor-brief-pillars">
-                  {homeContent.doctorIntro.pillars.map((pillar) => (
-                    <div key={pillar.title}>
-                      <h3 className="doctor-brief-pillar__title">
-                        {pillar.title}
-                      </h3>
-                      <p className="doctor-brief-pillar__text">{pillar.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        </Container>
-      </section>
-
-      {/* ٣. قسم التخصص الحالي بعد ضبط كثافة المحتوى والمسافات */}
-      <SpecialtyIntro />
-
-      {/* الخدمات الفعلية إن كانت بياناتها معتمدة */}
-      <ServiceRows services={publicServices} context="home" />
-
-      {/* ٤. قسم «قبل الاستشارة» (ثلاث خطوات تحضيرية متصلة) */}
-      <BeforeConsultation />
-
-      {/* ٥. قسم بارز «من المقالات» (مقال كبير بجانب مقالتين أصغر) */}
-      <KnowledgeTeaser articles={visibleArticles} />
-
-      {/* ٦. قسم «تعرّف على أسلوب المحتوى» */}
-      <ContentStyleSection />
-
-      {/* ٧. قسم الأسئلة العملية المختصرة */}
-      {publicFaqs.length > 0 ? (
-        <section
-          id={homeContent.faqSection.id}
-          className="practical-faq-section"
-          aria-labelledby="home-faq-heading"
-        >
-          <Container>
-            <ScrollReveal>
-              <div className="editorial-split">
-                <div className="editorial-split__lead">
-                  <span className="eyebrow">
-                    {homeContent.faqSection.eyebrow}
-                  </span>
-                  <h2 id="home-faq-heading" className="section-title">
-                    {homeContent.faqSection.title}
-                  </h2>
-                  <p className="section-lead">
-                    {homeContent.faqSection.intro}
-                  </p>
-                </div>
-
-                <div className="editorial-split__content">
-                  <Accordion
-                    items={publicFaqs.map((item, idx) => ({
-                      id: item.id,
-                      question: item.question,
-                      answer: item.answer ?? "",
-                      defaultOpen: idx === 0,
-                    }))}
-                  />
-                </div>
-              </div>
-            </ScrollReveal>
-          </Container>
-        </section>
-      ) : null}
-
-      {/* ٨. دعوة التواصل الختامية والفوتر */}
-      <BookingPanel mode="cta-banner" />
+      {/* الأقسام القابلة للإظهار والإخفاء وإعادة الترتيب من لوحة الإدارة */}
+      {homeData.sectionOrder.map((key) => renderSection(key))}
     </>
   );
 }

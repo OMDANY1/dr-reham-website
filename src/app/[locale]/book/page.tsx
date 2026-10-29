@@ -6,11 +6,15 @@ import { qaVerifiedClinicsFixture, siteConfig } from "@/config/site";
 import { bookPageCopy } from "@/content/ar/book";
 import { isLiveBookingReady, isSupportedLocale } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
+import { getPublicClinicsFromCms } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
 import { BookingPanel } from "@/components/sections/BookingPanel";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
-  const liveReady = isLiveBookingReady(siteConfig);
+  const cmsClinics = getPublicClinicsFromCms();
+  const liveReady = isLiveBookingReady(siteConfig, cmsClinics);
   return buildRouteMetadata({
     title: liveReady
       ? bookPageCopy.meta.liveTitle
@@ -44,16 +48,17 @@ export default async function BookPage({
       ? reqHeaders.get("x-qa-booking-fixture")
       : null;
 
+  const cmsClinics = getPublicClinicsFromCms();
   const activeClinics =
     qaFixtureMode === "verified-multi"
       ? qaVerifiedClinicsFixture
       : qaFixtureMode === "verified-single"
       ? [qaVerifiedClinicsFixture[0]]
-      : siteConfig.clinics;
+      : cmsClinics;
 
   const liveReady = isLiveBookingReady(
     siteConfig,
-    qaFixtureMode ? activeClinics : undefined
+    qaFixtureMode ? activeClinics : cmsClinics.some((c) => c.enabled && c.affiliationVerified) ? cmsClinics : undefined
   );
 
   return (

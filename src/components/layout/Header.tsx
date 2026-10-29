@@ -12,26 +12,40 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { MobileMenu, type NavItem } from "@/components/layout/MobileMenu";
 
-export function getActiveNavItems(): NavItem[] {
+export function getActiveNavItems(
+  nav: typeof homeContent.navigation = homeContent.navigation
+): NavItem[] {
   const items: NavItem[] = [
-    { label: homeContent.navigation.about, href: "/ar/about" },
-    { label: homeContent.navigation.specialty, href: "/ar#specialty" },
+    { label: nav.about, href: "/ar/about" },
+    { label: nav.specialty, href: "/ar#specialty" },
   ];
 
   if (getPublicServices(servicesRecords).length > 0) {
-    items.push({ label: homeContent.navigation.services, href: "/ar/services" });
+    items.push({ label: nav.services, href: "/ar/services" });
   }
 
-  items.push({ label: homeContent.navigation.journal, href: "/ar/journal" });
-  items.push({ label: homeContent.navigation.contact, href: "/ar/book" });
+  items.push({ label: nav.journal, href: "/ar/journal" });
+  items.push({ label: nav.contact, href: "/ar/book" });
   return items;
 }
 
-export function Header() {
+export interface HeaderProps {
+  navigation?: typeof homeContent.navigation;
+  brandName?: string;
+  specialtyAr?: string;
+  bookingLabel?: string;
+}
+
+export function Header({
+  navigation = homeContent.navigation,
+  brandName = siteConfig.profile.nameAr,
+  specialtyAr = siteConfig.profile.specialtyAr,
+  bookingLabel: bookingLabelProp,
+}: HeaderProps = {}) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const bookingLabel = getBookingCtaLabel(siteConfig);
-  const navItems = getActiveNavItems();
+  const bookingLabel = bookingLabelProp ?? getBookingCtaLabel(siteConfig);
+  const navItems = getActiveNavItems(navigation);
 
   useEffect(() => {
     const onScroll = () => {
@@ -42,6 +56,10 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <header
       className={`site-header ${scrolled ? "site-header--scrolled" : ""}`.trim()}
@@ -50,12 +68,8 @@ export function Header() {
         <Link href="/ar" className="site-header__brand">
           <Logo tone="ink" size="compact" decorative />
           <div className="site-header__brand-text">
-            <span className="site-header__brand-name">
-              {siteConfig.profile.nameAr}
-            </span>
-            <span className="site-header__brand-sub">
-              {siteConfig.profile.specialtyAr}
-            </span>
+            <span className="site-header__brand-name">{brandName}</span>
+            <span className="site-header__brand-sub">{specialtyAr}</span>
           </div>
         </Link>
 
@@ -92,7 +106,7 @@ export function Header() {
           navItems={navItems}
           bookingLabel={bookingLabel}
           bookingHref="/ar/book"
-          brandName={siteConfig.profile.nameAr}
+          brandName={brandName}
         />
       </Container>
     </header>

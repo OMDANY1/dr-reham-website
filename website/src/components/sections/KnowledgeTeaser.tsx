@@ -11,21 +11,22 @@ import {
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import type { HomePageCmsData } from "@/lib/cms/types";
 
 export interface KnowledgeTeaserProps {
   articles: ArticleRecord[];
+  sectionCopy?: HomePageCmsData["knowledgeSection"];
 }
 
-/**
- * قسم «من المقالات» في الصفحة الرئيسية:
- * يعرض مقالًا كبيرًا مميزًا بجانب مقالتين أصغر بتكوين تحريري متوازن مع زر «جميع المقالات».
- * في وضع المعاينة يعرض المسودات المكتملة مع شارة «مسودة للمراجعة»، وفي وضع الإنتاج يعرض المعتمد فقط.
- */
-export function KnowledgeTeaser({ articles }: KnowledgeTeaserProps) {
+export function KnowledgeTeaser({
+  articles,
+  sectionCopy,
+}: KnowledgeTeaserProps) {
   if (articles.length === 0) {
     return null;
   }
 
+  const copy = sectionCopy ?? homeContent.knowledgeSection;
   const primaryArticle =
     articles.find((item) => item.featured) ?? articles[0];
   const secondaryArticles = articles
@@ -42,25 +43,20 @@ export function KnowledgeTeaser({ articles }: KnowledgeTeaserProps) {
         <ScrollReveal>
           <div className="section-header-row">
             <div>
-              <span className="eyebrow">
-                {homeContent.knowledgeSection.eyebrow}
-              </span>
+              <span className="eyebrow">{copy.eyebrow}</span>
               <h2 id="knowledge-teaser-heading" className="section-title">
-                {homeContent.knowledgeSection.title}
+                {copy.title}
               </h2>
-              <p className="section-lead">
-                {homeContent.knowledgeSection.intro}
-              </p>
+              <p className="section-lead">{copy.intro}</p>
             </div>
             <div className="section-header-row__action">
               <Button href="/ar/journal" variant="secondary">
-                {homeContent.knowledgeSection.viewAllLabel} ←
+                {copy.viewAllLabel} ←
               </Button>
             </div>
           </div>
 
           <div className="home-articles-showcase">
-            {/* المقال الرئيسي الكبير */}
             <article className="home-article-featured">
               <Link
                 href={`/ar/journal/${primaryArticle.slug}`}
@@ -116,13 +112,12 @@ export function KnowledgeTeaser({ articles }: KnowledgeTeaserProps) {
                     href={`/ar/journal/${primaryArticle.slug}`}
                     className="text-link"
                   >
-                    {homeContent.knowledgeSection.readArticleLabel} ←
+                    {copy.readArticleLabel} ←
                   </Link>
                 </div>
               </div>
             </article>
 
-            {/* المقالتان الأصغر بجانبه */}
             <div className="home-articles-side">
               {secondaryArticles.map((article) => (
                 <article key={article.slug} className="home-article-compact">
@@ -180,7 +175,7 @@ export function KnowledgeTeaser({ articles }: KnowledgeTeaserProps) {
                         href={`/ar/journal/${article.slug}`}
                         className="text-link"
                       >
-                        {homeContent.knowledgeSection.readArticleLabel} ←
+                        {copy.readArticleLabel} ←
                       </Link>
                     </div>
                   </div>
