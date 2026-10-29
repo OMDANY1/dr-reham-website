@@ -1,0 +1,156 @@
+{
+  "package": "Dr-Reham-Antigravity-Kit",
+  "version": "1.0",
+  "files": [
+    {
+      "path": ".agent/rules/project.md",
+      "bytes": 466,
+      "sha256": "895831d2889d9d80f9c3c706f57938f24d47bf928b6f0e6530e7389296594bb5"
+    },
+    {
+      "path": ".agent/workflows/build-site.md",
+      "bytes": 582,
+      "sha256": "22273d338f3bfb92b1d8d791218866221d17bd69748757b1bd1e40a71e27dc49"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 2171,
+      "sha256": "34885cd01a37ce150ac79aec1ae60bdd87b1a6e35a5bde781bbc48060fb4d5be"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2676,
+      "sha256": "e13cf4fad039fda1c21e67728541d6e0c6e6559580b050b8c9d5ace8a20da53b"
+    },
+    {
+      "path": "START-HERE.md",
+      "bytes": 2301,
+      "sha256": "76a5198bd7334b3eb43cfb7c5d4fdeaf93274b51403c3d2a2eaa851b771ab4bc"
+    },
+    {
+      "path": "assets/brand/README.md",
+      "bytes": 860,
+      "sha256": "1f9699701a64c433c35d21cbc50749b92843274a327c67416adaea46e9d6d422"
+    },
+    {
+      "path": "assets/brand/logo-original.png",
+      "bytes": 10703,
+      "sha256": "428e86cd72e3b44df44ee45aa83b822cec3f836074316fd23e7e497bea2e8e44"
+    },
+    {
+      "path": "content/ar-copy.md",
+      "bytes": 1415,
+      "sha256": "e4882411d43cea9f766cd5d34339979c4f0ef428bef73e1d7ace65778ad6c377"
+    },
+    {
+      "path": "content/site-draft.json",
+      "bytes": 1229,
+      "sha256": "c7700ea98bc3898e328f7a3006e534e6e88b26e366f922371a6ad9ecb4a9a017"
+    },
+    {
+      "path": "docs/00-BRIEF.md",
+      "bytes": 1575,
+      "sha256": "b6b5a299986e6d3317e27561c2f2732b285b9aeae9425b969577958e10c4e052"
+    },
+    {
+      "path": "docs/01-SOURCES-AND-FACTS.md",
+      "bytes": 2234,
+      "sha256": "f21bd0ea5e7507e23adef4eb51ae0d801a330bcdfd5dd168a617d148f05ce312"
+    },
+    {
+      "path": "docs/02-CREATIVE-DIRECTION.md",
+      "bytes": 2888,
+      "sha256": "131145f0e8f3af062f3d67fa468257f534effddfb72e28fb34623380b573921b"
+    },
+    {
+      "path": "docs/03-DESIGN-SYSTEM.md",
+      "bytes": 2503,
+      "sha256": "c87c1a037da3cbafabe24370f90d05370b3f6ca23f26c3a193fa0e3ee941e301"
+    },
+    {
+      "path": "docs/04-SITEMAP-AND-ROUTES.md",
+      "bytes": 1733,
+      "sha256": "fa634b82f572006fdedc80b3f77c080c1219cbaf06d6ca03e9acf8e313d8459e"
+    },
+    {
+      "path": "docs/05-INTERACTIONS-AND-MOTION.md",
+      "bytes": 2047,
+      "sha256": "28b2848d1474661fa7805e876e754e5c9ca2aec5b23b51725811bdc06b4bf16b"
+    },
+    {
+      "path": "docs/06-CONTENT-MODEL.md",
+      "bytes": 1578,
+      "sha256": "c25608a199c7c7fb8c6d9104ec6ea8e858ee3a5fd872083409a949b1c4a91ad7"
+    },
+    {
+      "path": "docs/07-TECHNICAL-PLAN.md",
+      "bytes": 3520,
+      "sha256": "58e94ea968f302782714b2e02b5b24758bf67725e8d42ce7cc040a3aa188b948"
+    },
+    {
+      "path": "docs/08-ASSET-PLAN.md",
+      "bytes": 1317,
+      "sha256": "fc6dc0ca332b6b058d116955c6e5b3e108d657f737278709a46cfeacb63b0d92"
+    },
+    {
+      "path": "docs/09-QA-AND-ACCEPTANCE.md",
+      "bytes": 2300,
+      "sha256": "143336f0ad1359b83593908baf2db15cdce9f45c12bb282200caa5c8ef3935b7"
+    },
+    {
+      "path": "docs/10-DELIVERY-PHASES.md",
+      "bytes": 1307,
+      "sha256": "a4fbb733d4d87638679435dbc7cfb961c95c7c94ce6dd48ae2e41c50abfbe690"
+    },
+    {
+      "path": "docs/11-OPEN-QUESTIONS.md",
+      "bytes": 1278,
+      "sha256": "afec5b1ed38dc1c40900559b9aef23e8c8912600f0125698a6b24095b6a7d951"
+    },
+    {
+      "path": "reference/tokens.css",
+      "bytes": 1009,
+      "sha256": "fd2fc99b6c313d19f72afd1b8dead02dda1feec9d83b67b0882ce605b7bb9186"
+    },
+    {
+      "path": "routes/about.md",
+      "bytes": 877,
+      "sha256": "7d4c4bd59873db06444c976da7c96da43c2dfb71b64790f2b70bfe116355b6e8"
+    },
+    {
+      "path": "routes/book.md",
+      "bytes": 1441,
+      "sha256": "57d7f6e4c04f0ed6e11f5c17ed8177b2b8191d14bdb06b00aa015a5668c27d4d"
+    },
+    {
+      "path": "routes/faq.md",
+      "bytes": 861,
+      "sha256": "5f33a4e96e428b8576018d7b475b45a80319466f1da80e5495359e7bbdd55c65"
+    },
+    {
+      "path": "routes/home.md",
+      "bytes": 2071,
+      "sha256": "85b120f16db07f7e8a56d88199b12c9c9d575083194af796e9ee7042c8914600"
+    },
+    {
+      "path": "routes/journal.md",
+      "bytes": 1070,
+      "sha256": "e0659a57f0b3870ace94eb32a5dd99eddef8252952fb0ae912ebd862bde87066"
+    },
+    {
+      "path": "routes/not-found.md",
+      "bytes": 375,
+      "sha256": "b1b2e5c10e26e74e1420ddaa637bbf22bff98776da46149c8f2415ac638c6caa"
+    },
+    {
+      "path": "routes/privacy.md",
+      "bytes": 685,
+      "sha256": "63e52442f39812dd27e64eae896b683a93a36d4275ce07f549726226805b75b1"
+    },
+    {
+      "path": "routes/services.md",
+      "bytes": 1181,
+      "sha256": "505e940743101e1eac774ec302836e182edada8992134b1ff7f6d661b9578044"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+/* ==========================================================================
+   Design Tokens — د. ريهام القحطاني (Photographic Editorial Direction)
+   ========================================================================== */
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("/fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url("/fonts/ibm-plex-sans-arabic-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0898-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Color Palette — Pure White, Intentional Sky Accents, Deep Readable Ink */
+  --white: #ffffff;
+  --sky-50: #f5fbfd;
+  --sky-100: #e3f4fb;
+  --sky-200: #bae6f7;
+  --sky-400: #38bdf8;
+  --sky-500: #0ea5e9;
+  --sky-600: #0284c7;
+  --sky-700: #087a9c;
+  --sky-800: #065f7c;
+  --ink: #0e2f3d;
+  --ink-soft: #164254;
+  --muted: #43616d;
+  --border: #d2e6ef;
+
+  /* Typography — High-contrast Editorial Scale
+     Hero: 64-80px desktop (4rem-4.85rem), 38-46px mobile (2.375rem-2.875rem)
+     Body: 17-19px (1.0625rem-1.1875rem) */
+  --font-ar: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+  --text-hero: clamp(2.45rem, 3.85vw + 0.65rem, 4.15rem);
+  --text-h1: clamp(2.25rem, 3.4vw + 1rem, 3.75rem);
+  --text-h2: clamp(1.875rem, 2.4vw + 0.9rem, 2.875rem);
+  --text-statement: clamp(1.45rem, 1.5vw + 0.9rem, 2.05rem);
+  --text-h3: clamp(1.25rem, 0.9vw + 0.95rem, 1.55rem);
+  --text-body-lg: clamp(1.125rem, 0.3vw + 1.02rem, 1.25rem);
+  --text-body: clamp(1.0625rem, 0.22vw + 1rem, 1.1875rem);
+  --text-small: 0.95rem;
+  --text-caption: 0.875rem;
+
+  /* Line Heights */
+  --leading-hero: 1.18;
+  --leading-heading: 1.32;
+  --leading-statement: 1.62;
+  --leading-body: 1.82;
+
+  /* Spacing Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128 */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+
+  /* Layout & Controls */
+  --content-width: 82rem; /* 1312px */
+  --reading-measure: 60ch;
+  --gutter-mobile: 1.25rem; /* 20px */
+  --gutter-desktop: 3rem; /* 48px */
+  --control-height: 3.25rem; /* 52px */
+  --touch-min: 2.75rem; /* 44px */
+  --control-radius: 0.625rem; /* 10px */
+  --overlay-shadow: 0 24px 48px -12px rgba(14, 47, 61, 0.18);
+}
+
+@media (max-width: 375px) {
+  :root {
+    --gutter-mobile: 1rem;
+  }
+}

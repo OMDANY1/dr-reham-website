@@ -1,0 +1,21 @@
+/* Reference tokens; integrate into actual app styles. */
+:root {
+ --white:#ffffff; --sky-50:#f2fbfe; --sky-100:#e0f5fc;
+ --sky-200:#bceaf7; --sky-400:#64c6e5; --sky-500:#32aed4;
+ --sky-700:#087a9c; --ink:#123c4a; --muted:#466570; --border:#c7e2ea;
+ --font-ar:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+ --content-width:80rem; --control-radius:.75rem;
+}
+.brand-logo {
+ display:inline-block; inline-size:4.5rem; aspect-ratio:216 / 188;
+ background-color:var(--ink);
+ -webkit-mask:url('/brand/logo-original.png') center / contain no-repeat;
+ mask:url('/brand/logo-original.png') center / contain no-repeat;
+}
+.brand-logo--sky {background-color:var(--sky-700)}
+.brand-logo--white {background-color:var(--white)}
+:focus-visible {outline:3px solid var(--ink);outline-offset:4px}
+/* Scope animation overrides to the components that animate. */
+@media (prefers-reduced-motion:reduce) {
+ .contour-scene, .reveal {animation:none!important;transition:none!important;transform:none!important;opacity:1!important}
+}

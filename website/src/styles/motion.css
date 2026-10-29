@@ -1,0 +1,110 @@
+/* ==========================================================================
+   Refined & Perceptible Editorial Motion (Respects prefers-reduced-motion)
+   ========================================================================== */
+
+@keyframes heroTextReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroPhotoReveal {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes editorialSectionReveal {
+  from {
+    opacity: 0.35;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-hero-1 {
+    animation: heroTextReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .reveal-hero-2 {
+    animation: heroTextReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+  }
+
+  .reveal-hero-3 {
+    animation: heroTextReveal 760ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
+  }
+
+  .reveal-hero-4 {
+    animation: heroTextReveal 800ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+  }
+
+  .reveal-hero-photo {
+    animation: heroPhotoReveal 950ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+  }
+
+  /* Scroll-triggered reveal for editorial sections — always visible when static */
+  .scroll-reveal {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .scroll-reveal--entering {
+    animation: editorialSectionReveal 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Subtle editorial image zoom on hover */
+  .editorial-photo-zoom {
+    transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .editorial-photo-wrap:hover .editorial-photo-zoom {
+    transform: scale(1.028);
+  }
+
+  .mobile-menu-dialog {
+    animation: drawerSlideIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-hero-1,
+  .reveal-hero-2,
+  .reveal-hero-3,
+  .reveal-hero-4,
+  .reveal-hero-photo,
+  .scroll-reveal,
+  .scroll-reveal--entering,
+  .editorial-photo-zoom,
+  .mobile-menu-dialog {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

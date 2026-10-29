@@ -1,0 +1,47 @@
+{
+  "mode": "preview",
+  "locale": "ar",
+  "profile": {
+    "nameAr": "د. ريهام القحطاني",
+    "nameEn": "Reham AlQahtani",
+    "specialtyAr": "طب وجراحة تجميل العيون والجفون",
+    "city": "الرياض",
+    "professionalRank": null,
+    "biography": null,
+    "credentials": []
+  },
+  "domain": null,
+  "instagramUrl": "https://www.instagram.com/dr.rehamdq/",
+  "bookingEnabled": false,
+  "legalEntity": null,
+  "privacyContact": null,
+  "clinics": [
+    {
+      "id": "safwa-majesty",
+      "name": "عيادات الصفوة ماجستي",
+      "source": "Instagram public bio reviewed 2026-10-29",
+      "affiliationVerified": false,
+      "enabled": false,
+      "address": null,
+      "mapsUrl": null,
+      "bookingUrl": null,
+      "whatsappE164": null,
+      "hours": null
+    },
+    {
+      "id": "habib-olaya",
+      "name": "د. سليمان الحبيب – العليا",
+      "source": "Instagram public bio reviewed 2026-10-29",
+      "affiliationVerified": false,
+      "enabled": false,
+      "address": null,
+      "mapsUrl": null,
+      "bookingUrl": null,
+      "whatsappE164": null,
+      "hours": null
+    }
+  ],
+  "services": [],
+  "articles": [],
+  "faq": []
+}
