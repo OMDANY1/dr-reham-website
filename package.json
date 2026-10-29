@@ -1,0 +1,33 @@
+{
+  "name": "dr-reham-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "الموقع الرسمي لد. ريهام القحطاني — طب وجراحة تجميل العيون والجفون",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "test": "vitest run && playwright test"
+  },
+  "dependencies": {
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
+    "@playwright/test": "1.64.1",
+    "@types/node": "22.14.0",
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "eslint": "9.24.0",
+    "eslint-config-next": "15.5.0",
+    "typescript": "5.8.3",
+    "vitest": "3.2.7"
+  }
+}
