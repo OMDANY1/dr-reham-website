@@ -41,7 +41,7 @@ export default function NotFound() {
           </h1>
           <p
             style={{
-              color: "var(--muted)",
+              color: "var(--color-paragraph)",
               fontSize: "var(--text-body-lg)",
               marginBlockEnd: "var(--space-6)",
             }}
@@ -49,7 +49,7 @@ export default function NotFound() {
             {notFoundCopy.description}
           </p>
 
-          <div className="empty-state__actions">
+          <div className="hero-editorial__cta-row">
             <Button href="/ar" variant="primary">
               {notFoundCopy.homeCta}
             </Button>

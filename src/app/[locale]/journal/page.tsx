@@ -1,15 +1,15 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { articlesRecords, journalPageCopy } from "@/content/ar/articles";
 import { getVisibleArticles, isSupportedLocale } from "@/lib/content-gates";
-import { isProtectedDraftPreviewActive } from "@/lib/preview-auth";
+import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { Container } from "@/components/ui/Container";
+import { Button } from "@/components/ui/Button";
 import { JournalExplorer } from "@/components/journal/JournalExplorer";
-import { EditorialContactChapter } from "@/components/sections/EditorialContactChapter";
+import { BookingPanel } from "@/components/sections/BookingPanel";
 
 export const metadata: Metadata = buildRouteMetadata({
   title: journalPageCopy.meta.title,
@@ -19,120 +19,62 @@ export const metadata: Metadata = buildRouteMetadata({
 
 export default async function JournalIndexPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string }>;
 }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) {
     notFound();
   }
 
-  const resolvedSearchParams = await searchParams;
-  const initialCategory =
-    typeof resolvedSearchParams.category === "string"
-      ? resolvedSearchParams.category
-      : "الكل";
-
-  const protectedPreview = await isProtectedDraftPreviewActive();
-  const visibleArticles = getVisibleArticles(
-    articlesRecords,
-    undefined,
-    protectedPreview
-  );
+  const visibleArticles = getVisibleArticles(articlesRecords);
+  const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
 
   return (
     <>
-      {protectedPreview ? (
-        <div
-          className="protected-preview-bar"
-          role="region"
-          aria-label="تنبيه وضع المعاينة المحمية"
-        >
-          <Container className="protected-preview-bar__inner">
-            <div>
-              <span className="protected-preview-bar__badge">معاينة محمية</span>
-              <span>
-                {journalPageCopy.protectedPreviewNotice.activeBannerText}
-              </span>
-            </div>
-            <Link
-              href="/api/preview/exit?redirect=/ar/journal"
-              className="protected-preview-bar__exit"
-            >
-              {journalPageCopy.protectedPreviewNotice.exitPreviewLabel}
-            </Link>
-          </Container>
-        </div>
-      ) : null}
-
-      <header className="journal-masthead">
+      <header className="page-header page-header--compact">
         <Container>
-          <span className="journal-masthead__eyebrow">
-            {journalPageCopy.eyebrow}
-          </span>
-          <h1 className="journal-masthead__title">
-            {journalPageCopy.headline}
-          </h1>
-          <p className="journal-masthead__intro">{journalPageCopy.intro}</p>
+          <span className="eyebrow">{journalPageCopy.eyebrow}</span>
+          <h1 className="page-header__title">{journalPageCopy.headline}</h1>
+          <p className="section-lead">{journalPageCopy.intro}</p>
         </Container>
       </header>
 
-      <section className="section" aria-labelledby="journal-list-heading">
+      <section
+        className="section section--journal-index"
+        aria-labelledby="journal-list-heading"
+      >
         <Container>
           <h2 id="journal-list-heading" className="sr-only">
-            قائمة موضوعات ومقالات العين والجفون
+            قائمة المقالات التوعوية
           </h2>
 
-          <JournalExplorer
-            articles={visibleArticles}
-            isProtectedPreview={protectedPreview}
-            initialCategory={initialCategory}
-          />
-
-          {/* في النسخة العامة غير المحمية (ومع بقاء المسودات غير منشورة للعامة)، تتوفر بوابة المعاينة المحمية للمراجعين فقط */}
-          {!protectedPreview && siteConfig.mode === "preview" ? (
-            <aside
-              className="journal-preview-gate"
-              aria-label="بوابة المعاينة المحمية للمسودات"
-            >
-              <div>
-                <strong>
-                  {journalPageCopy.protectedPreviewNotice.publicBannerTitle}
-                </strong>
-                <p style={{ fontSize: "var(--text-small)", color: "var(--muted)" }}>
-                  {journalPageCopy.protectedPreviewNotice.publicBannerText}
-                </p>
+          {visibleArticles.length > 0 ? (
+            <JournalExplorer articles={visibleArticles} />
+          ) : (
+            <div className="inquiry-channel-card">
+              <h3 className="empty-state__title">
+                {journalPageCopy.directVisitState.title}
+              </h3>
+              <p className="empty-state__message">
+                {journalPageCopy.directVisitState.message}
+              </p>
+              <div className="empty-state__actions">
+                {instagramHref ? (
+                  <Button href={instagramHref} variant="primary" external>
+                    {journalPageCopy.directVisitState.primaryCta} ↗
+                  </Button>
+                ) : null}
+                <Button href="/ar" variant="secondary">
+                  {journalPageCopy.directVisitState.secondaryCta}
+                </Button>
               </div>
-
-              <form
-                action="/api/preview"
-                method="GET"
-                className="journal-preview-gate__form"
-              >
-                <input type="hidden" name="redirect" value="/ar/journal" />
-                <label htmlFor="preview-key-input" className="sr-only">
-                  مفتاح المعاينة المحمية
-                </label>
-                <input
-                  id="preview-key-input"
-                  type="password"
-                  name="key"
-                  placeholder="مفتاح المعاينة المحمية"
-                  className="journal-preview-gate__input"
-                  required
-                />
-                <button type="submit" className="btn btn--secondary">
-                  دخول المعاينة المحمية
-                </button>
-              </form>
-            </aside>
-          ) : null}
+            </div>
+          )}
         </Container>
       </section>
 
-      <EditorialContactChapter />
+      <BookingPanel mode="cta-banner" />
     </>
   );
 }

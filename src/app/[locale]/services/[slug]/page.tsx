@@ -102,7 +102,7 @@ export default async function ServiceDetailPage({
               style={{
                 marginBlockStart: "var(--space-4)",
                 fontSize: "var(--text-caption)",
-                color: "var(--muted)",
+                color: "var(--color-secondary)",
               }}
             >
               {servicesPageCopy.detailLabels.reviewedByPrefix}{" "}

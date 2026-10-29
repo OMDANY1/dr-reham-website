@@ -1,95 +1,108 @@
-/* حركات مفهوم «للنظرة تفاصيل» — وحدات نصية كاملة وكشف بانورامي متزن */
+/* ==========================================================================
+   Refined & Perceptible Editorial Motion (Respects prefers-reduced-motion)
+   ========================================================================== */
 
-@keyframes gazeUnitIn {
-  0% {
+@keyframes heroTextReveal {
+  from {
     opacity: 0;
-    transform: translate3d(0, 18px, 0);
+    transform: translateY(18px);
   }
-  100% {
+  to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    transform: translateY(0);
   }
 }
 
-@keyframes gazePanoramaReveal {
-  0% {
+@keyframes heroPhotoReveal {
+  from {
     opacity: 0;
-    transform: scale(1.025);
+    transform: scale(1.035);
   }
-  100% {
+  to {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-.gaze-unit-1 {
-  animation: gazeUnitIn 580ms var(--ease-out-editorial) both;
+@keyframes editorialSectionReveal {
+  from {
+    opacity: 0.35;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.gaze-unit-2 {
-  animation: gazeUnitIn 640ms var(--ease-out-editorial) 90ms both;
+@keyframes drawerSlideIn {
+  from {
+    transform: translateX(20px);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
-.gaze-unit-3 {
-  animation: gazeUnitIn 680ms var(--ease-out-editorial) 170ms both;
-}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-hero-1 {
+    animation: heroTextReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
-.gaze-panorama-enter {
-  animation: gazePanoramaReveal 820ms var(--ease-out-editorial) 140ms both;
-}
+  .reveal-hero-2 {
+    animation: heroTextReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+  }
 
-/* انتقالات الفصول عند التمرير */
-.scroll-reveal {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  transition:
-    opacity 620ms var(--ease-out-editorial),
-    transform 620ms var(--ease-out-editorial);
-}
+  .reveal-hero-3 {
+    animation: heroTextReveal 760ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
+  }
 
-.scroll-reveal--pending {
-  opacity: 0;
-  transform: translate3d(0, 20px, 0);
-}
+  .reveal-hero-4 {
+    animation: heroTextReveal 800ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+  }
 
-.scroll-reveal--visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
+  .reveal-hero-photo {
+    animation: heroPhotoReveal 950ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+  }
 
-/* تفاعل الصور والروابط التحريرية */
-.editorial-image-zoom {
-  overflow: hidden;
-  border-radius: var(--radius-none);
-}
+  /* Scroll-triggered reveal for editorial sections — always visible when static */
+  .scroll-reveal {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-.editorial-image-zoom img {
-  transition: transform 640ms var(--ease-out-editorial);
-}
+  .scroll-reveal--entering {
+    animation: editorialSectionReveal 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 
-@media (hover: hover) {
-  .editorial-image-zoom:hover img,
-  a:hover .editorial-image-zoom img {
+  /* Subtle editorial image zoom on hover */
+  .editorial-photo-zoom {
+    transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .editorial-photo-wrap:hover .editorial-photo-zoom {
     transform: scale(1.028);
   }
+
+  .mobile-menu-dialog {
+    animation: drawerSlideIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }
 
-/* احترام تفضيل تقليل الحركة بالكامل */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
+  .reveal,
+  .reveal-hero-1,
+  .reveal-hero-2,
+  .reveal-hero-3,
+  .reveal-hero-4,
+  .reveal-hero-photo,
   .scroll-reveal,
-  .scroll-reveal--pending,
-  .scroll-reveal--visible {
-    opacity: 1 !important;
+  .scroll-reveal--entering,
+  .editorial-photo-zoom,
+  .mobile-menu-dialog {
+    animation: none !important;
+    transition: none !important;
     transform: none !important;
+    opacity: 1 !important;
   }
 }

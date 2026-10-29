@@ -9,48 +9,38 @@ export const ARTICLE_CATEGORIES = [
 
 export const journalPageCopy = {
   meta: {
-    title: "المقالات — عن العين وتفاصيلها | د. ريهام القحطاني",
+    title: "المقالات | د. ريهام القحطاني",
     description:
-      "عن العين وتفاصيلها — قراءات تحريرية مبسّطة حول العين والجفون والاستعداد للاستشارة لدى د. ريهام القحطاني في الرياض.",
+      "تفاصيل تستحق المعرفة — قراءات مبسّطة حول العين والجفون والاستعداد للاستشارة.",
   },
-  eyebrow: "المجلة الطبية",
-  headline: "عن العين وتفاصيلها",
-  intro:
-    "قراءات تحريرية مبسّطة تشرح مصطلحات الجفون ومحيط العين وتساعدك على الاستعداد الواعي قبل الاستشارة.",
-  featuredBadge: "موضوع افتتاحي",
+  eyebrow: "المقالات التوعوية",
+  headline: "تفاصيل تستحق المعرفة",
+  intro: "قراءات مبسّطة حول العين والجفون والاستعداد للاستشارة.",
+  featuredBadge: "مقال مميز",
   readArticleCta: "قراءة المقال",
-  searchPlaceholder: "ابحث في العناوين والملخصات...",
+  searchPlaceholder: "ابحث في عناوين المقالات وملخصاتها...",
   searchLabel: "البحث في المقالات",
   clearSearchLabel: "مسح البحث",
-  categoryFilterLabel: "تصفية الموضوعات حسب التصنيف",
+  categoryFilterLabel: "تصفية المقالات حسب التصنيف",
   emptySearchState: {
-    title: "لا توجد موضوعات مطابقة لبحثك",
+    title: "لا توجد مقالات مطابقة لبحثك",
     message:
       "جرّب البحث بكلمات أخرى أو اختيار تصنيف مختلف لاستعراض القراءات المتاحة.",
     resetCta: "إعادة ضبط البحث والتصنيف",
   },
   directVisitState: {
-    title: "المحتوى التوعوي عبر إنستجرام",
+    title: "المحتوى التوعوي عبر الحساب الرسمي",
     message:
-      "تشارك د. ريهام القحطاني إضاءات وموضوعات توعوية حول الجفون ومحيط العين عبر حساب الدكتورة على إنستجرام.",
-    primaryCta: "زيارة حساب الدكتورة على إنستجرام",
+      "تشارك د. ريهام القحطاني إضاءات وموضوعات توعوية حول الجفون ومحيط العين عبر حسابها الرسمي في إنستجرام.",
+    primaryCta: "متابعة الحساب الرسمي في إنستجرام",
     secondaryCta: "العودة للرئيسية",
-  },
-  protectedPreviewNotice: {
-    publicBannerTitle: "مسودات المقالات الكاملة محفوظة في المعاينة المحمية",
-    publicBannerText:
-      "تعرض النسخة العامة أدناه المحاور التوعوية المعتمدة فقط دون نشر المسودات قيد المراجعة الطبية.",
-    activeBannerTitle: "وضع المعاينة المحمية للمسودات مفعل",
-    activeBannerText:
-      "أنت تستعرض الآن المسودات التحريرية الست قيد المراجعة؛ هذه المسودات مفصولة عن النسخة العامة للزوار.",
-    exitPreviewLabel: "إنهاء المعاينة المحمية",
   },
   articleLabels: {
     breadcrumbJournal: "المقالات",
     backToJournal: "العودة إلى جميع المقالات",
     draftBadge: "مسودة للمراجعة",
     previewNotice:
-      "معاينة محمية خاصة بالمراجعة التحريرية؛ لا تُعرض هذه المسودة في النسخة العامة للزوار إلا بعد الاعتماد الرسمي.",
+      "نسخة معاينة تحريرية لتقييم تجربة القراءة؛ تُنشر للعامة فقط بعد اكتمال المراجعة والاعتماد الرسمي.",
     tocHeading: "فهرس المقال",
     authorPrefix: "الكاتب:",
     reviewedByPrefix: "مراجعة طبية:",
@@ -62,83 +52,15 @@ export const journalPageCopy = {
     copiedFeedback: "تم نسخ الرابط",
     relatedArticlesHeading: "مقالات مرتبطة",
     relatedServicesHeading: "خدمات ذات صلة",
-    calmInquiryEyebrow: "التواصل والاستفسار",
+    calmInquiryEyebrow: "استفسار مباشر",
     calmInquiryTitle: "هل لديك استفسار حول موعد أو زيارة؟",
     calmInquiryText:
-      "للاستفسار عن المواعيد في الرياض، يمكنك التواصل عبر حساب الدكتورة على إنستجرام (@dr.rehamdq).",
+      "للاستفسار عن المواعيد في الرياض، يمكنك التواصل مباشرة عبر الحساب الرسمي الموثق للدكتورة ريهام القحطاني على إنستجرام.",
     calmInquiryCta: "تواصل للاستفسار",
     disclaimer:
       "هذه المادة مخصصة للتثقيف الصحي العام فقط، ولا تمثل تشخيصًا شخصيًا أو توصية علاجية ولا تُغني عن الفحص الطبي المباشر.",
   },
 };
-
-/**
- * محاور القراءة العامة في النسخة العامة (عند عدم تفعيل المعاينة المحمية للمسودات):
- * تستند حصريًا إلى العناوين التوعوية المؤكدة وإرشادات التحضير، دون شارات «مسودة للمراجعة»
- * ودون تحويل المسودات غير المعتمدة إلى مقالات منشورة.
- */
-export const publicEditorialTopics = [
-  {
-    slug: "topic-hooded-vs-deep-set",
-    title: "الجفن المبطن والعين الغائرة: قراءة في تفاصيل الجفن العلوي",
-    excerpt:
-      "مدخل تعريفي يوضح الفروق الشكلية والتشريحية العامة بين طية الجفن العلوي وموضع العين داخل الحجاج العظمي، ولماذا يعتمد التوصيف الدقيق على الفحص المباشر.",
-    category: "العين والجفون",
-    featured: true,
-    readingLabel: "محور تعريفي",
-    href: "/ar/faq",
-    ctaLabel: "قراءة الإرشادات التوعوية",
-    image: {
-      src: "/media/gaze-article-hooded-vs-deepset.jpg",
-      alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي وقوس الحاجب تحت إضاءة نهارية ناعمة",
-    },
-  },
-  {
-    slug: "topic-periorbital-appearance",
-    title: "مظهر الإرهاق حول العين: تعدد العوامل بين الجلد والأنسجة ونمط الحياة",
-    excerpt:
-      "إضاءة مختصرة حول تداخل طبيعة الجلد الرقيق والظلال الضوئية والعوامل اليومية في تشكيل مظهر محيط العين دون اختزالها في سبب واحد.",
-    category: "حول العين",
-    featured: false,
-    readingLabel: "محور تعريفي",
-    href: "/ar/faq",
-    ctaLabel: "استعراض الأسئلة المرتبطة",
-    image: {
-      src: "/media/gaze-article-periorbital-fatigue.jpg",
-      alt: "صورة تحريرية تعبيرية هادئة لمنطقة العين وأعلى الوجنة في ضوء الصباح الطبيعي",
-    },
-  },
-  {
-    slug: "topic-consultation-preparation",
-    title: "الاستعداد للاستشارة: ترتيب الملاحظات وتجهيز المعلومات الصحية",
-    excerpt:
-      "خطوات عملية لتدوين استفساراتك وتجهيز قائمة القطرات والأدوية والتقارير السابقة قبل حضور الموعد الطبي في الرياض.",
-    category: "قبل الاستشارة",
-    featured: false,
-    readingLabel: "دليل الزيارة",
-    href: "/ar#before-visit",
-    ctaLabel: "الانتقال إلى فصل قبل زيارتك",
-    image: {
-      src: "/media/gaze-article-consultation-prep.jpg",
-      alt: "صورة تحريرية تعبيرية لدفتر ملاحظات مفتوح وقلم على سطح حجري أبيض",
-    },
-  },
-  {
-    slug: "topic-consultation-questions",
-    title: "حوار الاستشارة المباشرة: كيف تناقش توقعاتك بواقعية ووضوح؟",
-    excerpt:
-      "محاور تساعد الزائر على فهم أهمية المعاينة السريرية المباشرة في العيادة والتمييز بين التوعية العامة والتقييم الطبي الشخصي.",
-    category: "قبل الاستشارة",
-    featured: false,
-    readingLabel: "دليل الزيارة",
-    href: "/ar/book",
-    ctaLabel: "إرشادات التواصل والمواعيد",
-    image: {
-      src: "/media/gaze-article-dialogue-questions.jpg",
-      alt: "صورة تحريرية تعبيرية لركن استشارة معماري هادئ ومضيء",
-    },
-  },
-];
 
 /**
  * ست مسودات عربية مكتملة للمعاينة (في حدود 400–600 كلمة لكل مقال).
@@ -155,7 +77,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "العين والجفون",
     featured: true,
     image: {
-      src: "/media/gaze-article-hooded-vs-deepset.jpg",
+      src: "/media/article-hooded-vs-deepset.jpg",
       alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي وقوس الحاجب تحت إضاءة نهارية ناعمة",
     },
     author: null,
@@ -233,7 +155,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "حول العين",
     featured: false,
     image: {
-      src: "/media/gaze-article-periorbital-fatigue.jpg",
+      src: "/media/article-tired-eye-factors.jpg",
       alt: "صورة تحريرية تعبيرية هادئة لمنطقة العين وأعلى الوجنة في ضوء الصباح الطبيعي",
     },
     author: null,
@@ -306,7 +228,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "قبل الاستشارة",
     featured: false,
     image: {
-      src: "/media/gaze-article-consultation-prep.jpg",
+      src: "/media/article-consultation-prep.jpg",
       alt: "صورة تحريرية تعبيرية لدفتر ملاحظات مفتوح وقلم ونظارة طبية على سطح رخامي هادئ",
     },
     author: null,
@@ -383,7 +305,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "قبل الاستشارة",
     featured: false,
     image: {
-      src: "/media/gaze-article-dialogue-questions.jpg",
+      src: "/media/article-consultation-questions.jpg",
       alt: "صورة تحريرية تعبيرية لركن هادئ ومضيء يرمز لبيئة الاستشارة المتأنية",
     },
     author: null,
@@ -463,7 +385,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "قبل الاستشارة",
     featured: false,
     image: {
-      src: "/media/gaze-article-medical-notes.jpg",
+      src: "/media/article-medical-history-notes.jpg",
       alt: "صورة تحريرية تعبيرية لملف أنيق ونظارة طبية على طاولة مضاءة بنور النهار",
     },
     author: null,
@@ -536,7 +458,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "العين والجفون",
     featured: false,
     image: {
-      src: "/media/gaze-article-realistic-reading.jpg",
+      src: "/media/article-realistic-expectations.jpg",
       alt: "صورة تحريرية تعبيرية لمنشور زجاجي شفاف يعكس ضوء النهار بهدوء ووضوح",
     },
     author: null,

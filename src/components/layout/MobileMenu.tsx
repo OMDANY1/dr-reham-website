@@ -31,10 +31,12 @@ export function MobileMenu({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
 
+  // إغلاق القائمة تلقائيًا عند تغير المسار الداخلي
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
 
+  // إدارة قفل التمرير، التركيز (Focus Trap)، وزر Escape، وإعادة التركيز للزر الأصلي
   useEffect(() => {
     if (!isOpen) {
       if (wasOpenRef.current) {
@@ -48,6 +50,7 @@ export function MobileMenu({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // نقل التركيز إلى زر الإغلاق عند فتح النافذة
     const timer = window.setTimeout(() => {
       closeButtonRef.current?.focus();
     }, 10);
@@ -111,14 +114,14 @@ export function MobileMenu({
             d="M2.5 5H15.5M2.5 9H15.5M2.5 13H10.5"
             stroke="currentColor"
             strokeWidth="1.75"
-            strokeLinecap="square"
+            strokeLinecap="round"
           />
         </svg>
       </button>
 
       {isOpen ? (
         <div
-          className="mobile-drawer-backdrop"
+          className="mobile-menu-backdrop"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setIsOpen(false);
@@ -131,58 +134,74 @@ export function MobileMenu({
             role="dialog"
             aria-modal="true"
             aria-label="القائمة الرئيسية"
-            className="mobile-drawer"
+            className="mobile-menu-dialog"
           >
             <div>
-              <div className="mobile-drawer__top">
+              <div className="mobile-menu-dialog__top">
                 <Link
                   href="/ar"
-                  className="site-header__logo-link"
-                  aria-label={`${brandName} — الرئيسية`}
+                  className="site-header__brand"
                   onClick={() => setIsOpen(false)}
                 >
                   <Logo tone="ink" size="compact" decorative />
+                  <span className="site-header__brand-name">{brandName}</span>
                 </Link>
 
                 <button
                   ref={closeButtonRef}
                   type="button"
-                  className="mobile-drawer__close"
+                  className="mobile-menu-trigger"
                   aria-label="إغلاق القائمة"
                   onClick={() => setIsOpen(false)}
                 >
-                  إغلاق ×
+                  <span>إغلاق</span>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3.5 3.5L12.5 12.5M12.5 3.5L3.5 12.5"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </button>
               </div>
 
-              <nav className="mobile-drawer__nav" aria-label="روابط الجوال">
-                {navItems.map((item) => {
-                  const isHome = item.href === "/ar";
-                  const isActive = isHome
-                    ? pathname === "/ar"
-                    : Boolean(
+              <nav aria-label="روابط الجوال">
+                <ul className="mobile-menu-dialog__list">
+                  {navItems.map((item) => {
+                    const isHashLink = item.href.includes("#");
+                    const isActive =
+                      !isHashLink &&
+                      Boolean(
                         pathname === item.href ||
                           pathname?.startsWith(`${item.href}/`)
                       );
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`mobile-drawer__link ${
-                        isActive ? "mobile-drawer__link--active" : ""
-                      }`.trim()}
-                      aria-current={isActive ? "page" : undefined}
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <span>{item.label}</span>
-                      <span aria-hidden="true">←</span>
-                    </Link>
-                  );
-                })}
+                    return (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="mobile-menu-dialog__link"
+                          aria-current={isActive ? "page" : undefined}
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <span>{item.label}</span>
+                          <span aria-hidden="true">←</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
               </nav>
             </div>
 
-            <div className="mobile-drawer__footer">
+            <div className="mobile-menu-dialog__footer">
               <Button
                 href={bookingHref}
                 variant="primary"

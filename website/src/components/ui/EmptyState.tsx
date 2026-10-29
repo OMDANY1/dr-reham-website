@@ -32,7 +32,7 @@ export function EmptyState({
       {title ? <h2 className="empty-state__title">{title}</h2> : null}
       <p className="empty-state__message">{message}</p>
       {note ? (
-        <p style={{ fontSize: "var(--text-small)", color: "var(--muted)" }}>
+        <p style={{ fontSize: "var(--text-small)", color: "var(--color-secondary)" }}>
           {note}
         </p>
       ) : null}
