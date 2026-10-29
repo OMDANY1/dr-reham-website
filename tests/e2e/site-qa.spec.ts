@@ -60,6 +60,11 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
           ?.borderTopWidth,
         footerTopBorder: getStyle(".site-footer")?.borderTopColor,
         footerLinkColor: getStyle(".site-footer__link")?.color,
+        doctorBriefStatementColor: getStyle(".doctor-brief-statement")?.color,
+        doctorBriefHeadingColor: getStyle(".doctor-brief-identity__name")?.color,
+        doctorBriefPillarTextColor: getStyle(".doctor-brief-pillar__text")?.color,
+        headerSubColor: getStyle(".site-header__brand-sub")?.color,
+        readingTimeColor: getStyle(".journal-reading-time")?.color,
       };
     });
 
@@ -82,11 +87,36 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
     expect(computedColors.categoryTagText).toBe("rgb(15, 42, 61)"); // #0F2A3D
     expect(computedColors.draftBadgeColor).toBe("rgb(11, 122, 154)"); // #0B7A9A
     expect(computedColors.draftBadgeBorderStyle).toBe("dashed");
-    expect(computedColors.finalEyebrowColor).toBe("rgb(227, 201, 165)"); // #E3C9A5 («التواصل المباشر»)
+    expect(computedColors.finalEyebrowColor).toBe("rgb(255, 255, 255)"); // #FFFFFF («التواصل المباشر» — 4.92:1 >= 4.5:1 on #0B7A9A)
     expect(computedColors.finalHeadingColor).toBe("rgb(255, 255, 255)"); // #FFFFFF
     expect(computedColors.finalSectionTopBorder).toBe("0px"); // old top sky strip removed
     expect(computedColors.footerTopBorder).toBe("rgb(184, 212, 227)"); // #B8D4E3
     expect(computedColors.footerLinkColor).toBe("rgb(15, 42, 61)"); // #0F2A3D
+    expect(computedColors.doctorBriefStatementColor).toBe("rgb(30, 58, 76)"); // #1E3A4C («ممارسة طبية متخصصة…»)
+    expect(computedColors.doctorBriefHeadingColor).toBe("rgb(15, 42, 61)"); // #0F2A3D
+    expect(computedColors.doctorBriefPillarTextColor).toBe("rgb(71, 85, 105)"); // #475569
+    expect(computedColors.headerSubColor).toBe("rgb(85, 96, 112)"); // #556070
+    expect(computedColors.readingTimeColor).toBe("rgb(85, 96, 112)"); // #556070
+
+    // Verify step cards have balanced bottom spacing and no content clipping
+    const stepCardMetrics = await page.evaluate(() => {
+      const cards = Array.from(document.querySelectorAll(".prep-step-card"));
+      return cards.map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const desc = card.querySelector(".prep-step-card__desc");
+        const descRect = desc ? desc.getBoundingClientRect() : cardRect;
+        return {
+          bottomGap: Math.round(cardRect.bottom - descRect.bottom),
+          clipped: card.scrollHeight > card.clientHeight + 2,
+        };
+      });
+    });
+    expect(stepCardMetrics).toHaveLength(3);
+    for (const metric of stepCardMetrics) {
+      expect(metric.bottomGap).toBeLessThanOrEqual(28);
+      expect(metric.bottomGap).toBeGreaterThanOrEqual(16);
+      expect(metric.clipped).toBe(false);
+    }
 
     // 2. Enriched Home Sections present in order
     await expect(
@@ -122,7 +152,7 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
       .getByRole("link", { name: "المقالات" });
     await expect(footerArticlesLink).toHaveAttribute("href", "/ar/journal");
 
-    // Capture After screenshots for Home (with animations settled)
+    // Capture After screenshots for Home and focused sections (with animations settled)
     const w = viewport?.width ?? 1440;
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.screenshot({
@@ -132,6 +162,24 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
     await page.screenshot({
       path: `${ARTIFACT_DIR}/after-home-${w}.png`,
       fullPage: w >= 960,
+    });
+    await page.locator(".site-header").screenshot({
+      path: `${ARTIFACT_DIR}/refinement-header-${w}.png`,
+    });
+    await page.addStyleTag({
+      content: ".site-header { position: static !important; }",
+    });
+    await page.locator(".doctor-brief-section").screenshot({
+      path: `${ARTIFACT_DIR}/refinement-doctor-brief-${w}.png`,
+    });
+    await page.locator(".prep-steps-section").screenshot({
+      path: `${ARTIFACT_DIR}/refinement-prep-steps-${w}.png`,
+    });
+    await page.locator(".home-articles-section").screenshot({
+      path: `${ARTIFACT_DIR}/refinement-home-articles-${w}.png`,
+    });
+    await page.locator(".final-inquiry-section").screenshot({
+      path: `${ARTIFACT_DIR}/refinement-final-inquiry-${w}.png`,
     });
   });
 

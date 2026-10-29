@@ -231,11 +231,11 @@ summary:focus-visible {
 }
 
 .eyebrow--on-sky {
-  color: var(--color-sand-light);
+  color: var(--color-eyebrow-on-teal);
 }
 
 .eyebrow--on-sky::before {
-  background-color: var(--color-sand-light);
+  background-color: var(--color-eyebrow-on-teal);
 }
 
 /* ==========================================================================
@@ -815,7 +815,7 @@ summary:focus-visible {
   font-size: var(--text-statement);
   line-height: var(--leading-statement);
   font-weight: 600;
-  color: var(--color-paragraph);
+  color: var(--color-lead-statement);
   max-inline-size: 38ch;
 }
 
@@ -1518,28 +1518,31 @@ summary:focus-visible {
   background-color: var(--color-card-bg);
   border: 1.5px solid var(--color-border);
   border-radius: var(--control-radius);
-  padding: var(--space-6);
+  padding-block-start: 1.5rem;
+  padding-inline: 1.5rem;
+  padding-block-end: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0.65rem;
 }
 
 .prep-step-card__top {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  margin-block-end: 0.15rem;
 }
 
 .prep-step-card__number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 2.6rem;
-  block-size: 2.6rem;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
   border-radius: 50%;
   background-color: var(--color-teal);
   color: var(--color-white);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -1552,13 +1555,17 @@ summary:focus-visible {
 }
 
 .prep-step-card__title {
-  font-size: var(--text-h3);
+  font-size: clamp(1.125rem, 0.4vw + 0.95rem, 1.25rem);
+  line-height: 1.35;
   color: var(--color-navy);
+  text-wrap: pretty;
 }
 
 .prep-step-card__desc {
   color: var(--color-paragraph);
-  font-size: var(--text-body);
+  font-size: 1.025rem;
+  line-height: 1.7;
+  margin: 0;
 }
 
 .prep-steps-footnote {
