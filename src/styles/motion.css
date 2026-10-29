@@ -1,110 +1,95 @@
-/* ==========================================================================
-   Refined & Perceptible Editorial Motion (Respects prefers-reduced-motion)
-   ========================================================================== */
+/* حركات مفهوم «للنظرة تفاصيل» — وحدات نصية كاملة وكشف بانورامي متزن */
 
-@keyframes heroTextReveal {
-  from {
+@keyframes gazeUnitIn {
+  0% {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translate3d(0, 18px, 0);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@keyframes heroPhotoReveal {
-  from {
+@keyframes gazePanoramaReveal {
+  0% {
     opacity: 0;
-    transform: scale(1.035);
+    transform: scale(1.025);
   }
-  to {
+  100% {
     opacity: 1;
     transform: scale(1);
   }
 }
 
-@keyframes editorialSectionReveal {
-  from {
-    opacity: 0.35;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.gaze-unit-1 {
+  animation: gazeUnitIn 580ms var(--ease-out-editorial) both;
 }
 
-@keyframes drawerSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.gaze-unit-2 {
+  animation: gazeUnitIn 640ms var(--ease-out-editorial) 90ms both;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .reveal-hero-1 {
-    animation: heroTextReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+.gaze-unit-3 {
+  animation: gazeUnitIn 680ms var(--ease-out-editorial) 170ms both;
+}
 
-  .reveal-hero-2 {
-    animation: heroTextReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
-  }
+.gaze-panorama-enter {
+  animation: gazePanoramaReveal 820ms var(--ease-out-editorial) 140ms both;
+}
 
-  .reveal-hero-3 {
-    animation: heroTextReveal 760ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
-  }
+/* انتقالات الفصول عند التمرير */
+.scroll-reveal {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 620ms var(--ease-out-editorial),
+    transform 620ms var(--ease-out-editorial);
+}
 
-  .reveal-hero-4 {
-    animation: heroTextReveal 800ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
-  }
+.scroll-reveal--pending {
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+}
 
-  .reveal-hero-photo {
-    animation: heroPhotoReveal 950ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
-  }
+.scroll-reveal--visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
 
-  /* Scroll-triggered reveal for editorial sections — always visible when static */
-  .scroll-reveal {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* تفاعل الصور والروابط التحريرية */
+.editorial-image-zoom {
+  overflow: hidden;
+  border-radius: var(--radius-none);
+}
 
-  .scroll-reveal--entering {
-    animation: editorialSectionReveal 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+.editorial-image-zoom img {
+  transition: transform 640ms var(--ease-out-editorial);
+}
 
-  /* Subtle editorial image zoom on hover */
-  .editorial-photo-zoom {
-    transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .editorial-photo-wrap:hover .editorial-photo-zoom {
+@media (hover: hover) {
+  .editorial-image-zoom:hover img,
+  a:hover .editorial-image-zoom img {
     transform: scale(1.028);
   }
-
-  .mobile-menu-dialog {
-    animation: drawerSlideIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
 }
 
+/* احترام تفضيل تقليل الحركة بالكامل */
 @media (prefers-reduced-motion: reduce) {
-  .reveal,
-  .reveal-hero-1,
-  .reveal-hero-2,
-  .reveal-hero-3,
-  .reveal-hero-4,
-  .reveal-hero-photo,
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   .scroll-reveal,
-  .scroll-reveal--entering,
-  .editorial-photo-zoom,
-  .mobile-menu-dialog {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
+  .scroll-reveal--pending,
+  .scroll-reveal--visible {
     opacity: 1 !important;
+    transform: none !important;
   }
 }

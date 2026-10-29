@@ -1,36 +1,26 @@
 import React from "react";
-import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { homeContent } from "@/content/ar/home";
-import { servicesRecords } from "@/content/ar/services";
-import { articlesRecords } from "@/content/ar/articles";
-import { faqRecords } from "@/content/ar/faq";
-import {
-  getPublicFaqs,
-  getPublicServices,
-  getVisibleArticles,
-  isSupportedLocale,
-} from "@/lib/content-gates";
+import { articlesRecords, journalPageCopy } from "@/content/ar/articles";
+import { getVisibleArticles, isSupportedLocale } from "@/lib/content-gates";
+import { isProtectedDraftPreviewActive } from "@/lib/preview-auth";
 import { buildPhysicianJsonLd, buildRouteMetadata } from "@/lib/metadata";
-import { Hero } from "@/components/sections/Hero";
-import { SpecialtyIntro } from "@/components/sections/SpecialtyIntro";
-import { BeforeConsultation } from "@/components/sections/BeforeConsultation";
-import { ServiceRows } from "@/components/sections/ServiceRows";
-import { KnowledgeTeaser } from "@/components/sections/KnowledgeTeaser";
-import { ContentStyleSection } from "@/components/sections/ContentStyleSection";
-import { BookingPanel } from "@/components/sections/BookingPanel";
 import { Container } from "@/components/ui/Container";
-import { Accordion } from "@/components/ui/Accordion";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { PanoramicOpening } from "@/components/sections/PanoramicOpening";
+import { SpecialtyChapter } from "@/components/sections/SpecialtyChapter";
+import { DoctorFeatureChapter } from "@/components/sections/DoctorFeatureChapter";
+import { EditorialJournalChapter } from "@/components/sections/EditorialJournalChapter";
+import { BeforeVisitChapter } from "@/components/sections/BeforeVisitChapter";
+import { EditorialContactChapter } from "@/components/sections/EditorialContactChapter";
 
-export const metadata: Metadata = buildRouteMetadata({
+export const metadata = buildRouteMetadata({
   title: homeContent.meta.title,
   description: homeContent.meta.description,
   pathname: "/ar",
 });
 
-export default async function HomePage({
+export default async function ArabicHomePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -40,136 +30,66 @@ export default async function HomePage({
     notFound();
   }
 
-  const publicServices = getPublicServices(servicesRecords);
-  const visibleArticles = getVisibleArticles(articlesRecords);
-  const publicFaqs = getPublicFaqs(faqRecords).slice(0, 4);
-  const physicianJsonLd = buildPhysicianJsonLd();
+  const protectedPreview = await isProtectedDraftPreviewActive();
+  const visibleArticles = getVisibleArticles(
+    articlesRecords,
+    undefined,
+    protectedPreview
+  );
+  const physicianSchema = buildPhysicianJsonLd();
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(physicianJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(physicianSchema),
+        }}
       />
 
-      {/* ١. الافتتاحية الفوتوغرافية الحالية */}
-      <Hero />
-
-      {/* ٢. التعريف الموجز بالدكتورة والتخصص */}
-      <section
-        id={homeContent.doctorIntro.id}
-        className="doctor-brief-section"
-        style={{ scrollMarginBlockStart: "5.5rem" }}
-        aria-labelledby="doctor-brief-heading"
-      >
-        <Container>
-          <ScrollReveal>
-            <div className="doctor-brief-grid">
-              <div className="doctor-brief-identity">
-                <div>
-                  <span className="eyebrow">
-                    {homeContent.doctorIntro.eyebrow}
-                  </span>
-                  <h2
-                    id="doctor-brief-heading"
-                    className="doctor-brief-identity__name"
-                  >
-                    {homeContent.doctorIntro.name}
-                  </h2>
-                  <p className="doctor-brief-identity__role">
-                    {homeContent.doctorIntro.specialty}
-                  </p>
-                  <span className="doctor-brief-identity__city">
-                    {homeContent.doctorIntro.city}
-                  </span>
-                </div>
-
-                <div>
-                  <Link
-                    href={homeContent.doctorIntro.moreLinkHref}
-                    className="text-link"
-                  >
-                    {homeContent.doctorIntro.moreLinkLabel} ←
-                  </Link>
-                </div>
-              </div>
-
-              <div className="doctor-brief-narrative">
-                <p className="doctor-brief-statement">
-                  {homeContent.doctorIntro.leadStatement}
-                </p>
-
-                <div className="doctor-brief-pillars">
-                  {homeContent.doctorIntro.pillars.map((pillar) => (
-                    <div key={pillar.title}>
-                      <h3 className="doctor-brief-pillar__title">
-                        {pillar.title}
-                      </h3>
-                      <p className="doctor-brief-pillar__text">{pillar.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </ScrollReveal>
-        </Container>
-      </section>
-
-      {/* ٣. قسم التخصص الحالي بعد ضبط كثافة المحتوى والمسافات */}
-      <SpecialtyIntro />
-
-      {/* الخدمات الفعلية إن كانت بياناتها معتمدة */}
-      <ServiceRows services={publicServices} context="home" />
-
-      {/* ٤. قسم «قبل الاستشارة» (ثلاث خطوات تحضيرية متصلة) */}
-      <BeforeConsultation />
-
-      {/* ٥. قسم بارز «من المقالات» (مقال كبير بجانب مقالتين أصغر) */}
-      <KnowledgeTeaser articles={visibleArticles} />
-
-      {/* ٦. قسم «تعرّف على أسلوب المحتوى» */}
-      <ContentStyleSection />
-
-      {/* ٧. قسم الأسئلة العملية المختصرة */}
-      {publicFaqs.length > 0 ? (
-        <section
-          id={homeContent.faqSection.id}
-          className="practical-faq-section"
-          aria-labelledby="home-faq-heading"
+      {protectedPreview ? (
+        <div
+          className="protected-preview-bar"
+          role="region"
+          aria-label="تنبيه وضع المعاينة المحمية"
         >
-          <Container>
-            <ScrollReveal>
-              <div className="editorial-split">
-                <div className="editorial-split__lead">
-                  <span className="eyebrow">
-                    {homeContent.faqSection.eyebrow}
-                  </span>
-                  <h2 id="home-faq-heading" className="section-title">
-                    {homeContent.faqSection.title}
-                  </h2>
-                  <p className="section-lead">
-                    {homeContent.faqSection.intro}
-                  </p>
-                </div>
-
-                <div className="editorial-split__content">
-                  <Accordion
-                    items={publicFaqs.map((item, idx) => ({
-                      id: item.id,
-                      question: item.question,
-                      answer: item.answer ?? "",
-                      defaultOpen: idx === 0,
-                    }))}
-                  />
-                </div>
-              </div>
-            </ScrollReveal>
+          <Container className="protected-preview-bar__inner">
+            <div>
+              <span className="protected-preview-bar__badge">معاينة محمية</span>
+              <span>
+                {journalPageCopy.protectedPreviewNotice.activeBannerText}
+              </span>
+            </div>
+            <Link
+              href="/api/preview/exit?redirect=/ar"
+              className="protected-preview-bar__exit"
+            >
+              {journalPageCopy.protectedPreviewNotice.exitPreviewLabel}
+            </Link>
           </Container>
-        </section>
+        </div>
       ) : null}
 
-      {/* ٨. دعوة التواصل الختامية والفوتر */}
-      <BookingPanel mode="cta-banner" />
+      {/* الفصل الأول — الافتتاحية البانورامية («للنظرة تفاصيل.») */}
+      <PanoramicOpening />
+
+      {/* الفصل الثاني — «تخصص يبدأ من التفاصيل» */}
+      <SpecialtyChapter />
+
+      {/* الفصل الثالث — «د. ريهام القحطاني» (القسم السماوي المميز) */}
+      <DoctorFeatureChapter />
+
+      {/* الفصل الرابع — «اقرأ النظرة عن قرب» */}
+      <EditorialJournalChapter
+        articles={visibleArticles}
+        isProtectedPreview={protectedPreview}
+      />
+
+      {/* الفصل الخامس — «قبل زيارتك» (التحضير العام + الأسئلة القابلة للفتح) */}
+      <BeforeVisitChapter />
+
+      {/* الفصل السادس — التواصل */}
+      <EditorialContactChapter />
     </>
   );
 }

@@ -53,9 +53,9 @@ export const aboutContent = {
     },
     {
       label: "القناة الرسمية",
-      value: "@dr.rehamdq",
+      value: "حساب الدكتورة على إنستجرام (@dr.rehamdq)",
       href: "https://www.instagram.com/dr.rehamdq/",
-      isLtr: true,
+      isLtr: false,
     },
   ],
 };

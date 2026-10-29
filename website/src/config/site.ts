@@ -35,11 +35,17 @@ export interface SiteProfile {
 
 export interface SiteConfig {
   mode: SiteMode;
+  /**
+   * في النسخة العامة الافتراضية يكون `enablePreviewDrafts: false`،
+   * ولا تُعرض المسودات إلا داخل المعاينة المحمية الخادمية (عبر كوكي المعاينة المحمية أو ترويسة الاختبار).
+   */
   enablePreviewDrafts: boolean;
   locale: SupportedLocale;
   profile: SiteProfile;
   domain: string | null;
   instagramUrl: string;
+  instagramHandle: string;
+  instagramLabel: string;
   bookingEnabled: boolean;
   legalEntity: string | null;
   privacyContact: string | null;
@@ -55,15 +61,14 @@ const resolvedStage: SiteMode =
 /**
  * المصدر المركزي لإعدادات الموقع — مبني مباشرة على content/site-draft.json
  * وسجل الحقائق في docs/01-SOURCES-AND-FACTS.md.
- * لا تُفعّل العيادات أو الحجز المباشر إلا بعد توثيق البيانات رسميًا.
- * إتاحة مسودات المقالات للمعاينة مشروطة بإعداد الخادم (mode === "preview" && enablePreviewDrafts)
- * ولا تعتمد على أي query parameter عام.
+ * - لا تُفعّل العيادات أو الحجز المباشر إلا بعد توثيق البيانات رسميًا.
+ * - المسودات مفصولة تمامًا عن النسخة العامة (`enablePreviewDrafts: false` افتراضيًا)،
+ *   ولا تظهر إلا في معاينة محمية (`isProtectedDraftPreviewActive`).
+ * - يُستخدم وصف «حساب الدكتورة على إنستجرام» دون ادعاء توثيق غير مثبت.
  */
 export const siteConfig: SiteConfig = {
   mode: resolvedStage,
-  enablePreviewDrafts:
-    resolvedStage === "preview" &&
-    process.env.DISABLE_PREVIEW_DRAFTS !== "true",
+  enablePreviewDrafts: false,
   locale: "ar",
   profile: {
     nameAr: "د. ريهام القحطاني",
@@ -76,6 +81,8 @@ export const siteConfig: SiteConfig = {
   },
   domain: null,
   instagramUrl: "https://www.instagram.com/dr.rehamdq/",
+  instagramHandle: "@dr.rehamdq",
+  instagramLabel: "حساب الدكتورة على إنستجرام",
   bookingEnabled: false,
   legalEntity: null,
   privacyContact: null,

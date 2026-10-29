@@ -49,7 +49,7 @@ export default function NotFound() {
             {notFoundCopy.description}
           </p>
 
-          <div className="hero-editorial__cta-row">
+          <div className="empty-state__actions">
             <Button href="/ar" variant="primary">
               {notFoundCopy.homeCta}
             </Button>

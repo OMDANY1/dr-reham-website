@@ -22,126 +22,68 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <Container>
-        <div className="site-footer__grid">
-          <div>
-            <Link href="/ar" className="site-header__brand">
-              <Logo tone="sky" size="compact" decorative />
-              <div className="site-header__brand-text">
-                <span className="site-header__brand-name">
-                  {siteConfig.profile.nameAr}
-                </span>
-                <span className="site-header__brand-sub">
-                  {siteConfig.profile.specialtyAr}
-                </span>
-              </div>
+        <div className="site-footer__top">
+          <div className="site-footer__brand">
+            <Link
+              href="/ar"
+              aria-label={`${siteConfig.profile.nameAr} — الرئيسية`}
+            >
+              <Logo tone="ink" size="compact" decorative />
             </Link>
-            <p
-              style={{
-                marginBlockStart: "var(--space-3)",
-                color: "var(--muted)",
-                maxInlineSize: "36ch",
-              }}
-            >
-              عناية دقيقة بتفاصيل نظرتك — {siteConfig.profile.specialtyAr} في{" "}
-              {siteConfig.profile.city}.
-            </p>
+            <div>
+              <p className="site-footer__name">{siteConfig.profile.nameAr}</p>
+              <p className="site-footer__meta">
+                {siteConfig.profile.specialtyAr} — {siteConfig.profile.city}
+              </p>
+            </div>
           </div>
 
-          <nav aria-label="روابط التذييل">
-            <h2
-              style={{
-                fontSize: "var(--text-small)",
-                fontWeight: 700,
-                color: "var(--ink)",
-                marginBlockEnd: "var(--space-3)",
-              }}
-            >
-              التنقل
-            </h2>
-            <ul className="site-footer__list">
-              <li>
-                <Link href="/ar/about" className="site-footer__link">
-                  {homeContent.navigation.about}
-                </Link>
-              </li>
-              <li>
-                <Link href="/ar#specialty" className="site-footer__link">
-                  {homeContent.navigation.specialty}
-                </Link>
-              </li>
-              {hasServices ? (
-                <li>
-                  <Link href="/ar/services" className="site-footer__link">
-                    {homeContent.navigation.services}
-                  </Link>
-                </li>
-              ) : null}
-              <li>
-                <Link href="/ar/journal" className="site-footer__link">
-                  {homeContent.navigation.journal}
-                </Link>
-              </li>
-              {hasFaqs ? (
-                <li>
-                  <Link href="/ar/faq" className="site-footer__link">
-                    {homeContent.navigation.faq}
-                  </Link>
-                </li>
-              ) : null}
-              <li>
-                <Link href="/ar/book" className="site-footer__link">
-                  {bookingLabel}
-                </Link>
-              </li>
-            </ul>
+          <nav className="site-footer__nav" aria-label="روابط التذييل">
+            <Link href="/ar" className="site-footer__link">
+              {homeContent.navigation.home}
+            </Link>
+            <Link href="/ar/journal" className="site-footer__link">
+              {homeContent.navigation.journal}
+            </Link>
+            <Link href="/ar/about" className="site-footer__link">
+              {homeContent.navigation.about}
+            </Link>
+            {hasServices ? (
+              <Link href="/ar/services" className="site-footer__link">
+                {homeContent.navigation.services}
+              </Link>
+            ) : null}
+            {hasFaqs ? (
+              <Link href="/ar/faq" className="site-footer__link">
+                {homeContent.navigation.faq}
+              </Link>
+            ) : null}
+            <Link href="/ar/book" className="site-footer__link">
+              {bookingLabel}
+            </Link>
+            <Link href="/ar/privacy" className="site-footer__link">
+              {homeContent.navigation.privacy}
+            </Link>
+            {instagramHref ? (
+              <a
+                href={instagramHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="site-footer__link"
+              >
+                {siteConfig.instagramLabel} ({siteConfig.instagramHandle}) ↗
+              </a>
+            ) : null}
           </nav>
-
-          <div>
-            <h2
-              style={{
-                fontSize: "var(--text-small)",
-                fontWeight: 700,
-                color: "var(--ink)",
-                marginBlockEnd: "var(--space-3)",
-              }}
-            >
-              التواصل والخصوصية
-            </h2>
-            <ul className="site-footer__list">
-              {instagramHref ? (
-                <li>
-                  <a
-                    href={instagramHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="site-footer__link"
-                  >
-                    <span>إنستجرام</span>
-                    <span
-                      className="ltr-inline"
-                      style={{ marginInlineStart: "0.4rem" }}
-                    >
-                      @dr.rehamdq
-                    </span>
-                  </a>
-                </li>
-              ) : null}
-              <li>
-                <Link href="/ar/privacy" className="site-footer__link">
-                  {homeContent.navigation.privacy}
-                </Link>
-              </li>
-            </ul>
-          </div>
         </div>
 
         <div className="site-footer__bottom">
-          <p style={{ color: "var(--muted)", fontSize: "var(--text-small)" }}>
+          <p>
             © {new Date().getFullYear()} {siteConfig.profile.nameAr} —{" "}
             {siteConfig.profile.city}.
           </p>
-          <p style={{ color: "var(--muted)", fontSize: "var(--text-caption)" }}>
-            الصور المنشورة في الموقع تعبيرية وتحريرية ولا تمثل حالات مرضى أو نتائج علاجية.
+          <p>
+            الصور المنشورة في الموقع تعبيرية وتحريرية ولا تمثل الدكتورة أو مرضى حقيقيين أو نتائج علاجية.
           </p>
         </div>
       </Container>

@@ -17,6 +17,7 @@ import {
   getVisibleArticles,
   isSupportedLocale,
 } from "@/lib/content-gates";
+import { isProtectedDraftPreviewActive } from "@/lib/preview-auth";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { Container } from "@/components/ui/Container";
@@ -38,7 +39,13 @@ export async function generateMetadata({
     });
   }
 
-  const article = getVisibleArticleBySlug(articlesRecords, slug);
+  const protectedPreview = await isProtectedDraftPreviewActive();
+  const article = getVisibleArticleBySlug(
+    articlesRecords,
+    slug,
+    undefined,
+    protectedPreview
+  );
   if (!article) {
     return buildRouteMetadata({
       title: notFoundCopy.meta.title,
@@ -54,7 +61,6 @@ export async function generateMetadata({
       : `${article.title} | د. ريهام القحطاني`,
     description: article.seo.description ?? article.excerpt ?? "",
     pathname: `/ar/journal/${article.slug}`,
-    // المسودات لا تُفهرس أبدًا حتى لو كانت معروضة في وضع المعاينة
     forceNoIndex: article.status === "draft",
   });
 }
@@ -69,7 +75,13 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
-  const article = getVisibleArticleBySlug(articlesRecords, slug);
+  const protectedPreview = await isProtectedDraftPreviewActive();
+  const article = getVisibleArticleBySlug(
+    articlesRecords,
+    slug,
+    undefined,
+    protectedPreview
+  );
   if (!article) {
     notFound();
   }
@@ -78,9 +90,11 @@ export default async function ArticleDetailPage({
   const wordCount = calculateArticleWordCount(article);
   const showTableOfContents = article.body.length >= 3 || wordCount >= 350;
 
-  const allVisibleArticles = getVisibleArticles(articlesRecords).filter(
-    (item) => item.slug !== article.slug
-  );
+  const allVisibleArticles = getVisibleArticles(
+    articlesRecords,
+    undefined,
+    protectedPreview
+  ).filter((item) => item.slug !== article.slug);
   const sameCategoryArticles = allVisibleArticles.filter(
     (item) => item.category === article.category
   );
@@ -103,143 +117,156 @@ export default async function ArticleDetailPage({
 
   return (
     <>
+      {protectedPreview ? (
+        <div
+          className="protected-preview-bar"
+          role="region"
+          aria-label="تنبيه وضع المعاينة المحمية"
+        >
+          <Container className="protected-preview-bar__inner">
+            <div>
+              <span className="protected-preview-bar__badge">معاينة محمية</span>
+              <span>{journalPageCopy.articleLabels.previewNotice}</span>
+            </div>
+            <Link
+              href="/api/preview/exit?redirect=/ar/journal"
+              className="protected-preview-bar__exit"
+            >
+              {journalPageCopy.protectedPreviewNotice.exitPreviewLabel}
+            </Link>
+          </Container>
+        </div>
+      ) : null}
+
       <header className="article-detail-header">
         <Container>
-          <nav aria-label="مسار الصفحة" className="article-breadcrumb-nav">
-            <ol className="breadcrumb">
-              <li>
-                <Link href="/ar">{homeContent.navigation.home}</Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li>
-                <Link href="/ar/journal">
-                  {journalPageCopy.articleLabels.breadcrumbJournal}
-                </Link>
-              </li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">{article.title}</li>
-            </ol>
+          <nav aria-label="مسار الصفحة" className="article-breadcrumb">
+            <Link href="/ar">{homeContent.navigation.home}</Link>
+            <span aria-hidden="true">/</span>
+            <Link href="/ar/journal">
+              {journalPageCopy.articleLabels.breadcrumbJournal}
+            </Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{article.title}</span>
           </nav>
 
-          <div className="article-detail-header__inner">
-            <div className="journal-meta-row">
-              <span className="journal-badge journal-badge--category">
-                {article.category}
-              </span>
+          <div className="journal-spread-meta">
+            <span className="journal-spread-meta__category">
+              {article.category}
+            </span>
+            <span aria-hidden="true">•</span>
+            <span data-testid="article-reading-time">
+              {formatReadingTimeAr(readingMinutes)}
+            </span>
+            {article.status === "draft" ? (
               <span
-                className="journal-reading-time"
-                data-testid="article-reading-time"
+                className="journal-spread-meta__draft"
+                data-testid="draft-preview-badge"
               >
-                {formatReadingTimeAr(readingMinutes)}
+                {journalPageCopy.articleLabels.draftBadge}
               </span>
-              {article.status === "draft" ? (
-                <span
-                  className="draft-preview-badge"
-                  data-testid="draft-preview-badge"
-                >
-                  {journalPageCopy.articleLabels.draftBadge}
-                </span>
-              ) : null}
-            </div>
-
-            <h1 className="article-detail-header__title">{article.title}</h1>
-
-            {article.excerpt ? (
-              <p className="article-detail-header__lead">{article.excerpt}</p>
-            ) : null}
-
-            {/* لا تُعرض بيانات الكاتب أو المراجع أو تاريخ النشر إلا إذا كانت حقيقية ومعتمدة */}
-            {hasRealAttribution ? (
-              <div className="article-attribution-row">
-                {article.author ? (
-                  <span>
-                    {journalPageCopy.articleLabels.authorPrefix}{" "}
-                    <strong>{article.author}</strong>
-                  </span>
-                ) : null}
-                {article.reviewedBy ? (
-                  <span>
-                    {journalPageCopy.articleLabels.reviewedByPrefix}{" "}
-                    <strong>{article.reviewedBy}</strong>
-                  </span>
-                ) : null}
-                {article.publishedAt ? (
-                  <span>
-                    {journalPageCopy.articleLabels.publishedAtPrefix}{" "}
-                    <span>{article.publishedAt}</span>
-                  </span>
-                ) : null}
-              </div>
             ) : null}
           </div>
 
+          <h1 className="article-detail-header__title">{article.title}</h1>
+
+          {article.excerpt ? (
+            <p className="article-detail-header__excerpt">{article.excerpt}</p>
+          ) : null}
+
+          {hasRealAttribution ? (
+            <div
+              className="journal-spread-meta"
+              style={{ marginBlockStart: "var(--space-3)" }}
+            >
+              {article.author ? (
+                <span>
+                  {journalPageCopy.articleLabels.authorPrefix}{" "}
+                  <strong>{article.author}</strong>
+                </span>
+              ) : null}
+              {article.reviewedBy ? (
+                <span>
+                  {journalPageCopy.articleLabels.reviewedByPrefix}{" "}
+                  <strong>{article.reviewedBy}</strong>
+                </span>
+              ) : null}
+              {article.publishedAt ? (
+                <span>
+                  {journalPageCopy.articleLabels.publishedAtPrefix}{" "}
+                  <span>{article.publishedAt}</span>
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+
           {article.image ? (
-            <figure className="article-hero-figure">
+            <figure className="article-wide-hero">
               <img
                 src={article.image.src}
                 alt={article.image.alt}
-                className="article-hero-figure__img"
-                width={1120}
-                height={640}
+                className="article-wide-hero__img"
+                width={1344}
+                height={768}
               />
             </figure>
           ) : null}
         </Container>
       </header>
 
-      <article className="article-detail-body">
+      <article>
         <Container>
-          <div className="article-detail-layout">
-            {/* فهرس التنقل الداخلي للمقالات الطويلة */}
+          <div className="article-layout">
+            {/* فهرس جانبي عند الحاجة */}
             {showTableOfContents ? (
               <aside
                 className="article-toc"
                 aria-labelledby="article-toc-heading"
                 data-testid="article-toc"
               >
-                <div className="article-toc__box">
-                  <h2 id="article-toc-heading" className="article-toc__title">
-                    {journalPageCopy.articleLabels.tocHeading}
-                  </h2>
-                  <ol className="article-toc__list">
-                    {article.body.map((section, idx) => {
-                      const sectionId = section.id ?? `section-${idx + 1}`;
-                      return (
-                        <li key={sectionId}>
-                          <a
-                            href={`#${sectionId}`}
-                            className="article-toc__link"
-                          >
-                            {section.heading}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </div>
+                <h2 id="article-toc-heading" className="article-toc__heading">
+                  {journalPageCopy.articleLabels.tocHeading}
+                </h2>
+                <ol className="article-toc__list">
+                  {article.body.map((section, idx) => {
+                    const sectionId = section.id ?? `section-${idx + 1}`;
+                    return (
+                      <li key={sectionId}>
+                        <a
+                          href={`#${sectionId}`}
+                          className="article-toc__link"
+                        >
+                          {section.heading}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ol>
               </aside>
-            ) : null}
+            ) : (
+              <div />
+            )}
 
-            {/* عمود القراءة المريح */}
-            <div className="article-reading-column">
+            {/* عمود قراءة مريح */}
+            <div className="article-prose">
               {article.body.map((section, idx) => {
                 const sectionId = section.id ?? `section-${idx + 1}`;
                 return (
                   <section
                     key={sectionId}
                     id={sectionId}
-                    className="article-content-section"
+                    className="article-prose__section"
                   >
-                    <h2 className="article-content-section__heading">
+                    <h2 className="article-prose__heading">
                       {section.heading}
                     </h2>
                     {section.paragraphs.map((p, pIdx) => (
-                      <p key={pIdx} className="article-content-section__para">
+                      <p key={pIdx} className="article-prose__paragraph">
                         {p}
                       </p>
                     ))}
                     {section.bullets && section.bullets.length > 0 ? (
-                      <ul className="article-content-section__bullets">
+                      <ul className="article-prose__bullets">
                         {section.bullets.map((bullet, bIdx) => (
                           <li key={bIdx}>{bullet}</li>
                         ))}
@@ -249,12 +276,12 @@ export default async function ArticleDetailPage({
                 );
               })}
 
-              {/* تنبيه التوعية العامة */}
-              <div className="article-disclaimer-box">
-                <p>{journalPageCopy.articleLabels.disclaimer}</p>
+              <div className="before-visit-prep">
+                <p style={{ fontSize: "var(--text-small)" }}>
+                  {journalPageCopy.articleLabels.disclaimer}
+                </p>
               </div>
 
-              {/* المصادر الفعلية في نهاية المقال */}
               {article.sources && article.sources.length > 0 ? (
                 <section
                   className="article-sources"
@@ -263,29 +290,26 @@ export default async function ArticleDetailPage({
                 >
                   <h2
                     id="article-sources-heading"
-                    className="article-sources__title"
+                    className="article-toc__heading"
                   >
                     {journalPageCopy.articleLabels.sourcesHeading}
                   </h2>
                   <ul className="article-sources__list">
                     {article.sources.map((src, idx) => {
                       if (typeof src === "string") {
-                        return (
-                          <li key={idx} className="article-sources__item">
-                            {src}
-                          </li>
-                        );
+                        return <li key={idx}>{src}</li>;
                       }
                       return (
-                        <li key={idx} className="article-sources__item">
-                          <span className="article-sources__institution">
-                            {src.institution}
-                          </span>
+                        <li key={idx}>
+                          <strong>{src.institution}: </strong>
                           <a
                             href={src.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="article-sources__link ltr-inline"
+                            style={{
+                              textDecoration: "underline",
+                              color: "var(--sky-600)",
+                            }}
                           >
                             {src.title} ↗
                           </a>
@@ -296,164 +320,162 @@ export default async function ArticleDetailPage({
                 </section>
               ) : null}
 
-              {/* شريط المشاركة ونسخ الرابط وعودة للمقالات */}
-              <div className="article-footer-bar">
+              <div className="article-share-bar">
                 <ArticleShareBar
                   title={article.title}
                   excerpt={article.excerpt}
                 />
-                <Link href="/ar/journal" className="text-link">
+                <Link href="/ar/journal" className="journal-chapter__all-link">
                   ← {journalPageCopy.articleLabels.backToJournal}
                 </Link>
               </div>
 
               {approvedRelatedServices.length > 0 ? (
-                <section className="article-related-services">
-                  <h2 className="article-sources__title">
+                <section className="article-sources">
+                  <h2 className="article-toc__heading">
                     {journalPageCopy.articleLabels.relatedServicesHeading}
                   </h2>
-                  {approvedRelatedServices.map((srv, idx) => (
+                  {approvedRelatedServices.map((srv) => (
                     <Link
                       key={srv.slug}
                       href={`/ar/services/${srv.slug}`}
-                      className="service-link-row"
+                      className="specialty-topic-row"
                     >
-                      <span className="numbered-row__index">
-                        {String(idx + 1).padStart(2, "0")}
-                      </span>
                       <div>
-                        <h3 className="numbered-row__title">{srv.title}</h3>
-                        <p className="numbered-row__desc">{srv.summary}</p>
+                        <h3 className="specialty-topic-row__title">
+                          {srv.title}
+                        </h3>
+                        <p className="specialty-topic-row__desc">
+                          {srv.summary}
+                        </p>
                       </div>
-                      <span className="service-link-row__action">
-                        تفاصيل الخدمة ←
-                      </span>
+                      <span aria-hidden="true">←</span>
                     </Link>
                   ))}
                 </section>
               ) : null}
 
-              {/* دعوة هادئة للاستفسار عبر القناة الرسمية */}
               <aside
-                className="article-calm-inquiry"
+                className="inquiry-channel-card"
+                style={{ marginBlockStart: "var(--space-6)" }}
                 aria-labelledby="article-calm-inquiry-heading"
               >
-                <div>
-                  <span className="eyebrow">
-                    {journalPageCopy.articleLabels.calmInquiryEyebrow}
-                  </span>
-                  <h2
-                    id="article-calm-inquiry-heading"
-                    className="article-calm-inquiry__title"
-                  >
-                    {journalPageCopy.articleLabels.calmInquiryTitle}
-                  </h2>
-                  <p className="article-calm-inquiry__text">
-                    {journalPageCopy.articleLabels.calmInquiryText}
-                  </p>
-                </div>
-                <div className="article-calm-inquiry__actions">
-                  {instagramHref ? (
-                    <Button href={instagramHref} variant="primary" external>
-                      {journalPageCopy.articleLabels.calmInquiryCta} ↗
-                    </Button>
-                  ) : (
-                    <Button href="/ar/book" variant="primary">
-                      {journalPageCopy.articleLabels.calmInquiryCta}
-                    </Button>
-                  )}
-                </div>
+                <span className="eyebrow">
+                  {journalPageCopy.articleLabels.calmInquiryEyebrow}
+                </span>
+                <h2
+                  id="article-calm-inquiry-heading"
+                  style={{
+                    fontSize: "var(--text-h3)",
+                    marginBlockEnd: "var(--space-2)",
+                  }}
+                >
+                  {journalPageCopy.articleLabels.calmInquiryTitle}
+                </h2>
+                <p
+                  style={{
+                    color: "var(--muted)",
+                    marginBlockEnd: "var(--space-4)",
+                  }}
+                >
+                  {journalPageCopy.articleLabels.calmInquiryText}
+                </p>
+                {instagramHref ? (
+                  <Button href={instagramHref} variant="primary" external>
+                    {journalPageCopy.articleLabels.calmInquiryCta} ↗
+                  </Button>
+                ) : (
+                  <Button href="/ar/book" variant="primary">
+                    {journalPageCopy.articleLabels.calmInquiryCta}
+                  </Button>
+                )}
               </aside>
             </div>
           </div>
         </Container>
       </article>
 
-      {/* مقالات مرتبطة بحسب التصنيف مع استبعاد المقال الحالي */}
       {relatedArticles.length > 0 ? (
         <section
-          className="section section--tinted"
+          className="section"
           aria-labelledby="related-articles-heading"
           data-testid="related-articles-section"
         >
           <Container>
-            <div className="section-header-row">
+            <div className="journal-chapter__header">
               <div>
-                <span className="eyebrow">{article.category}</span>
-                <h2 id="related-articles-heading" className="section-title">
+                <span className="journal-chapter__eyebrow">
+                  {article.category}
+                </span>
+                <h2
+                  id="related-articles-heading"
+                  className="journal-chapter__title"
+                >
                   {journalPageCopy.articleLabels.relatedArticlesHeading}
                 </h2>
               </div>
-              <Button href="/ar/journal" variant="secondary">
-                {homeContent.knowledgeSection.viewAllLabel}
-              </Button>
+              <Link href="/ar/journal" className="journal-chapter__all-link">
+                {homeContent.journalChapter.allArticlesLabel} ←
+              </Link>
             </div>
 
-            <div className="journal-grid">
+            <div className="journal-editorial-rows">
               {relatedArticles.map((related) => {
                 const relMinutes = calculateReadingTimeMinutes(related);
                 return (
                   <article
                     key={related.slug}
-                    className="journal-card"
+                    className="journal-editorial-row"
                     data-testid="related-article-card"
                   >
-                    <Link
-                      href={`/ar/journal/${related.slug}`}
-                      className="journal-card__media editorial-photo-wrap"
-                      tabIndex={-1}
-                      aria-hidden="true"
-                    >
-                      {related.image ? (
-                        <img
-                          src={related.image.src}
-                          alt={related.image.alt}
-                          className="journal-card__img editorial-photo-zoom"
-                          width={640}
-                          height={400}
-                        />
+                    <div className="journal-editorial-row__meta-col">
+                      <span className="journal-spread-meta__category">
+                        {related.category}
+                      </span>
+                      <span>{formatReadingTimeAr(relMinutes)}</span>
+                      {related.status === "draft" ? (
+                        <span className="journal-spread-meta__draft">
+                          {journalPageCopy.articleLabels.draftBadge}
+                        </span>
                       ) : null}
-                    </Link>
+                    </div>
 
-                    <div className="journal-card__body">
-                      <div className="journal-meta-row">
-                        <span className="journal-badge journal-badge--category">
-                          {related.category}
-                        </span>
-                        <span className="journal-reading-time">
-                          {formatReadingTimeAr(relMinutes)}
-                        </span>
-                        {related.status === "draft" ? (
-                          <span className="draft-preview-badge">
-                            {journalPageCopy.articleLabels.draftBadge}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <h3 className="journal-card__title">
-                        <Link
-                          href={`/ar/journal/${related.slug}`}
-                          className="journal-card__title-link"
-                        >
+                    <div>
+                      <h3 className="journal-editorial-row__title">
+                        <Link href={`/ar/journal/${related.slug}`}>
                           {related.title}
                         </Link>
                       </h3>
-
                       {related.excerpt ? (
-                        <p className="journal-card__excerpt">
+                        <p className="journal-editorial-row__excerpt">
                           {related.excerpt}
                         </p>
                       ) : null}
-
-                      <div className="journal-card__footer">
-                        <Link
-                          href={`/ar/journal/${related.slug}`}
-                          className="text-link"
-                        >
-                          {journalPageCopy.readArticleCta} ←
-                        </Link>
-                      </div>
+                      <Link
+                        href={`/ar/journal/${related.slug}`}
+                        className="journal-editorial-row__link"
+                      >
+                        <span>{journalPageCopy.readArticleCta}</span>
+                        <span aria-hidden="true">←</span>
+                      </Link>
                     </div>
+
+                    {related.image ? (
+                      <Link
+                        href={`/ar/journal/${related.slug}`}
+                        className="journal-editorial-row__media editorial-image-zoom"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                      >
+                        <img
+                          src={related.image.src}
+                          alt={related.image.alt}
+                          className="journal-editorial-row__img"
+                          width={640}
+                          height={400}
+                        />
+                      </Link>
+                    ) : null}
                   </article>
                 );
               })}

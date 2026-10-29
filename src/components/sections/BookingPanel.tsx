@@ -20,11 +20,6 @@ export interface BookingPanelProps {
   initialClinicParam?: string | null;
 }
 
-/**
- * مكوّن التواصل والاستفسار:
- * - في وضع cta-banner: يعرض قسم الدعوة النهائية للتواصل «لنبدأ باستفسارك» على مساحة سماوية واضحة وقوية.
- * - في وضع full-selector: يعرض محدد العيادات عند تفعيلها أو بطاقة التواصل الرسمي المؤكدة عبر إنستجرام.
- */
 export function BookingPanel({
   mode = "cta-banner",
   clinics = siteConfig.clinics,
@@ -46,42 +41,43 @@ export function BookingPanel({
     const primaryHref = liveReady
       ? "/ar/book"
       : instagramHref ?? "/ar/book";
+    const { contactChapter } = homeContent;
 
     return (
       <section
-        className="final-inquiry-section"
+        className="contact-chapter"
         aria-labelledby="final-inquiry-heading"
       >
         <Container>
           <ScrollReveal>
-            <div className="final-inquiry-grid">
+            <div className="contact-chapter__box">
               <div>
-                <span className="eyebrow eyebrow--on-sky">
-                  {homeContent.finalInquiry.eyebrow}
+                <span className="contact-chapter__eyebrow">
+                  {contactChapter.eyebrow}
                 </span>
-                <h2 id="final-inquiry-heading" className="final-inquiry__title">
-                  {homeContent.finalInquiry.heading}
+                <h2
+                  id="final-inquiry-heading"
+                  className="contact-chapter__title"
+                >
+                  {contactChapter.title}
                 </h2>
-                <p className="final-inquiry__support">
-                  {homeContent.finalInquiry.support}
-                </p>
+                <p className="contact-chapter__lead">{contactChapter.lead}</p>
               </div>
 
-              <div className="final-inquiry__actions">
+              <div className="contact-chapter__actions">
                 <Button
                   href={primaryHref}
-                  variant="white"
+                  variant="primary"
                   external={!liveReady && Boolean(instagramHref)}
                 >
-                  {homeContent.finalInquiry.primaryCta} ↗
+                  {contactChapter.primaryCta}{" "}
+                  {!liveReady && instagramHref ? "↗" : ""}
                 </Button>
-                {!liveReady && instagramHref ? (
-                  <p className="final-inquiry__caption">
-                    {homeContent.finalInquiry.destinationCaption}
-                  </p>
-                ) : null}
               </div>
             </div>
+            <p className="contact-chapter__note">
+              {contactChapter.channelNote}
+            </p>
           </ScrollReveal>
         </Container>
       </section>
@@ -101,33 +97,37 @@ export function BookingPanel({
       <section className="section" aria-labelledby="direct-inquiry-heading">
         <Container>
           <div className="editorial-split">
-            <div className="editorial-split__lead">
-              <span className="eyebrow">القناة المعتمدة</span>
+            <div>
+              <span className="eyebrow">قناة التواصل</span>
               <h2 id="direct-inquiry-heading" className="section-title">
-                التواصل المباشر
+                التواصل للاستفسار
               </h2>
               <p className="section-lead">
-                نسعد باستقبال استفساراتكم حول المواعيد والعيادات في الرياض عبر
-                الحساب الرسمي الموثق للدكتورة ريهام القحطاني.
+                نسعد باستقبال استفساراتكم حول المواعيد والزيارات في الرياض عبر
+                حساب الدكتورة على إنستجرام.
               </p>
             </div>
 
-            <div className="editorial-split__content">
-              <div className="inquiry-channel-card" role="region" aria-label="وسيلة التواصل المؤكدة">
-                <span className="inquiry-channel-card__badge">
+            <div>
+              <div
+                className="inquiry-channel-card"
+                role="region"
+                aria-label="وسيلة التواصل المؤكدة"
+              >
+                <span className="eyebrow">
                   {bookPageCopy.directInquiryCard.badge}
                 </span>
                 <h3
                   style={{
                     fontSize: "var(--text-h2)",
                     color: "var(--ink)",
+                    marginBlockEnd: "var(--space-3)",
                   }}
                 >
                   {bookPageCopy.directInquiryCard.title}{" "}
                   <span
-                    className="ltr-inline"
                     style={{
-                      color: "var(--sky-700)",
+                      color: "var(--sky-600)",
                       fontSize: "var(--text-h3)",
                     }}
                   >
@@ -137,15 +137,14 @@ export function BookingPanel({
                 <p
                   style={{
                     color: "var(--muted)",
-                    fontSize: "var(--text-body-lg)",
-                    maxInlineSize: "48ch",
+                    marginBlockEnd: "var(--space-4)",
                   }}
                 >
                   {bookPageCopy.directInquiryCard.description}
                 </p>
 
                 {instagramHref ? (
-                  <div style={{ marginBlockStart: "var(--space-2)" }}>
+                  <div style={{ marginBlockEnd: "var(--space-4)" }}>
                     <Button href={instagramHref} variant="primary" external>
                       {bookPageCopy.directInquiryCard.actionLabel} ↗
                     </Button>
@@ -174,7 +173,7 @@ export function BookingPanel({
     <section className="section" aria-labelledby="clinic-selection-heading">
       <Container>
         <div className="editorial-split">
-          <div className="editorial-split__lead">
+          <div>
             <h2 id="clinic-selection-heading" className="section-title">
               {isSingleClinic
                 ? "العيادة المعتمدة"
@@ -189,8 +188,7 @@ export function BookingPanel({
                   marginBlockStart: "var(--space-4)",
                   padding: "var(--space-3)",
                   backgroundColor: "var(--sky-50)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--control-radius)",
+                  border: "1px solid var(--border-hairline)",
                   fontSize: "var(--text-small)",
                   color: "var(--ink)",
                 }}
@@ -200,9 +198,17 @@ export function BookingPanel({
             ) : null}
           </div>
 
-          <div className="editorial-split__content">
+          <div>
             {!isSingleClinic ? (
-              <fieldset className="clinic-radio-group">
+              <fieldset
+                style={{
+                  border: "none",
+                  marginBlockEnd: "var(--space-5)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "var(--space-3)",
+                }}
+              >
                 <legend className="sr-only">
                   {bookPageCopy.selectorLabels.groupLegend}
                 </legend>
@@ -211,9 +217,19 @@ export function BookingPanel({
                   return (
                     <label
                       key={clinic.id}
-                      className={`clinic-radio-option ${
-                        isSelected ? "clinic-radio-option--selected" : ""
-                      }`.trim()}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "var(--space-3)",
+                        padding: "var(--space-4)",
+                        border: isSelected
+                          ? "2px solid var(--ink)"
+                          : "1px solid var(--border-hairline)",
+                        backgroundColor: isSelected
+                          ? "var(--sky-50)"
+                          : "var(--white)",
+                        cursor: "pointer",
+                      }}
                     >
                       <input
                         type="radio"
@@ -240,7 +256,6 @@ export function BookingPanel({
                               display: "block",
                               fontSize: "var(--text-small)",
                               color: "var(--muted)",
-                              marginBlockStart: "var(--space-1)",
                             }}
                           >
                             {clinic.address}
@@ -253,11 +268,11 @@ export function BookingPanel({
               </fieldset>
             ) : null}
 
-            <div className="clinic-details-box" aria-live="polite">
-              <div>
+            <div className="clinic-selector-shell" aria-live="polite">
+              <div style={{ marginBlockEnd: "var(--space-4)" }}>
                 <span
                   style={{
-                    fontSize: "var(--text-caption)",
+                    fontSize: "var(--text-meta)",
                     color: "var(--muted)",
                     display: "block",
                   }}
@@ -268,7 +283,6 @@ export function BookingPanel({
                   style={{
                     fontSize: "var(--text-h2)",
                     color: "var(--ink)",
-                    marginBlockStart: "var(--space-1)",
                   }}
                 >
                   {activeClinic.name}
@@ -276,11 +290,11 @@ export function BookingPanel({
               </div>
 
               {activeClinic.address ? (
-                <div>
+                <div style={{ marginBlockEnd: "var(--space-3)" }}>
                   <strong
                     style={{
                       display: "block",
-                      fontSize: "var(--text-caption)",
+                      fontSize: "var(--text-meta)",
                       color: "var(--muted)",
                     }}
                   >
@@ -291,11 +305,11 @@ export function BookingPanel({
               ) : null}
 
               {activeClinic.hours ? (
-                <div>
+                <div style={{ marginBlockEnd: "var(--space-3)" }}>
                   <strong
                     style={{
                       display: "block",
-                      fontSize: "var(--text-caption)",
+                      fontSize: "var(--text-meta)",
                       color: "var(--muted)",
                     }}
                   >
@@ -306,19 +320,26 @@ export function BookingPanel({
               ) : null}
 
               {activeAction.mapsHref ? (
-                <div>
+                <div style={{ marginBlockEnd: "var(--space-4)" }}>
                   <a
                     href={activeAction.mapsHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-link"
+                    className="journal-chapter__all-link"
                   >
                     {bookPageCopy.selectorLabels.mapsLinkLabel} ↗
                   </a>
                 </div>
               ) : null}
 
-              <div className="external-destination-notice">
+              <div
+                style={{
+                  padding: "var(--space-4)",
+                  backgroundColor: "var(--sky-50)",
+                  borderInlineStart: "3px solid var(--sky-600)",
+                  marginBlockEnd: "var(--space-4)",
+                }}
+              >
                 <strong
                   style={{
                     display: "block",
@@ -328,16 +349,19 @@ export function BookingPanel({
                 >
                   {bookPageCopy.selectorLabels.externalNoticeTitle}
                 </strong>
-                <p style={{ color: "var(--muted)", fontSize: "var(--text-small)" }}>
+                <p
+                  style={{
+                    color: "var(--muted)",
+                    fontSize: "var(--text-small)",
+                  }}
+                >
                   {activeAction.destinationNote}
                 </p>
               </div>
 
-              <div>
-                <Button href={activeAction.href} variant="primary" external>
-                  {activeAction.label} ↗
-                </Button>
-              </div>
+              <Button href={activeAction.href} variant="primary" external>
+                {activeAction.label} ↗
+              </Button>
             </div>
           </div>
         </div>

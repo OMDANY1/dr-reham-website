@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
@@ -14,59 +14,45 @@ import { MobileMenu, type NavItem } from "@/components/layout/MobileMenu";
 
 export function getActiveNavItems(): NavItem[] {
   const items: NavItem[] = [
+    { label: homeContent.navigation.home, href: "/ar" },
+    { label: homeContent.navigation.journal, href: "/ar/journal" },
     { label: homeContent.navigation.about, href: "/ar/about" },
-    { label: homeContent.navigation.specialty, href: "/ar#specialty" },
+    { label: homeContent.navigation.faq, href: "/ar/faq" },
   ];
 
   if (getPublicServices(servicesRecords).length > 0) {
     items.push({ label: homeContent.navigation.services, href: "/ar/services" });
   }
 
-  items.push({ label: homeContent.navigation.journal, href: "/ar/journal" });
-  items.push({ label: homeContent.navigation.contact, href: "/ar/book" });
   return items;
 }
 
 export function Header() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
   const bookingLabel = getBookingCtaLabel(siteConfig);
   const navItems = getActiveNavItems();
 
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 16);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <header
-      className={`site-header ${scrolled ? "site-header--scrolled" : ""}`.trim()}
-    >
+    <header className="site-header">
       <Container className="site-header__inner">
-        <Link href="/ar" className="site-header__brand">
+        <Link
+          href="/ar"
+          className="site-header__logo-link"
+          aria-label={`${siteConfig.profile.nameAr} — الصفحة الرئيسية`}
+        >
           <Logo tone="ink" size="compact" decorative />
-          <div className="site-header__brand-text">
-            <span className="site-header__brand-name">
-              {siteConfig.profile.nameAr}
-            </span>
-            <span className="site-header__brand-sub">
-              {siteConfig.profile.specialtyAr}
-            </span>
-          </div>
         </Link>
 
         <nav className="site-header__nav" aria-label="التنقل الرئيسي">
           {navItems.map((item) => {
-            const isHashLink = item.href.includes("#");
-            const isActive =
-              !isHashLink &&
-              Boolean(
-                pathname === item.href || pathname?.startsWith(`${item.href}/`)
-              );
+            const isHome = item.href === "/ar";
+            const isActive = isHome
+              ? pathname === "/ar"
+              : Boolean(
+                  pathname === item.href ||
+                    pathname?.startsWith(`${item.href}/`)
+                );
+
             return (
               <Link
                 key={item.href}
@@ -83,17 +69,19 @@ export function Header() {
         </nav>
 
         <div className="site-header__actions">
-          <Button href="/ar/book" variant="primary">
-            {bookingLabel}
-          </Button>
-        </div>
+          <div className="site-header__cta-desktop">
+            <Button href="/ar/book" variant="primary">
+              {bookingLabel}
+            </Button>
+          </div>
 
-        <MobileMenu
-          navItems={navItems}
-          bookingLabel={bookingLabel}
-          bookingHref="/ar/book"
-          brandName={siteConfig.profile.nameAr}
-        />
+          <MobileMenu
+            navItems={navItems}
+            bookingLabel={bookingLabel}
+            bookingHref="/ar/book"
+            brandName={siteConfig.profile.nameAr}
+          />
+        </div>
       </Container>
     </header>
   );
