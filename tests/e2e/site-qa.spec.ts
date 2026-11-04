@@ -146,6 +146,16 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
       page.getByRole("heading", { name: "لنبدأ باستفسارك" })
     ).toBeVisible();
 
+    // Verify WhatsApp CTA button and phone number on Home
+    const heroWhatsappBtn = page
+      .locator(".hero-editorial__cta-row")
+      .getByRole("link", { name: /تواصل عبر واتساب/ });
+    await expect(heroWhatsappBtn).toHaveAttribute(
+      "href",
+      "https://wa.me/966540450425"
+    );
+    await expect(page.locator("body")).toContainText("+966 54 045 0425");
+
     // 3. Footer has «المقالات» link
     const footerArticlesLink = page
       .locator("footer")
@@ -415,6 +425,11 @@ test.describe("Dr. Reham Website — Approved Color System & Articles QA", () =>
   }) => {
     await page.goto("/ar/book");
     await expect(page.locator("h1")).toContainText("تواصل للاستفسار");
+    await expect(
+      page.locator(".inquiry-channel-card").getByRole("link", {
+        name: /تواصل عبر واتساب/,
+      })
+    ).toHaveAttribute("href", "https://wa.me/966540450425");
     await expect(
       page.getByRole("link", { name: /الانتقال إلى حساب إنستجرام/ })
     ).toHaveAttribute("href", "https://www.instagram.com/dr.rehamdq/");

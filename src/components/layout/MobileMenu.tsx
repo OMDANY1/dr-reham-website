@@ -15,6 +15,7 @@ export interface MobileMenuProps {
   navItems: NavItem[];
   bookingLabel: string;
   bookingHref: string;
+  bookingExternal?: boolean;
   brandName: string;
 }
 
@@ -22,6 +23,7 @@ export function MobileMenu({
   navItems,
   bookingLabel,
   bookingHref,
+  bookingExternal = false,
   brandName,
 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -205,6 +207,7 @@ export function MobileMenu({
               <Button
                 href={bookingHref}
                 variant="primary"
+                external={bookingExternal}
                 onClick={() => setIsOpen(false)}
               >
                 {bookingLabel}

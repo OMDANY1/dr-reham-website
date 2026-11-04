@@ -14,7 +14,7 @@ export const homeContent = {
     privacy: "الخصوصية",
     home: "الرئيسية",
     backHome: "العودة للرئيسية",
-    primaryInquiryCta: "تواصل للاستفسار",
+    primaryInquiryCta: "تواصل عبر واتساب",
   },
   hero: {
     doctorTag: "د. ريهام القحطاني",
@@ -22,10 +22,10 @@ export const homeContent = {
     headlineLine1: "عناية دقيقة",
     headlineLine2: "بتفاصيل نظرتك",
     support: "د. ريهام القحطاني — طب وجراحة تجميل العيون والجفون في الرياض.",
-    primaryCta: "تواصل للاستفسار",
+    primaryCta: "تواصل عبر واتساب",
     secondaryCta: "عن الدكتورة",
     secondaryHref: "#about-doctor",
-    destinationHint: "التواصل عبر الحساب الرسمي في إنستجرام (@dr.rehamdq)",
+    destinationHint: "التواصل المباشر عبر واتساب الرسمي:",
     image: {
       src: "/media/hero-gaze-editorial.jpg",
       alt: "صورة تحريرية تعبيرية مقرّبة لمنطقة العين والحاجب بإضاءة طبيعية هادئة",
@@ -164,9 +164,9 @@ export const homeContent = {
     eyebrow: "التواصل المباشر",
     heading: "لنبدأ باستفسارك",
     support:
-      "للاستفسار عن المواعيد والتواصل في الرياض، يسعدنا استقبال رسائلكم ومتابعتكم عبر القناة الرسمية المعتمدة للدكتورة ريهام القحطاني.",
-    primaryCta: "تواصل للاستفسار",
+      "للاستفسار عن المواعيد والتواصل في الرياض، يسعدنا استقبال رسائلكم مباشرة عبر واتساب الرسمي للدكتورة ريهام القحطاني.",
+    primaryCta: "تواصل عبر واتساب",
     destinationCaption:
-      "ينقلك الزر إلى الحساب الرسمي الموثق على إنستجرام (@dr.rehamdq)",
+      "ينقلك الزر مباشرة إلى محادثة واتساب الرسمية:",
   },
 };

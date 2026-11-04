@@ -121,6 +121,7 @@ export default async function ArticleDetailPage({
   );
 
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
+  const whatsappHref = validateExternalHttpsUrl(siteConfig.whatsappUrl);
   const hasRealAttribution = Boolean(
     article.author || article.reviewedBy || article.publishedAt
   );
@@ -433,7 +434,11 @@ export default async function ArticleDetailPage({
                   </p>
                 </div>
                 <div className="article-calm-inquiry__actions">
-                  {instagramHref ? (
+                  {whatsappHref ? (
+                    <Button href={whatsappHref} variant="primary" external>
+                      تواصل عبر واتساب ↗
+                    </Button>
+                  ) : instagramHref ? (
                     <Button href={instagramHref} variant="primary" external>
                       {journalPageCopy.articleLabels.calmInquiryCta} ↗
                     </Button>

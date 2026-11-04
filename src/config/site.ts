@@ -40,6 +40,9 @@ export interface SiteConfig {
   profile: SiteProfile;
   domain: string | null;
   instagramUrl: string;
+  whatsappE164: string;
+  whatsappDisplay: string;
+  whatsappUrl: string;
   bookingEnabled: boolean;
   legalEntity: string | null;
   privacyContact: string | null;
@@ -76,6 +79,9 @@ export const siteConfig: SiteConfig = {
   },
   domain: null,
   instagramUrl: "https://www.instagram.com/dr.rehamdq/",
+  whatsappE164: "+966540450425",
+  whatsappDisplay: "+966 54 045 0425",
+  whatsappUrl: "https://wa.me/966540450425",
   bookingEnabled: false,
   legalEntity: null,
   privacyContact: null,

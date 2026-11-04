@@ -2,7 +2,10 @@ import React from "react";
 import { siteConfig } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
 import { isLiveBookingReady } from "@/lib/content-gates";
-import { validateExternalHttpsUrl } from "@/lib/booking-links";
+import {
+  buildWhatsAppBookingUrl,
+  validateExternalHttpsUrl,
+} from "@/lib/booking-links";
 import { Button } from "@/components/ui/Button";
 import type { HomePageCmsData } from "@/lib/cms/types";
 
@@ -11,25 +14,45 @@ export interface HeroProps {
 }
 
 export function Hero({ data }: HeroProps = {}) {
-  const hero = data ?? {
-    ...homeContent.hero,
-    primaryHref: siteConfig.instagramUrl,
-    image: {
-      ...homeContent.hero.image,
-      focalX: 36,
-      focalY: 35,
-    },
-  };
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
+
+  const hero = data
+    ? {
+        ...data,
+        primaryCta:
+          data.primaryCta === "تواصل للاستفسار"
+            ? homeContent.hero.primaryCta
+            : data.primaryCta,
+        primaryHref:
+          !data.primaryHref || data.primaryHref === siteConfig.instagramUrl
+            ? whatsappHref
+            : data.primaryHref,
+        destinationHint:
+          data.destinationHint?.includes("إنستجرام")
+            ? homeContent.hero.destinationHint
+            : data.destinationHint,
+      }
+    : {
+        ...homeContent.hero,
+        primaryHref: whatsappHref,
+        image: {
+          ...homeContent.hero.image,
+          focalX: 36,
+          focalY: 35,
+        },
+      };
+
   const liveReady = isLiveBookingReady(siteConfig);
-  const instagramHref = validateExternalHttpsUrl(
-    hero.primaryHref || siteConfig.instagramUrl
+  const externalHref = validateExternalHttpsUrl(
+    hero.primaryHref || whatsappHref
   );
   const primaryHref =
     hero.primaryHref && hero.primaryHref.startsWith("/")
       ? hero.primaryHref
       : liveReady
       ? "/ar/book"
-      : instagramHref ?? "/ar/book";
+      : externalHref ?? whatsappHref;
   const isExternalPrimary = primaryHref.startsWith("https://");
 
   return (
@@ -94,15 +117,24 @@ export function Hero({ data }: HeroProps = {}) {
               variant="primary"
               external={isExternalPrimary}
             >
-              {hero.primaryCta}
+              {hero.primaryCta} ↗
             </Button>
             <Button href={hero.secondaryHref} variant="secondary">
               {hero.secondaryCta}
             </Button>
           </div>
-          {!liveReady && instagramHref ? (
+          {!liveReady && externalHref ? (
             <p className="hero-editorial__destination-note">
-              {hero.destinationHint}
+              <span>{hero.destinationHint} </span>
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-link ltr-inline"
+                dir="ltr"
+              >
+                {siteConfig.whatsappDisplay}
+              </a>
             </p>
           ) : null}
         </div>

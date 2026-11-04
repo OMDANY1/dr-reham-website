@@ -52,6 +52,12 @@ export const aboutContent = {
       value: "الرياض، المملكة العربية السعودية",
     },
     {
+      label: "واتساب التواصل",
+      value: "+966 54 045 0425",
+      href: "https://wa.me/966540450425",
+      isLtr: true,
+    },
+    {
       label: "القناة الرسمية",
       value: "@dr.rehamdq",
       href: "https://www.instagram.com/dr.rehamdq/",

@@ -12,7 +12,10 @@ import {
   getPublicFaqs,
   getPublicServices,
 } from "@/lib/content-gates";
-import { validateExternalHttpsUrl } from "@/lib/booking-links";
+import {
+  buildWhatsAppBookingUrl,
+  validateExternalHttpsUrl,
+} from "@/lib/booking-links";
 import { Logo } from "@/components/brand/Logo";
 import { Container } from "@/components/ui/Container";
 
@@ -41,6 +44,8 @@ export function Footer({
   }
 
   const bookingLabel = bookingLabelProp ?? getBookingCtaLabel(siteConfig);
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
   const instagramHref = validateExternalHttpsUrl(instagramUrl);
   const hasServices = getPublicServices(servicesRecords).length > 0;
   const hasFaqs = getPublicFaqs(faqRecords).length > 0;
@@ -129,6 +134,25 @@ export function Footer({
               التواصل والخصوصية
             </h2>
             <ul className="site-footer__list">
+              {whatsappHref ? (
+                <li>
+                  <a
+                    href={whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="site-footer__link"
+                  >
+                    <span>واتساب</span>
+                    <span
+                      className="ltr-inline"
+                      dir="ltr"
+                      style={{ marginInlineStart: "0.4rem" }}
+                    >
+                      {siteConfig.whatsappDisplay}
+                    </span>
+                  </a>
+                </li>
+              ) : null}
               {instagramHref ? (
                 <li>
                   <a

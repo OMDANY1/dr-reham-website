@@ -6,7 +6,12 @@ import { usePathname } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
 import { servicesRecords } from "@/content/ar/services";
-import { getBookingCtaLabel, getPublicServices } from "@/lib/content-gates";
+import {
+  getBookingCtaLabel,
+  getPublicServices,
+  isLiveBookingReady,
+} from "@/lib/content-gates";
+import { buildWhatsAppBookingUrl } from "@/lib/booking-links";
 import { Logo } from "@/components/brand/Logo";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
@@ -44,7 +49,16 @@ export function Header({
 }: HeaderProps = {}) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const bookingLabel = bookingLabelProp ?? getBookingCtaLabel(siteConfig);
+  const liveReady = isLiveBookingReady(siteConfig);
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
+  const bookingLabel =
+    bookingLabelProp ??
+    (liveReady
+      ? getBookingCtaLabel(siteConfig)
+      : navigation.primaryInquiryCta);
+  const bookingHref = liveReady ? "/ar/book" : whatsappHref;
+  const bookingExternal = !liveReady && bookingHref.startsWith("https://");
   const navItems = getActiveNavItems(navigation);
 
   useEffect(() => {
@@ -97,7 +111,11 @@ export function Header({
         </nav>
 
         <div className="site-header__actions">
-          <Button href="/ar/book" variant="primary">
+          <Button
+            href={bookingHref}
+            variant="primary"
+            external={bookingExternal}
+          >
             {bookingLabel}
           </Button>
         </div>
@@ -105,7 +123,8 @@ export function Header({
         <MobileMenu
           navItems={navItems}
           bookingLabel={bookingLabel}
-          bookingHref="/ar/book"
+          bookingHref={bookingHref}
+          bookingExternal={bookingExternal}
           brandName={brandName}
         />
       </Container>

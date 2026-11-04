@@ -6,6 +6,7 @@ import { homeContent } from "@/content/ar/home";
 import { bookPageCopy } from "@/content/ar/book";
 import { isLiveBookingReady } from "@/lib/content-gates";
 import {
+  buildWhatsAppBookingUrl,
   resolveClinicAction,
   resolveSelectedClinic,
   validateExternalHttpsUrl,
@@ -25,7 +26,7 @@ export interface BookingPanelProps {
 /**
  * مكوّن التواصل والاستفسار:
  * - في وضع cta-banner: يعرض قسم الدعوة النهائية للتواصل «لنبدأ باستفسارك» على مساحة التيل المعتمدة.
- * - في وضع full-selector: يعرض محدد العيادات عند تفعيلها أو بطاقة التواصل الرسمي المؤكدة عبر إنستجرام.
+ * - في وضع full-selector: يعرض محدد العيادات عند تفعيلها أو بطاقة التواصل الرسمي المؤكدة عبر واتساب وإنستجرام.
  */
 export function BookingPanel({
   mode = "cta-banner",
@@ -43,12 +44,34 @@ export function BookingPanel({
   }, [resolution.selectedClinic?.id]);
 
   const liveReady = isLiveBookingReady(siteConfig, clinics);
-  const finalInquiry = finalInquiryData ?? {
-    ...homeContent.finalInquiry,
-    primaryHref: siteConfig.instagramUrl,
-  };
-  const instagramHref = validateExternalHttpsUrl(
-    finalInquiry.primaryHref || siteConfig.instagramUrl
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
+  const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
+
+  const finalInquiry = finalInquiryData
+    ? {
+        ...finalInquiryData,
+        primaryCta:
+          finalInquiryData.primaryCta === "تواصل للاستفسار"
+            ? homeContent.finalInquiry.primaryCta
+            : finalInquiryData.primaryCta,
+        primaryHref:
+          !finalInquiryData.primaryHref ||
+          finalInquiryData.primaryHref === siteConfig.instagramUrl
+            ? whatsappHref
+            : finalInquiryData.primaryHref,
+        destinationCaption:
+          finalInquiryData.destinationCaption?.includes("إنستجرام")
+            ? homeContent.finalInquiry.destinationCaption
+            : finalInquiryData.destinationCaption,
+      }
+    : {
+        ...homeContent.finalInquiry,
+        primaryHref: whatsappHref,
+      };
+
+  const externalBannerHref = validateExternalHttpsUrl(
+    finalInquiry.primaryHref || whatsappHref
   );
 
   if (mode === "cta-banner") {
@@ -57,7 +80,7 @@ export function BookingPanel({
         ? finalInquiry.primaryHref
         : liveReady
         ? "/ar/book"
-        : instagramHref ?? "/ar/book";
+        : externalBannerHref ?? whatsappHref;
     const isExternal = primaryHref.startsWith("https://");
 
     return (
@@ -88,9 +111,12 @@ export function BookingPanel({
                 >
                   {finalInquiry.primaryCta} ↗
                 </Button>
-                {!liveReady && instagramHref ? (
+                {!liveReady && externalBannerHref ? (
                   <p className="final-inquiry__caption">
-                    {finalInquiry.destinationCaption}
+                    <span>{finalInquiry.destinationCaption} </span>
+                    <span className="ltr-inline" dir="ltr">
+                      {siteConfig.whatsappDisplay}
+                    </span>
                   </p>
                 ) : null}
               </div>
@@ -121,12 +147,17 @@ export function BookingPanel({
               </h2>
               <p className="section-lead">
                 نسعد باستقبال استفساراتكم حول المواعيد والعيادات في الرياض عبر
-                الحساب الرسمي الموثق للدكتورة ريهام القحطاني.
+                محادثة واتساب الرسمية أو عبر الحساب الموثق للدكتورة ريهام
+                القحطاني.
               </p>
             </div>
 
             <div className="editorial-split__content">
-              <div className="inquiry-channel-card" role="region" aria-label="وسيلة التواصل المؤكدة">
+              <div
+                className="inquiry-channel-card"
+                role="region"
+                aria-label="وسيلة التواصل المؤكدة"
+              >
                 <span className="inquiry-channel-card__badge">
                   {bookPageCopy.directInquiryCard.badge}
                 </span>
@@ -136,17 +167,19 @@ export function BookingPanel({
                     color: "var(--color-navy)",
                   }}
                 >
-                  {bookPageCopy.directInquiryCard.title}{" "}
-                  <span
-                    className="ltr-inline"
-                    style={{
-                      color: "var(--color-navy)",
-                      fontSize: "var(--text-h3)",
-                    }}
-                  >
-                    ({bookPageCopy.directInquiryCard.handle})
-                  </span>
+                  {bookPageCopy.directInquiryCard.title}
                 </h3>
+                <p
+                  className="ltr-inline"
+                  dir="ltr"
+                  style={{
+                    color: "var(--color-teal)",
+                    fontSize: "var(--text-h3)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {siteConfig.whatsappDisplay}
+                </p>
                 <p
                   style={{
                     color: "var(--color-paragraph)",
@@ -157,13 +190,25 @@ export function BookingPanel({
                   {bookPageCopy.directInquiryCard.description}
                 </p>
 
-                {instagramHref ? (
-                  <div style={{ marginBlockStart: "var(--space-2)" }}>
-                    <Button href={instagramHref} variant="primary" external>
+                <div
+                  style={{
+                    marginBlockStart: "var(--space-2)",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "var(--space-3)",
+                  }}
+                >
+                  {whatsappHref ? (
+                    <Button href={whatsappHref} variant="primary" external>
+                      {bookPageCopy.directInquiryCard.whatsappLabel} ↗
+                    </Button>
+                  ) : null}
+                  {instagramHref ? (
+                    <Button href={instagramHref} variant="secondary" external>
                       {bookPageCopy.directInquiryCard.actionLabel} ↗
                     </Button>
-                  </div>
-                ) : null}
+                  ) : null}
+                </div>
 
                 <p
                   style={{
@@ -341,7 +386,12 @@ export function BookingPanel({
                 >
                   {bookPageCopy.selectorLabels.externalNoticeTitle}
                 </strong>
-                <p style={{ color: "var(--color-paragraph)", fontSize: "var(--text-small)" }}>
+                <p
+                  style={{
+                    color: "var(--color-paragraph)",
+                    fontSize: "var(--text-small)",
+                  }}
+                >
                   {activeAction.destinationNote}
                 </p>
               </div>
