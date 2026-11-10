@@ -17,6 +17,16 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(html).toHaveAttribute("lang", "ar");
     await expect(html).toHaveAttribute("dir", "rtl");
 
+    // Verify Favicon & OpenGraph Preview Image meta tags
+    const ogImageAr = await page
+      .locator('meta[property="og:image"]')
+      .getAttribute("content");
+    expect(ogImageAr).toContain("/media/og-preview.jpg");
+    const faviconLinks = await page
+      .locator('link[rel="icon"], link[rel="apple-touch-icon"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute("href") || ""));
+    expect(faviconLinks.some((h) => h.includes("favicon.ico") || h.includes("icon.png"))).toBe(true);
+
     const h1 = page.locator("h1");
     await expect(h1).toContainText("د. ريهام القحطاني");
     await expect(page.locator(".hero-editorial__tagline")).toContainText(
@@ -278,6 +288,11 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     const html = page.locator("html");
     await expect(html).toHaveAttribute("lang", "en");
     await expect(html).toHaveAttribute("dir", "ltr");
+
+    const ogImageEn = await page
+      .locator('meta[property="og:image"]')
+      .getAttribute("content");
+    expect(ogImageEn).toContain("/media/og-preview-en.jpg");
 
     const h1 = page.locator("h1");
     await expect(h1).toContainText("Dr. Reham Alqahtani");

@@ -141,7 +141,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 6) {
+      if (parsed && parsed.schemaVersion >= 7) {
         return parsed;
       }
       if (
@@ -150,9 +150,10 @@ function ensureStoreInitialized(): PersistentCmsStore {
           parsed.schemaVersion === 2 ||
           parsed.schemaVersion === 3 ||
           parsed.schemaVersion === 4 ||
-          parsed.schemaVersion === 5)
+          parsed.schemaVersion === 5 ||
+          parsed.schemaVersion === 6)
       ) {
-        // Migrate schema v1..v5 -> v6: update About doctor photo & real Before/After clinical cases
+        // Migrate schema v1..v6 -> v7: update About doctor photo, real Before/After clinical cases, Favicon & OpenGraph preview image
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -160,7 +161,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 6;
+        parsed.schemaVersion = 7;
         if (parsed.pages?.home) {
           const prevPub = parsed.pages.home.publishedData;
           const prevResults = prevPub.resultsSection;
@@ -334,6 +335,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
           specialtyTitleEn:
             parsed.settings?.specialtyTitleEn ?? freshSettings.specialtyTitleEn,
           cityEn: parsed.settings?.cityEn ?? freshSettings.cityEn,
+          faviconPath: freshSettings.faviconPath,
           defaultOgImage: freshSettings.defaultOgImage,
         };
 
@@ -353,7 +355,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 6,
+    schemaVersion: 7,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},

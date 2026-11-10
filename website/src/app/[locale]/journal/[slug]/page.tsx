@@ -78,6 +78,7 @@ export async function generateMetadata({
     pathname: `/${locale}/journal/${article.slug}`,
     locale,
     forceNoIndex: article.status === "draft",
+    ogImage: article.image?.src,
   });
 }
 

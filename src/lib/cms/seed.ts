@@ -456,6 +456,26 @@ export function buildInitialMediaItems(): CmsMediaItem[] {
     isPublic: boolean;
   }> = [
     {
+      id: "media-og-preview-ar",
+      name: "صورة معاينة المشاركة للنسخة العربية (OpenGraph 1200x630)",
+      filename: "og-preview.jpg",
+      url: "/media/og-preview.jpg",
+      alt: "د. ريهام القحطاني — طب وجراحة تجميل العيون والجفون في الرياض",
+      focalX: 50,
+      focalY: 50,
+      isPublic: true,
+    },
+    {
+      id: "media-og-preview-en",
+      name: "صورة معاينة المشاركة للنسخة الإنجليزية (OpenGraph 1200x630)",
+      filename: "og-preview-en.jpg",
+      url: "/media/og-preview-en.jpg",
+      alt: "Dr. Reham Alqahtani — Oculoplastic & Eyelid Surgery in Riyadh",
+      focalX: 50,
+      focalY: 50,
+      isPublic: true,
+    },
+    {
       id: "media-hero-eye-plum-ivory",
       name: "صورة الافتتاحية التحريرية (Hero Eye)",
       filename: "hero-eye-plum-ivory.jpg",
@@ -685,8 +705,8 @@ export function buildInitialSettings(): CmsSiteSettings {
     city: siteConfig.profile.city,
     cityEn: siteConfig.profile.cityEn,
     logoPath: "/brand/logo-original.png",
-    faviconPath: "/brand/logo-original.png",
-    defaultOgImage: "/media/hero-eye-plum-ivory.jpg",
+    faviconPath: "/icon.png",
+    defaultOgImage: "/media/og-preview.jpg",
     seoTitleTemplate: "%s | د. ريهام القحطاني",
     seoDefaultDescription: homeContent.meta.description,
     domain: siteConfig.domain,
