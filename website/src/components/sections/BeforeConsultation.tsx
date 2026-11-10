@@ -1,20 +1,42 @@
 import React from "react";
+import type { SupportedLocale } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
+import { homeContentEn } from "@/content/en";
 import { Container } from "@/components/ui/Container";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import type { HomePageCmsData } from "@/lib/cms/types";
 
 export interface BeforeConsultationProps {
   data?: HomePageCmsData["beforeConsultationSection"];
+  locale?: SupportedLocale;
 }
 
-export function BeforeConsultation({ data }: BeforeConsultationProps = {}) {
-  const beforeConsultationSection =
-    data ?? homeContent.beforeConsultationSection;
+export function BeforeConsultation({
+  data,
+  locale = "ar",
+}: BeforeConsultationProps = {}) {
+  const isEn = locale === "en";
+  const baseSection = isEn
+    ? homeContentEn.beforeConsultationSection
+    : homeContent.beforeConsultationSection;
+
+  const eyebrow = isEn
+    ? baseSection.eyebrow
+    : data?.eyebrow || baseSection.eyebrow;
+  const title = isEn ? baseSection.title : data?.title || baseSection.title;
+  const intro = isEn ? baseSection.intro : data?.intro || baseSection.intro;
+  const steps = isEn
+    ? baseSection.steps
+    : data?.steps?.length
+    ? data.steps
+    : baseSection.steps;
+  const generalNote = isEn
+    ? baseSection.generalNote
+    : data?.generalNote || baseSection.generalNote;
 
   return (
     <section
-      id={beforeConsultationSection.id}
+      id={data?.id ?? baseSection.id}
       className="prep-steps-section"
       aria-labelledby="before-consultation-heading"
     >
@@ -22,23 +44,19 @@ export function BeforeConsultation({ data }: BeforeConsultationProps = {}) {
         <ScrollReveal>
           <div className="prep-steps-header">
             <div>
-              <span className="eyebrow">
-                {beforeConsultationSection.eyebrow}
-              </span>
+              <span className="eyebrow">{eyebrow}</span>
               <h2
                 id="before-consultation-heading"
                 className="prep-steps-header__title"
               >
-                {beforeConsultationSection.title}
+                {title}
               </h2>
             </div>
-            <p className="prep-steps-header__intro">
-              {beforeConsultationSection.intro}
-            </p>
+            <p className="prep-steps-header__intro">{intro}</p>
           </div>
 
           <ol className="prep-steps-track">
-            {beforeConsultationSection.steps.map((step) => (
+            {steps.map((step) => (
               <li key={step.stepNumber} className="prep-step-card">
                 <div className="prep-step-card__top">
                   <span className="prep-step-card__number" aria-hidden="true">
@@ -52,9 +70,7 @@ export function BeforeConsultation({ data }: BeforeConsultationProps = {}) {
             ))}
           </ol>
 
-          <p className="prep-steps-footnote">
-            {beforeConsultationSection.generalNote}
-          </p>
+          <p className="prep-steps-footnote">{generalNote}</p>
         </ScrollReveal>
       </Container>
     </section>

@@ -11,10 +11,12 @@ import type {
 } from "@/lib/cms/types";
 
 const SECTION_LABELS: Record<HomeSectionKey, string> = {
-  doctorIntro: "قسم عن الدكتورة",
-  specialtySection: "قسم التخصص الدقيق",
+  specialtiesStrip: "شريط التخصصات الأربعة",
+  doctorIntro: "قسم عن الدكتورة (التخصص الدقيق والركائز)",
+  resultsSection: "قسم النتائج الموثقة (قبل / بعد — مشروط)",
+  specialtySection: "قسم مجالات التخصص التفصيلية",
   beforeConsultationSection: "قسم ما قبل الاستشارة",
-  knowledgeSection: "قسم المقالات في الرئيسية",
+  knowledgeSection: "قسم التثقيف الطبي والمقالات",
   contentStyleSection: "قسم أسلوب المحتوى التوعوي",
   faqSection: "قسم الأسئلة الشائعة",
   finalInquiry: "قسم التواصل النهائي",
@@ -27,7 +29,9 @@ export default function AdminPagesEditor() {
   const [revisions, setRevisions] = useState<CmsRevision[]>([]);
   const [activeTab, setActiveTab] = useState<
     | "hero"
+    | "specialtiesStrip"
     | "doctorIntro"
+    | "resultsSection"
     | "specialtySection"
     | "beforeConsultationSection"
     | "knowledgeSection"
@@ -35,6 +39,7 @@ export default function AdminPagesEditor() {
     | "faqSection"
     | "finalInquiry"
     | "headerFooter"
+    | "englishContent"
     | "order"
     | "revisions"
   >("hero");
@@ -167,7 +172,7 @@ export default function AdminPagesEditor() {
     }
   };
 
-  const handlePreview = async () => {
+  const handlePreview = async (locale: "ar" | "en" = "ar") => {
     if (dirty) {
       await handleSaveDraft();
     }
@@ -176,7 +181,7 @@ export default function AdminPagesEditor() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "toggle_preview", enable: true }),
     });
-    window.open("/ar?preview=1", "_blank", "noopener,noreferrer");
+    window.open(`/${locale}?preview=1`, "_blank", "noopener,noreferrer");
   };
 
   const handleRestoreRevision = async (revisionId: string) => {
@@ -227,7 +232,7 @@ export default function AdminPagesEditor() {
 
   return (
     <AdminShell
-      title="تحرير أقسام الصفحات والهيدر والفوتر"
+      title="تحرير أقسام الصفحات والهيدر والفوتر (AR & EN)"
       subtitle={
         pageRecord
           ? `الإصدار الحالي: v${pageRecord.version} — آخر تحديث بواسطة ${
@@ -247,11 +252,19 @@ export default function AdminPagesEditor() {
           </button>
           <button
             type="button"
-            onClick={handlePreview}
+            onClick={() => handlePreview("ar")}
             disabled={saving || !draft}
             className="admin-btn admin-btn--navy"
           >
             معاينة قبل النشر
+          </button>
+          <button
+            type="button"
+            onClick={() => handlePreview("en")}
+            disabled={saving || !draft}
+            className="admin-btn admin-btn--navy"
+          >
+            Preview EN
           </button>
           {userRole === "admin" ? (
             <button
@@ -286,14 +299,17 @@ export default function AdminPagesEditor() {
             <div className="admin-btn-group">
               {[
                 { id: "hero", label: "١. الهيرو (الافتتاحية)" },
-                { id: "doctorIntro", label: "٢. عن الدكتورة" },
-                { id: "specialtySection", label: "٣. التخصص الدقيق" },
-                { id: "beforeConsultationSection", label: "٤. ما قبل الاستشارة" },
-                { id: "knowledgeSection", label: "٥. المقالات في الرئيسية" },
-                { id: "contentStyleSection", label: "٦. أسلوب المحتوى التوعوي" },
-                { id: "faqSection", label: "٧. قسم الأسئلة الشائعة" },
-                { id: "finalInquiry", label: "٨. قسم التواصل النهائي" },
-                { id: "headerFooter", label: "٩. الهيدر والفوتر" },
+                { id: "specialtiesStrip", label: "٢. شريط التخصصات" },
+                { id: "doctorIntro", label: "٣. عن الدكتورة والركائز" },
+                { id: "resultsSection", label: "٤. النتائج الموثقة (قبل/بعد)" },
+                { id: "knowledgeSection", label: "٥. التثقيف والمقالات" },
+                { id: "specialtySection", label: "٦. التخصص التفصيلي" },
+                { id: "beforeConsultationSection", label: "٧. ما قبل الاستشارة" },
+                { id: "contentStyleSection", label: "٨. أسلوب المحتوى" },
+                { id: "faqSection", label: "٩. الأسئلة الشائعة" },
+                { id: "finalInquiry", label: "١٠. التواصل النهائي" },
+                { id: "headerFooter", label: "١١. الهيدر والفوتر" },
+                { id: "englishContent", label: "١٢. المحتوى الإنجليزي (EN)" },
                 { id: "order", label: "ترتيب وإظهار الأقسام" },
                 { id: "revisions", label: `سجل النسخ (${revisions.length})` },
               ].map((tab) => (
@@ -371,7 +387,7 @@ export default function AdminPagesEditor() {
 
                 <div className="admin-field">
                   <label className="admin-label" htmlFor="hero-line2">
-                    العبارة المميزة بالتيل (السطر الثاني)
+                    السطر المميز (السطر الثاني)
                   </label>
                   <input
                     id="hero-line2"
@@ -520,10 +536,60 @@ export default function AdminPagesEditor() {
             </section>
           ) : null}
 
+          {activeTab === "specialtiesStrip" && draft.specialtiesStrip ? (
+            <section className="admin-card">
+              <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                تحرير شريط التخصصات الأربعة
+              </h2>
+              <div className="admin-form-grid admin-form-grid--2">
+                {draft.specialtiesStrip.map((item, idx) => (
+                  <div
+                    key={item.id || idx}
+                    className="admin-card admin-card--tinted"
+                    style={{ padding: "1rem" }}
+                  >
+                    <div className="admin-field">
+                      <label className="admin-label">
+                        عنوان التخصص {idx + 1}
+                      </label>
+                      <input
+                        className="admin-input"
+                        value={item.title}
+                        onChange={(e) =>
+                          updateDraft((d) => {
+                            if (d.specialtiesStrip) {
+                              d.specialtiesStrip[idx].title = e.target.value;
+                            }
+                            return d;
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="admin-field">
+                      <label className="admin-label">الوصف المختصر</label>
+                      <input
+                        className="admin-input"
+                        value={item.subtitle}
+                        onChange={(e) =>
+                          updateDraft((d) => {
+                            if (d.specialtiesStrip) {
+                              d.specialtiesStrip[idx].subtitle = e.target.value;
+                            }
+                            return d;
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           {activeTab === "doctorIntro" ? (
             <section className="admin-card">
               <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
-                تحرير قسم «عن الدكتورة»
+                تحرير قسم «عن الدكتورة» والركائز الأربع
               </h2>
 
               <div className="admin-form-grid admin-form-grid--2">
@@ -585,7 +651,7 @@ export default function AdminPagesEditor() {
               </div>
 
               <div className="admin-field">
-                <label className="admin-label">الفقرة البارزة (#1E3A4C)</label>
+                <label className="admin-label">الفقرة التعريفية البارزة</label>
                 <textarea
                   className="admin-textarea"
                   value={draft.doctorIntro.leadStatement}
@@ -598,6 +664,37 @@ export default function AdminPagesEditor() {
                 />
               </div>
 
+              {draft.doctorIntro.principles ? (
+                <div className="admin-form-grid admin-form-grid--2">
+                  {draft.doctorIntro.principles.map((p, idx) => (
+                    <div
+                      key={idx}
+                      className="admin-card admin-card--tinted"
+                      style={{ padding: "0.85rem" }}
+                    >
+                      <div className="admin-field">
+                        <label className="admin-label">
+                          الركيزة الأيقونية {idx + 1}
+                        </label>
+                        <input
+                          className="admin-input"
+                          value={p.title}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (d.doctorIntro.principles) {
+                                d.doctorIntro.principles[idx].title =
+                                  e.target.value;
+                              }
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               <div className="admin-form-grid admin-form-grid--2">
                 {draft.doctorIntro.pillars.map((pillar, idx) => (
                   <div
@@ -606,7 +703,9 @@ export default function AdminPagesEditor() {
                     style={{ padding: "1rem" }}
                   >
                     <div className="admin-field">
-                      <label className="admin-label">عنوان البطاقة {idx + 1}</label>
+                      <label className="admin-label">
+                        عنوان البطاقة {idx + 1}
+                      </label>
                       <input
                         className="admin-input"
                         value={pillar.title}
@@ -619,7 +718,9 @@ export default function AdminPagesEditor() {
                       />
                     </div>
                     <div className="admin-field">
-                      <label className="admin-label">نص البطاقة {idx + 1}</label>
+                      <label className="admin-label">
+                        نص البطاقة {idx + 1}
+                      </label>
                       <textarea
                         className="admin-textarea"
                         value={pillar.text}
@@ -633,6 +734,67 @@ export default function AdminPagesEditor() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </section>
+          ) : null}
+
+          {activeTab === "resultsSection" && draft.resultsSection ? (
+            <section className="admin-card">
+              <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                تحرير قسم النتائج الموثقة (قبل / بعد — مشروط بالموافقة الطبية)
+              </h2>
+              <div className="admin-alert">
+                ملاحظة طبية: يظل هذا القسم مخفياً تلقائياً عن الزوار في الموقع
+                العام طالما لم تتم إضافة حالات طبية حقيقية وموثقة ومعتمدة
+                بموافقة نشر صريحة، ويظهر فقط في «وضع المعاينة المحمي» لمعاينة
+                التصميم.
+              </div>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">العنوان الفرعي</label>
+                  <input
+                    className="admin-input"
+                    value={draft.resultsSection.eyebrow}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.eyebrow = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">العنوان الرئيسي</label>
+                  <input
+                    className="admin-input"
+                    value={draft.resultsSection.title}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.title = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label className="admin-label">الوصف</label>
+                <textarea
+                  className="admin-textarea"
+                  value={draft.resultsSection.description}
+                  onChange={(e) =>
+                    updateDraft((d) => {
+                      if (d.resultsSection) {
+                        d.resultsSection.description = e.target.value;
+                      }
+                      return d;
+                    })
+                  }
+                />
               </div>
             </section>
           ) : null}
@@ -1175,6 +1337,177 @@ export default function AdminPagesEditor() {
                   onChange={(e) =>
                     updateDraft((d) => {
                       d.headerFooter.footerDisclaimer = e.target.value;
+                      return d;
+                    })
+                  }
+                />
+              </div>
+            </section>
+          ) : null}
+
+          {activeTab === "englishContent" && draft.en ? (
+            <section className="admin-card" dir="ltr" style={{ textAlign: "left" }}>
+              <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                Edit English Homepage Copy (/en)
+              </h2>
+
+              <h3 style={{ fontSize: "1.05rem", margin: 0 }}>
+                1. Hero Section (EN)
+              </h3>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Specialty Eyebrow</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.hero.specialtyTag}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.hero.specialtyTag = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Main Title (Doctor Name)</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.hero.headlineLine1}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.hero.headlineLine1 = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Italic Subtitle</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.hero.headlineLine2}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.hero.headlineLine2 = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Primary CTA Button</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.hero.primaryCta}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.hero.primaryCta = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label className="admin-label">Hero Support Paragraph</label>
+                <textarea
+                  className="admin-textarea"
+                  value={draft.en.hero.support}
+                  onChange={(e) =>
+                    updateDraft((d) => {
+                      if (d.en) d.en.hero.support = e.target.value;
+                      return d;
+                    })
+                  }
+                />
+              </div>
+
+              <h3 style={{ fontSize: "1.05rem", margin: 0 }}>
+                2. About Section (EN)
+              </h3>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Eyebrow</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.doctorIntro.eyebrow}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.doctorIntro.eyebrow = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Section Heading</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.doctorIntro.specialty}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.doctorIntro.specialty = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label className="admin-label">About Narrative</label>
+                <textarea
+                  className="admin-textarea"
+                  value={draft.en.doctorIntro.leadStatement}
+                  onChange={(e) =>
+                    updateDraft((d) => {
+                      if (d.en)
+                        d.en.doctorIntro.leadStatement = e.target.value;
+                      return d;
+                    })
+                  }
+                />
+              </div>
+
+              <h3 style={{ fontSize: "1.05rem", margin: 0 }}>
+                3. Patient Education Section (EN)
+              </h3>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">Eyebrow</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.knowledgeSection.eyebrow}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en)
+                          d.en.knowledgeSection.eyebrow = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Heading</label>
+                  <input
+                    className="admin-input"
+                    value={draft.en.knowledgeSection.title}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.en) d.en.knowledgeSection.title = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label className="admin-label">Intro</label>
+                <textarea
+                  className="admin-textarea"
+                  value={draft.en.knowledgeSection.intro}
+                  onChange={(e) =>
+                    updateDraft((d) => {
+                      if (d.en) d.en.knowledgeSection.intro = e.target.value;
                       return d;
                     })
                   }

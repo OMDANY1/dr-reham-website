@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * خريطة الموقع (Sitemap):
- * تتضمن فقط المسارات العامة المعتمدة والمقالات المنشورة فعليًا،
+ * تتضمن فقط المسارات العامة المعتمدة والمقالات المنشورة فعليًا باللغتين (/ar و /en)،
  * ولا تسرّب أي سجل بحالة مسودة (draft) أو بانتظار المراجعة أو مؤرشف.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -22,34 +22,55 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ? validDomain.replace(/\/$/, "")
     : "http://localhost:3000";
 
-  const staticRoutes = [
-    "/ar",
-    "/ar/about",
-    "/ar/services",
-    "/ar/journal",
-    "/ar/faq",
-    "/ar/book",
-    "/ar/privacy",
+  const staticSuffixes = [
+    "",
+    "/about",
+    "/services",
+    "/journal",
+    "/faq",
+    "/book",
+    "/privacy",
   ];
 
   const publicServices = getPublicServices(servicesRecords);
-  const publicArticles = getStrictlyPublishedArticlesForSitemap();
+  const publicArticlesAr = getStrictlyPublishedArticlesForSitemap("ar");
+  const publicArticlesEn = getStrictlyPublishedArticlesForSitemap("en");
 
-  return [
-    ...staticRoutes.map((route) => ({
-      url: `${baseUrl}${route}`,
-      changeFrequency: "weekly" as const,
-      priority: route === "/ar" ? 1 : 0.8,
-    })),
-    ...publicServices.map((service) => ({
-      url: `${baseUrl}/ar/services/${service.slug}`,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
-    })),
-    ...publicArticles.map((article) => ({
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const locale of ["ar", "en"] as const) {
+    for (const suffix of staticSuffixes) {
+      entries.push({
+        url: `${baseUrl}/${locale}${suffix}`,
+        changeFrequency: "weekly",
+        priority: suffix === "" ? 1 : 0.8,
+      });
+    }
+
+    for (const service of publicServices) {
+      entries.push({
+        url: `${baseUrl}/${locale}/services/${service.slug}`,
+        changeFrequency: "monthly",
+        priority: 0.7,
+      });
+    }
+  }
+
+  for (const article of publicArticlesAr) {
+    entries.push({
       url: `${baseUrl}/ar/journal/${article.slug}`,
-      changeFrequency: "monthly" as const,
+      changeFrequency: "monthly",
       priority: 0.6,
-    })),
-  ];
+    });
+  }
+
+  for (const article of publicArticlesEn) {
+    entries.push({
+      url: `${baseUrl}/en/journal/${article.slug}`,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
+
+  return entries;
 }

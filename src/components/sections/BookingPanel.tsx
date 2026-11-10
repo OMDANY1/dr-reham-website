@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { siteConfig, type Clinic } from "@/config/site";
+import { siteConfig, type Clinic, type SupportedLocale } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
 import { bookPageCopy } from "@/content/ar/book";
+import { homeContentEn, bookPageCopyEn } from "@/content/en";
 import { isLiveBookingReady } from "@/lib/content-gates";
 import {
   buildWhatsAppBookingUrl,
@@ -21,19 +22,19 @@ export interface BookingPanelProps {
   clinics?: Clinic[];
   initialClinicParam?: string | null;
   finalInquiryData?: HomePageCmsData["finalInquiry"];
+  enOverride?: NonNullable<HomePageCmsData["en"]>["finalInquiry"];
+  locale?: SupportedLocale;
 }
 
-/**
- * مكوّن التواصل والاستفسار:
- * - في وضع cta-banner: يعرض قسم الدعوة النهائية للتواصل «لنبدأ باستفسارك» على مساحة التيل المعتمدة.
- * - في وضع full-selector: يعرض محدد العيادات عند تفعيلها أو بطاقة التواصل الرسمي المؤكدة عبر واتساب وإنستجرام.
- */
 export function BookingPanel({
   mode = "cta-banner",
   clinics = siteConfig.clinics,
   initialClinicParam = null,
   finalInquiryData,
+  enOverride,
+  locale = "ar",
 }: BookingPanelProps) {
+  const isEn = locale === "en";
   const resolution = resolveSelectedClinic(clinics, initialClinicParam);
   const [selectedId, setSelectedId] = useState<string | null>(
     resolution.selectedClinic?.id ?? null
@@ -48,38 +49,46 @@ export function BookingPanel({
     buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
 
-  const finalInquiry = finalInquiryData
-    ? {
-        ...finalInquiryData,
-        primaryCta:
-          finalInquiryData.primaryCta === "تواصل للاستفسار"
-            ? homeContent.finalInquiry.primaryCta
-            : finalInquiryData.primaryCta,
-        primaryHref:
-          !finalInquiryData.primaryHref ||
-          finalInquiryData.primaryHref === siteConfig.instagramUrl
-            ? whatsappHref
-            : finalInquiryData.primaryHref,
-        destinationCaption:
-          finalInquiryData.destinationCaption?.includes("إنستجرام")
-            ? homeContent.finalInquiry.destinationCaption
-            : finalInquiryData.destinationCaption,
-      }
-    : {
-        ...homeContent.finalInquiry,
-        primaryHref: whatsappHref,
-      };
+  const baseInquiry = isEn
+    ? homeContentEn.finalInquiry
+    : homeContent.finalInquiry;
+
+  const eyebrow = isEn
+    ? enOverride?.eyebrow || baseInquiry.eyebrow
+    : finalInquiryData?.eyebrow || baseInquiry.eyebrow;
+  const heading = isEn
+    ? enOverride?.heading || baseInquiry.heading
+    : finalInquiryData?.heading || baseInquiry.heading;
+  const support = isEn
+    ? enOverride?.support || baseInquiry.support
+    : finalInquiryData?.support || baseInquiry.support;
+  const primaryCta = isEn
+    ? enOverride?.primaryCta || baseInquiry.primaryCta
+    : finalInquiryData?.primaryCta === "تواصل للاستفسار"
+    ? homeContent.finalInquiry.primaryCta
+    : finalInquiryData?.primaryCta || baseInquiry.primaryCta;
+  const destinationCaption = isEn
+    ? enOverride?.destinationCaption || baseInquiry.destinationCaption
+    : finalInquiryData?.destinationCaption?.includes("إنستجرام")
+    ? homeContent.finalInquiry.destinationCaption
+    : finalInquiryData?.destinationCaption || baseInquiry.destinationCaption;
+
+  const rawPrimaryHref =
+    !finalInquiryData?.primaryHref ||
+    finalInquiryData.primaryHref === siteConfig.instagramUrl
+      ? whatsappHref
+      : finalInquiryData.primaryHref;
 
   const externalBannerHref = validateExternalHttpsUrl(
-    finalInquiry.primaryHref || whatsappHref
+    rawPrimaryHref || whatsappHref
   );
 
   if (mode === "cta-banner") {
     const primaryHref =
-      finalInquiry.primaryHref && finalInquiry.primaryHref.startsWith("/")
-        ? finalInquiry.primaryHref
+      rawPrimaryHref && rawPrimaryHref.startsWith("/")
+        ? rawPrimaryHref.replace(/^\/(ar|en)(?=\/|$)/, `/${locale}`)
         : liveReady
-        ? "/ar/book"
+        ? `/${locale}/book`
         : externalBannerHref ?? whatsappHref;
     const isExternal = primaryHref.startsWith("https://");
 
@@ -92,15 +101,11 @@ export function BookingPanel({
           <ScrollReveal>
             <div className="final-inquiry-grid">
               <div>
-                <span className="eyebrow eyebrow--on-sky">
-                  {finalInquiry.eyebrow}
-                </span>
+                <span className="eyebrow eyebrow--on-sky">{eyebrow}</span>
                 <h2 id="final-inquiry-heading" className="final-inquiry__title">
-                  {finalInquiry.heading}
+                  {heading}
                 </h2>
-                <p className="final-inquiry__support">
-                  {finalInquiry.support}
-                </p>
+                <p className="final-inquiry__support">{support}</p>
               </div>
 
               <div className="final-inquiry__actions">
@@ -109,11 +114,12 @@ export function BookingPanel({
                   variant="white"
                   external={isExternal}
                 >
-                  {finalInquiry.primaryCta} ↗
+                  <span>{primaryCta}</span>
+                  <span aria-hidden="true">{isEn ? "→" : "↗"}</span>
                 </Button>
                 {!liveReady && externalBannerHref ? (
                   <p className="final-inquiry__caption">
-                    <span>{finalInquiry.destinationCaption} </span>
+                    <span>{destinationCaption} </span>
                     <span className="ltr-inline" dir="ltr">
                       {siteConfig.whatsappDisplay}
                     </span>
@@ -127,7 +133,8 @@ export function BookingPanel({
     );
   }
 
-  /* mode === "full-selector" (لصفحة /ar/book) */
+  /* mode === "full-selector" (لصفحة /ar/book و /en/book) */
+  const copy = isEn ? bookPageCopyEn : bookPageCopy;
   const { bookableClinics, wasInvalidQueryReset } = resolution;
   const activeClinic =
     bookableClinics.find((c) => c.id === selectedId) ??
@@ -141,39 +148,37 @@ export function BookingPanel({
         <Container>
           <div className="editorial-split">
             <div className="editorial-split__lead">
-              <span className="eyebrow">القناة المعتمدة</span>
+              <span className="eyebrow">{copy.eyebrow}</span>
               <h2 id="direct-inquiry-heading" className="section-title">
-                التواصل المباشر
+                {copy.previewHeading}
               </h2>
-              <p className="section-lead">
-                نسعد باستقبال استفساراتكم حول المواعيد والعيادات في الرياض عبر
-                محادثة واتساب الرسمية أو عبر الحساب الموثق للدكتورة ريهام
-                القحطاني.
-              </p>
+              <p className="section-lead">{copy.introPreview}</p>
             </div>
 
             <div className="editorial-split__content">
               <div
                 className="inquiry-channel-card"
                 role="region"
-                aria-label="وسيلة التواصل المؤكدة"
+                aria-label={
+                  isEn ? "Verified Contact Channel" : "وسيلة التواصل المؤكدة"
+                }
               >
                 <span className="inquiry-channel-card__badge">
-                  {bookPageCopy.directInquiryCard.badge}
+                  {copy.directInquiryCard.badge}
                 </span>
                 <h3
                   style={{
                     fontSize: "var(--text-h2)",
-                    color: "var(--color-navy)",
+                    color: "var(--color-plum-dark)",
                   }}
                 >
-                  {bookPageCopy.directInquiryCard.title}
+                  {copy.directInquiryCard.title}
                 </h3>
                 <p
                   className="ltr-inline"
                   dir="ltr"
                   style={{
-                    color: "var(--color-teal)",
+                    color: "var(--color-plum)",
                     fontSize: "var(--text-h3)",
                     fontWeight: 700,
                   }}
@@ -187,7 +192,7 @@ export function BookingPanel({
                     maxInlineSize: "48ch",
                   }}
                 >
-                  {bookPageCopy.directInquiryCard.description}
+                  {copy.directInquiryCard.description}
                 </p>
 
                 <div
@@ -200,12 +205,14 @@ export function BookingPanel({
                 >
                   {whatsappHref ? (
                     <Button href={whatsappHref} variant="primary" external>
-                      {bookPageCopy.directInquiryCard.whatsappLabel} ↗
+                      <span>{copy.directInquiryCard.whatsappLabel}</span>
+                      <span aria-hidden="true">{isEn ? "→" : "↗"}</span>
                     </Button>
                   ) : null}
                   {instagramHref ? (
                     <Button href={instagramHref} variant="secondary" external>
-                      {bookPageCopy.directInquiryCard.actionLabel} ↗
+                      <span>{copy.directInquiryCard.actionLabel}</span>
+                      <span aria-hidden="true">{isEn ? "→" : "↗"}</span>
                     </Button>
                   ) : null}
                 </div>
@@ -216,7 +223,7 @@ export function BookingPanel({
                     color: "var(--color-secondary)",
                   }}
                 >
-                  {bookPageCopy.directInquiryCard.externalHint}
+                  {copy.directInquiryCard.externalHint}
                 </p>
               </div>
             </div>
@@ -235,10 +242,12 @@ export function BookingPanel({
           <div className="editorial-split__lead">
             <h2 id="clinic-selection-heading" className="section-title">
               {isSingleClinic
-                ? "العيادة المعتمدة"
-                : bookPageCopy.selectorLabels.groupLegend}
+                ? isEn
+                  ? "Verified Clinic"
+                  : "العيادة المعتمدة"
+                : copy.selectorLabels.groupLegend}
             </h2>
-            <p className="section-lead">{bookPageCopy.introLive}</p>
+            <p className="section-lead">{copy.introLive}</p>
 
             {wasInvalidQueryReset ? (
               <p
@@ -250,10 +259,10 @@ export function BookingPanel({
                   border: "1.5px solid var(--color-border)",
                   borderRadius: "var(--control-radius)",
                   fontSize: "var(--text-small)",
-                  color: "var(--color-navy)",
+                  color: "var(--color-plum-dark)",
                 }}
               >
-                {bookPageCopy.selectorLabels.invalidParamResetNote}
+                {copy.selectorLabels.invalidParamResetNote}
               </p>
             ) : null}
           </div>
@@ -262,10 +271,12 @@ export function BookingPanel({
             {!isSingleClinic ? (
               <fieldset className="clinic-radio-group">
                 <legend className="sr-only">
-                  {bookPageCopy.selectorLabels.groupLegend}
+                  {copy.selectorLabels.groupLegend}
                 </legend>
                 {bookableClinics.map((clinic) => {
                   const isSelected = clinic.id === activeClinic.id;
+                  const clinicName =
+                    isEn && clinic.nameEn ? clinic.nameEn : clinic.name;
                   return (
                     <label
                       key={clinic.id}
@@ -287,10 +298,10 @@ export function BookingPanel({
                             display: "block",
                             fontWeight: 700,
                             fontSize: "var(--text-h3)",
-                            color: "var(--color-navy)",
+                            color: "var(--color-plum-dark)",
                           }}
                         >
-                          {clinic.name}
+                          {clinicName}
                         </span>
                         {clinic.address ? (
                           <span
@@ -320,16 +331,18 @@ export function BookingPanel({
                     display: "block",
                   }}
                 >
-                  {bookPageCopy.selectorLabels.selectedClinicPrefix}
+                  {copy.selectorLabels.selectedClinicPrefix}
                 </span>
                 <h3
                   style={{
                     fontSize: "var(--text-h2)",
-                    color: "var(--color-navy)",
+                    color: "var(--color-plum-dark)",
                     marginBlockStart: "var(--space-1)",
                   }}
                 >
-                  {activeClinic.name}
+                  {isEn && activeClinic.nameEn
+                    ? activeClinic.nameEn
+                    : activeClinic.name}
                 </h3>
               </div>
 
@@ -342,7 +355,7 @@ export function BookingPanel({
                       color: "var(--color-secondary)",
                     }}
                   >
-                    {bookPageCopy.selectorLabels.addressLabel}
+                    {copy.selectorLabels.addressLabel}
                   </strong>
                   <p>{activeClinic.address}</p>
                 </div>
@@ -357,7 +370,7 @@ export function BookingPanel({
                       color: "var(--color-secondary)",
                     }}
                   >
-                    {bookPageCopy.selectorLabels.hoursLabel}
+                    {copy.selectorLabels.hoursLabel}
                   </strong>
                   <p>{activeClinic.hours}</p>
                 </div>
@@ -371,7 +384,7 @@ export function BookingPanel({
                     rel="noopener noreferrer"
                     className="text-link"
                   >
-                    {bookPageCopy.selectorLabels.mapsLinkLabel} ↗
+                    {copy.selectorLabels.mapsLinkLabel} ↗
                   </a>
                 </div>
               ) : null}
@@ -380,11 +393,11 @@ export function BookingPanel({
                 <strong
                   style={{
                     display: "block",
-                    color: "var(--color-navy)",
+                    color: "var(--color-plum-dark)",
                     marginBlockEnd: "var(--space-1)",
                   }}
                 >
-                  {bookPageCopy.selectorLabels.externalNoticeTitle}
+                  {copy.selectorLabels.externalNoticeTitle}
                 </strong>
                 <p
                   style={{
@@ -398,7 +411,8 @@ export function BookingPanel({
 
               <div>
                 <Button href={activeAction.href} variant="primary" external>
-                  {activeAction.label} ↗
+                  <span>{activeAction.label}</span>
+                  <span aria-hidden="true">{isEn ? "→" : "↗"}</span>
                 </Button>
               </div>
             </div>

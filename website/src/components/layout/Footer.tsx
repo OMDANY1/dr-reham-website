@@ -3,8 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { siteConfig } from "@/config/site";
+import { siteConfig, type SupportedLocale } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
+import { homeContentEn } from "@/content/en";
 import { servicesRecords } from "@/content/ar/services";
 import { faqRecords } from "@/content/ar/faq";
 import {
@@ -21,29 +22,56 @@ import { Container } from "@/components/ui/Container";
 
 export interface FooterProps {
   navigation?: typeof homeContent.navigation;
+  navigationEn?: typeof homeContent.navigation;
   brandName?: string;
+  brandNameEn?: string;
   specialtyAr?: string;
+  specialtyEn?: string;
   city?: string;
+  cityEn?: string;
   instagramUrl?: string;
   footerDisclaimer?: string;
+  footerDisclaimerEn?: string;
   bookingLabel?: string;
+  bookingLabelEn?: string;
 }
 
 export function Footer({
   navigation = homeContent.navigation,
+  navigationEn = homeContentEn.navigation,
   brandName = siteConfig.profile.nameAr,
+  brandNameEn = siteConfig.profile.nameEn,
   specialtyAr = siteConfig.profile.specialtyAr,
+  specialtyEn = siteConfig.profile.specialtyEn,
   city = siteConfig.profile.city,
+  cityEn = siteConfig.profile.cityEn,
   instagramUrl = siteConfig.instagramUrl,
   footerDisclaimer = "الصور المنشورة في الموقع تعبيرية وتحريرية ولا تمثل حالات مرضى أو نتائج علاجية.",
+  footerDisclaimerEn = "Images published on this website are editorial and illustrative and do not represent individual patient cases or clinical outcomes.",
   bookingLabel: bookingLabelProp,
+  bookingLabelEn: bookingLabelEnProp,
 }: FooterProps = {}) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) {
     return null;
   }
 
-  const bookingLabel = bookingLabelProp ?? getBookingCtaLabel(siteConfig);
+  const locale: SupportedLocale =
+    pathname === "/en" || pathname?.startsWith("/en/") ? "en" : "ar";
+  const isEn = locale === "en";
+
+  const activeNav = isEn ? navigationEn : navigation;
+  const activeBrand = isEn ? brandNameEn : brandName;
+  const activeSpecialty = isEn ? specialtyEn : specialtyAr;
+  const activeCity = isEn ? cityEn : city;
+  const activeDisclaimer = isEn ? footerDisclaimerEn : footerDisclaimer;
+
+  const bookingLabel = isEn
+    ? bookingLabelEnProp ??
+      getBookingCtaLabel(siteConfig, siteConfig.clinics, "en")
+    : bookingLabelProp ??
+      getBookingCtaLabel(siteConfig, siteConfig.clinics, "ar");
+
   const whatsappHref =
     buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
   const instagramHref = validateExternalHttpsUrl(instagramUrl);
@@ -55,67 +83,75 @@ export function Footer({
       <Container>
         <div className="site-footer__grid">
           <div>
-            <Link href="/ar" className="site-header__brand">
+            <Link href={`/${locale}`} className="site-header__brand">
               <Logo tone="ink" size="compact" decorative />
               <div className="site-header__brand-text">
-                <span className="site-header__brand-name">{brandName}</span>
-                <span className="site-header__brand-sub">{specialtyAr}</span>
+                <span className="site-header__brand-name">{activeBrand}</span>
+                <span className="site-header__brand-sub">{activeSpecialty}</span>
               </div>
             </Link>
             <p
               style={{
                 marginBlockStart: "var(--space-3)",
                 color: "var(--color-paragraph)",
-                maxInlineSize: "36ch",
+                maxInlineSize: "38ch",
               }}
             >
-              عناية دقيقة بتفاصيل نظرتك — {specialtyAr} في {city}.
+              {isEn
+                ? `Precision in Care. Harmony in Aesthetics — ${activeSpecialty} in ${activeCity}.`
+                : `عناية دقيقة بتفاصيل نظرتك — ${activeSpecialty} في ${activeCity}.`}
             </p>
           </div>
 
-          <nav aria-label="روابط التذييل">
+          <nav aria-label={isEn ? "Footer links" : "روابط التذييل"}>
             <h2
               style={{
                 fontSize: "var(--text-small)",
                 fontWeight: 700,
-                color: "var(--color-navy)",
+                color: "var(--color-plum-dark)",
                 marginBlockEnd: "var(--space-3)",
               }}
             >
-              التنقل
+              {isEn ? "Navigation" : "التنقل"}
             </h2>
             <ul className="site-footer__list">
               <li>
-                <Link href="/ar/about" className="site-footer__link">
-                  {navigation.about}
+                <Link href={`/${locale}/about`} className="site-footer__link">
+                  {activeNav.about}
                 </Link>
               </li>
               <li>
-                <Link href="/ar#specialty" className="site-footer__link">
-                  {navigation.specialty}
+                <Link
+                  href={`/${locale}#specialty`}
+                  className="site-footer__link"
+                >
+                  {activeNav.specialty}
                 </Link>
               </li>
               {hasServices ? (
                 <li>
-                  <Link href="/ar/services" className="site-footer__link">
-                    {navigation.services}
+                  <Link
+                    href={`/${locale}/services`}
+                    className="site-footer__link"
+                  >
+                    {activeNav.services}
                   </Link>
                 </li>
               ) : null}
               <li>
-                <Link href="/ar/journal" className="site-footer__link">
-                  {navigation.journal}
+                <Link href={`/${locale}/journal`} className="site-footer__link">
+                  {activeNav.journal}
                 </Link>
               </li>
               {hasFaqs ? (
                 <li>
-                  <Link href="/ar/faq" className="site-footer__link">
-                    {navigation.faq}
+                  <Link href={`/${locale}/faq`} className="site-footer__link">
+                    {activeNav.faq}
                   </Link>
                 </li>
               ) : null}
               <li>
-                <Link href="/ar/book" className="site-footer__link">
+                <Link href={`/${locale}/book`} className="site-footer__link">
                   {bookingLabel}
                 </Link>
               </li>
@@ -127,11 +163,11 @@ export function Footer({
               style={{
                 fontSize: "var(--text-small)",
                 fontWeight: 700,
-                color: "var(--color-navy)",
+                color: "var(--color-plum-dark)",
                 marginBlockEnd: "var(--space-3)",
               }}
             >
-              التواصل والخصوصية
+              {isEn ? "Contact & Privacy" : "التواصل والخصوصية"}
             </h2>
             <ul className="site-footer__list">
               {whatsappHref ? (
@@ -142,7 +178,7 @@ export function Footer({
                     rel="noopener noreferrer"
                     className="site-footer__link"
                   >
-                    <span>واتساب</span>
+                    <span>{isEn ? "WhatsApp" : "واتساب"}</span>
                     <span
                       className="ltr-inline"
                       dir="ltr"
@@ -161,7 +197,7 @@ export function Footer({
                     rel="noopener noreferrer"
                     className="site-footer__link"
                   >
-                    <span>إنستجرام</span>
+                    <span>{isEn ? "Instagram" : "إنستجرام"}</span>
                     <span
                       className="ltr-inline"
                       style={{ marginInlineStart: "0.4rem" }}
@@ -172,8 +208,8 @@ export function Footer({
                 </li>
               ) : null}
               <li>
-                <Link href="/ar/privacy" className="site-footer__link">
-                  {navigation.privacy}
+                <Link href={`/${locale}/privacy`} className="site-footer__link">
+                  {activeNav.privacy}
                 </Link>
               </li>
             </ul>
@@ -187,7 +223,7 @@ export function Footer({
               fontSize: "var(--text-small)",
             }}
           >
-            © {new Date().getFullYear()} {brandName} — {city}.
+            © {new Date().getFullYear()} {activeBrand} — {activeCity}.
           </p>
           <p
             style={{
@@ -195,7 +231,7 @@ export function Footer({
               fontSize: "var(--text-caption)",
             }}
           >
-            {footerDisclaimer}
+            {activeDisclaimer}
           </p>
         </div>
       </Container>

@@ -2,10 +2,10 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 2,
+  workers: 1,
   reporter: "list",
   use: {
     baseURL: "http://127.0.0.1:3000",
@@ -27,6 +27,7 @@ export default defineConfig({
         browserName: "chromium",
         channel: "chrome",
         viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2,
       },
     },
   ],

@@ -55,8 +55,8 @@ export const journalPageCopy = {
     calmInquiryEyebrow: "استفسار مباشر",
     calmInquiryTitle: "هل لديك استفسار حول موعد أو زيارة؟",
     calmInquiryText:
-      "للاستفسار عن المواعيد في الرياض، يمكنك التواصل مباشرة عبر الحساب الرسمي الموثق للدكتورة ريهام القحطاني على إنستجرام.",
-    calmInquiryCta: "تواصل للاستفسار",
+      "للاستفسار عن المواعيد في الرياض، يمكنك التواصل مباشرة عبر واتساب الرسمي للدكتورة ريهام القحطاني.",
+    calmInquiryCta: "تواصل عبر واتساب",
     disclaimer:
       "هذه المادة مخصصة للتثقيف الصحي العام فقط، ولا تمثل تشخيصًا شخصيًا أو توصية علاجية ولا تُغني عن الفحص الطبي المباشر.",
   },
@@ -77,7 +77,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "العين والجفون",
     featured: true,
     image: {
-      src: "/media/article-hooded-vs-deepset.jpg",
+      src: "/media/article-eyelid-indication.jpg",
       alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي وقوس الحاجب تحت إضاءة نهارية ناعمة",
     },
     author: null,
@@ -155,7 +155,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "حول العين",
     featured: false,
     image: {
-      src: "/media/article-tired-eye-factors.jpg",
+      src: "/media/article-tear-comfort.jpg",
       alt: "صورة تحريرية تعبيرية هادئة لمنطقة العين وأعلى الوجنة في ضوء الصباح الطبيعي",
     },
     author: null,
@@ -228,7 +228,7 @@ export const articlesRecords: ArticleRecord[] = [
     category: "قبل الاستشارة",
     featured: false,
     image: {
-      src: "/media/article-consultation-prep.jpg",
+      src: "/media/article-brow-lid-harmony.jpg",
       alt: "صورة تحريرية تعبيرية لدفتر ملاحظات مفتوح وقلم ونظارة طبية على سطح رخامي هادئ",
     },
     author: null,

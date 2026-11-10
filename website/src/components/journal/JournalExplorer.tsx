@@ -3,24 +3,38 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import type { SupportedLocale } from "@/config/site";
 import { ARTICLE_CATEGORIES, journalPageCopy } from "@/content/ar/articles";
+import { ARTICLE_CATEGORIES_EN, journalPageCopyEn } from "@/content/en";
 import {
   calculateReadingTimeMinutes,
   filterArticles,
-  formatReadingTimeAr,
+  formatReadingTime,
   type ArticleRecord,
 } from "@/lib/content-gates";
 
 export interface JournalExplorerProps {
   articles: ArticleRecord[];
+  locale?: SupportedLocale;
+  isPreviewSession?: boolean;
 }
 
-export function JournalExplorer({ articles }: JournalExplorerProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("الكل");
+export function JournalExplorer({
+  articles,
+  locale = "ar",
+  isPreviewSession = false,
+}: JournalExplorerProps) {
+  const isEn = locale === "en";
+  const allLabel = isEn ? "All" : "الكل";
+  const categories = isEn ? ARTICLE_CATEGORIES_EN : ARTICLE_CATEGORIES;
+  const copy = isEn ? journalPageCopyEn : journalPageCopy;
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(allLabel);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const isDefaultView =
-    selectedCategory === "الكل" && searchQuery.trim().length === 0;
+    (selectedCategory === "الكل" || selectedCategory === "All") &&
+    searchQuery.trim().length === 0;
 
   const featuredArticle = useMemo(() => {
     return articles.find((item) => item.featured) ?? articles[0] ?? null;
@@ -33,7 +47,6 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
     });
   }, [articles, selectedCategory, searchQuery]);
 
-  // في العرض الافتراضي يظهر المقال المميز في الأعلى ولا يتكرر في الشبكة أدناه
   const gridArticles = useMemo(() => {
     if (isDefaultView && featuredArticle) {
       return filteredArticles.filter(
@@ -44,13 +57,12 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
   }, [filteredArticles, isDefaultView, featuredArticle]);
 
   const handleReset = () => {
-    setSelectedCategory("الكل");
+    setSelectedCategory(allLabel);
     setSearchQuery("");
   };
 
   return (
     <div className="journal-magazine">
-      {/* ١. المقال المميز في البداية (يظهر في الوضع الافتراضي قبل التصفية والبحث فلا يتكرر في الشبكة) */}
       {isDefaultView && featuredArticle ? (
         <article
           className="journal-featured"
@@ -72,22 +84,23 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
           <div className="journal-featured__content">
             <div className="journal-meta-row">
               <span className="journal-badge journal-badge--featured">
-                {journalPageCopy.featuredBadge}
+                {copy.featuredBadge}
               </span>
               <span className="journal-badge journal-badge--category">
                 {featuredArticle.category}
               </span>
               <span className="journal-reading-time">
-                {formatReadingTimeAr(
-                  calculateReadingTimeMinutes(featuredArticle)
+                {formatReadingTime(
+                  calculateReadingTimeMinutes(featuredArticle),
+                  locale
                 )}
               </span>
-              {featuredArticle.status === "draft" ? (
+              {isPreviewSession && featuredArticle.status === "draft" ? (
                 <span
                   className="draft-preview-badge"
                   data-testid="draft-preview-badge"
                 >
-                  {journalPageCopy.articleLabels.draftBadge}
+                  {copy.articleLabels.draftBadge}
                 </span>
               ) : null}
             </div>
@@ -97,7 +110,7 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
               className="journal-featured__title"
             >
               <Link
-                href={`/ar/journal/${featuredArticle.slug}`}
+                href={`/${locale}/journal/${featuredArticle.slug}`}
                 className="journal-featured__title-link"
               >
                 {featuredArticle.title}
@@ -112,28 +125,32 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
 
             <div className="journal-featured__actions">
               <Link
-                href={`/ar/journal/${featuredArticle.slug}`}
+                href={`/${locale}/journal/${featuredArticle.slug}`}
                 className="btn btn--primary"
               >
-                {journalPageCopy.readArticleCta} ←
+                <span>{copy.readArticleCta}</span>
+                <span aria-hidden="true">{isEn ? "→" : "←"}</span>
               </Link>
             </div>
           </div>
         </article>
       ) : null}
 
-      {/* ٢. شريط البحث والفلاتر التفاعلي */}
       <div
         className="journal-controls"
         role="region"
-        aria-label="أدوات البحث وتصفية المقالات"
+        aria-label={
+          isEn
+            ? "Article search and category filters"
+            : "أدوات البحث وتصفية المقالات"
+        }
       >
         <div
           className="journal-categories"
           role="group"
-          aria-label={journalPageCopy.categoryFilterLabel}
+          aria-label={copy.categoryFilterLabel}
         >
-          {ARTICLE_CATEGORIES.map((category) => {
+          {categories.map((category) => {
             const active = selectedCategory === category;
             return (
               <button
@@ -153,7 +170,7 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
 
         <div className="journal-search">
           <label htmlFor="journal-search-input" className="sr-only">
-            {journalPageCopy.searchLabel}
+            {copy.searchLabel}
           </label>
           <div className="journal-search__field">
             <svg
@@ -184,7 +201,7 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={journalPageCopy.searchPlaceholder}
+              placeholder={copy.searchPlaceholder}
               className="journal-search__input"
               data-testid="journal-search-input"
             />
@@ -193,7 +210,7 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
                 type="button"
                 className="journal-search__clear"
                 onClick={() => setSearchQuery("")}
-                aria-label={journalPageCopy.clearSearchLabel}
+                aria-label={copy.clearSearchLabel}
               >
                 ×
               </button>
@@ -202,7 +219,6 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
         </div>
       </div>
 
-      {/* ٣. شبكة المقالات أو حالة عدم وجود نتائج */}
       {filteredArticles.length === 0 ? (
         <div
           className="journal-empty-state"
@@ -210,17 +226,17 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
           role="status"
         >
           <h3 className="journal-empty-state__title">
-            {journalPageCopy.emptySearchState.title}
+            {copy.emptySearchState.title}
           </h3>
           <p className="journal-empty-state__message">
-            {journalPageCopy.emptySearchState.message}
+            {copy.emptySearchState.message}
           </p>
           <button
             type="button"
             className="btn btn--secondary"
             onClick={handleReset}
           >
-            {journalPageCopy.emptySearchState.resetCta}
+            {copy.emptySearchState.resetCta}
           </button>
         </div>
       ) : (
@@ -234,7 +250,7 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
                 data-testid="article-grid-card"
               >
                 <Link
-                  href={`/ar/journal/${article.slug}`}
+                  href={`/${locale}/journal/${article.slug}`}
                   className="journal-card__media editorial-photo-wrap"
                   tabIndex={-1}
                   aria-hidden="true"
@@ -256,18 +272,18 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
                       {article.category}
                     </span>
                     <span className="journal-reading-time">
-                      {formatReadingTimeAr(minutes)}
+                      {formatReadingTime(minutes, locale)}
                     </span>
-                    {article.status === "draft" ? (
+                    {isPreviewSession && article.status === "draft" ? (
                       <span className="draft-preview-badge">
-                        {journalPageCopy.articleLabels.draftBadge}
+                        {copy.articleLabels.draftBadge}
                       </span>
                     ) : null}
                   </div>
 
                   <h3 className="journal-card__title">
                     <Link
-                      href={`/ar/journal/${article.slug}`}
+                      href={`/${locale}/journal/${article.slug}`}
                       className="journal-card__title-link"
                     >
                       {article.title}
@@ -280,10 +296,11 @@ export function JournalExplorer({ articles }: JournalExplorerProps) {
 
                   <div className="journal-card__footer">
                     <Link
-                      href={`/ar/journal/${article.slug}`}
+                      href={`/${locale}/journal/${article.slug}`}
                       className="text-link"
                     >
-                      {journalPageCopy.readArticleCta} ←
+                      <span>{copy.readArticleCta}</span>
+                      <span aria-hidden="true">{isEn ? "→" : "←"}</span>
                     </Link>
                   </div>
                 </div>

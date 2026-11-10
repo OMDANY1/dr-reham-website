@@ -7,7 +7,9 @@ import {
   calculateArticleWordCount,
   calculateReadingTimeMinutes,
   filterArticles,
+  formatReadingTime,
   formatReadingTimeAr,
+  formatReadingTimeEn,
   getBookingCtaLabel,
   getPublicArticleBySlug,
   getPublicArticles,
@@ -28,9 +30,9 @@ import {
 } from "@/lib/content-gates";
 
 describe("content-gates", () => {
-  it("validates supported locales strictly (only 'ar' in V1)", () => {
+  it("validates supported locales strictly ('ar' and 'en')", () => {
     expect(isSupportedLocale("ar")).toBe(true);
-    expect(isSupportedLocale("en")).toBe(false);
+    expect(isSupportedLocale("en")).toBe(true);
     expect(isSupportedLocale("fr")).toBe(false);
     expect(isSupportedLocale("")).toBe(false);
   });
@@ -67,7 +69,6 @@ describe("content-gates", () => {
   });
 
   it("separates preview draft articles from production published articles", () => {
-    // في بوابة الإنتاج الصارمة (المستخدمة في sitemap.xml ووضع الإنتاج): لا تمر المسودات أبدًا
     expect(getPublicArticles(articlesRecords)).toHaveLength(0);
     expect(
       getPublicArticleBySlug(articlesRecords, "hooded-vs-deep-set-eyelid")
@@ -84,7 +85,6 @@ describe("content-gates", () => {
       )
     ).toBeNull();
 
-    // في وضع المعاينة الخادمي (preview): تتوفر المسودات الست الكاملة لتقييم التجربة
     const previewArticles = getVisibleArticles(
       articlesRecords,
       "preview",
@@ -126,6 +126,9 @@ describe("content-gates", () => {
     );
     expect(isPublicArticle({ ...approvedArticle, body: [] })).toBe(false);
     expect(formatReadingTimeAr(3)).toBe("3 دقائق للقراءة");
+    expect(formatReadingTimeEn(5)).toBe("5 min read");
+    expect(formatReadingTime(4, "en")).toBe("4 min read");
+    expect(formatReadingTime(4, "ar")).toBe("4 دقائق للقراءة");
   });
 
   it("filters articles by category and search query together", () => {
@@ -133,6 +136,7 @@ describe("content-gates", () => {
     expect(filterArticles(all, { category: "الكل", query: "" })).toHaveLength(
       6
     );
+    expect(filterArticles(all, { category: "All", query: "" })).toHaveLength(6);
     expect(
       filterArticles(all, { category: "قبل الاستشارة", query: "" })
     ).toHaveLength(3);
@@ -180,12 +184,17 @@ describe("content-gates", () => {
     ).toBe(true);
   });
 
-  it("switches inquiry CTA label honestly based on verified configuration", () => {
+  it("switches inquiry CTA label honestly based on verified configuration and locale", () => {
     expect(isLiveBookingReady(siteConfig)).toBe(false);
-    expect(getBookingCtaLabel(siteConfig)).toBe("تواصل للاستفسار");
+    expect(getBookingCtaLabel(siteConfig, undefined, "ar")).toBe(
+      "تواصل للاستفسار"
+    );
+    expect(getBookingCtaLabel(siteConfig, undefined, "en")).toBe(
+      "Book a Consultation"
+    );
 
     expect(isLiveBookingReady(siteConfig, qaVerifiedClinicsFixture)).toBe(true);
-    expect(getBookingCtaLabel(siteConfig, qaVerifiedClinicsFixture)).toBe(
+    expect(getBookingCtaLabel(siteConfig, qaVerifiedClinicsFixture, "ar")).toBe(
       "احجز موعدًا"
     );
   });

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { journalPageCopy } from "@/content/ar/articles";
+import { journalPageCopyEn } from "@/content/en";
 import { isSupportedLocale } from "@/lib/content-gates";
 import { validateExternalHttpsUrl } from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
@@ -15,11 +16,21 @@ import { PreviewBanner } from "@/components/cms/PreviewBanner";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildRouteMetadata({
-  title: journalPageCopy.meta.title,
-  description: journalPageCopy.meta.description,
-  pathname: "/ar/journal",
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const validLocale = isSupportedLocale(locale) ? locale : "ar";
+  const copy = validLocale === "en" ? journalPageCopyEn : journalPageCopy;
+  return buildRouteMetadata({
+    title: copy.meta.title,
+    description: copy.meta.description,
+    pathname: `/${validLocale}/journal`,
+    locale: validLocale,
+  });
+}
 
 export default async function JournalIndexPage({
   params,
@@ -33,9 +44,10 @@ export default async function JournalIndexPage({
     notFound();
   }
 
+  const copy = locale === "en" ? journalPageCopyEn : journalPageCopy;
   const sp = await searchParams;
   const { articles: visibleArticles, isPreviewSession } =
-    await getPublicOrPreviewArticles(sp?.preview === "1");
+    await getPublicOrPreviewArticles(sp?.preview === "1", locale);
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
 
   return (
@@ -44,9 +56,9 @@ export default async function JournalIndexPage({
 
       <header className="page-header page-header--compact">
         <Container>
-          <span className="eyebrow">{journalPageCopy.eyebrow}</span>
-          <h1 className="page-header__title">{journalPageCopy.headline}</h1>
-          <p className="section-lead">{journalPageCopy.intro}</p>
+          <span className="eyebrow">{copy.eyebrow}</span>
+          <h1 className="page-header__title">{copy.headline}</h1>
+          <p className="section-lead">{copy.intro}</p>
         </Container>
       </header>
 
@@ -56,27 +68,31 @@ export default async function JournalIndexPage({
       >
         <Container>
           <h2 id="journal-list-heading" className="sr-only">
-            قائمة المقالات التوعوية
+            {locale === "en" ? "Educational Articles" : "قائمة المقالات التوعوية"}
           </h2>
 
           {visibleArticles.length > 0 ? (
-            <JournalExplorer articles={visibleArticles} />
+            <JournalExplorer
+              articles={visibleArticles}
+              locale={locale}
+              isPreviewSession={isPreviewSession}
+            />
           ) : (
             <div className="inquiry-channel-card">
               <h3 className="empty-state__title">
-                {journalPageCopy.directVisitState.title}
+                {copy.directVisitState.title}
               </h3>
               <p className="empty-state__message">
-                {journalPageCopy.directVisitState.message}
+                {copy.directVisitState.message}
               </p>
               <div className="empty-state__actions">
                 {instagramHref ? (
                   <Button href={instagramHref} variant="primary" external>
-                    {journalPageCopy.directVisitState.primaryCta} ↗
+                    {copy.directVisitState.primaryCta} ↗
                   </Button>
                 ) : null}
-                <Button href="/ar" variant="secondary">
-                  {journalPageCopy.directVisitState.secondaryCta}
+                <Button href={`/${locale}`} variant="secondary">
+                  {copy.directVisitState.secondaryCta}
                 </Button>
               </div>
             </div>
@@ -84,7 +100,7 @@ export default async function JournalIndexPage({
         </Container>
       </section>
 
-      <BookingPanel mode="cta-banner" />
+      <BookingPanel mode="cta-banner" locale={locale} />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { SupportedLocale } from "@/config/site";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 
@@ -17,6 +18,9 @@ export interface MobileMenuProps {
   bookingHref: string;
   bookingExternal?: boolean;
   brandName: string;
+  locale?: SupportedLocale;
+  arHref?: string;
+  enHref?: string;
 }
 
 export function MobileMenu({
@@ -25,6 +29,9 @@ export function MobileMenu({
   bookingHref,
   bookingExternal = false,
   brandName,
+  locale = "ar",
+  arHref = "/ar",
+  enHref = "/en",
 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
@@ -33,12 +40,12 @@ export function MobileMenu({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const wasOpenRef = useRef(false);
 
-  // إغلاق القائمة تلقائيًا عند تغير المسار الداخلي
+  const isEn = locale === "en";
+
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
 
-  // إدارة قفل التمرير، التركيز (Focus Trap)، وزر Escape، وإعادة التركيز للزر الأصلي
   useEffect(() => {
     if (!isOpen) {
       if (wasOpenRef.current) {
@@ -52,7 +59,6 @@ export function MobileMenu({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // نقل التركيز إلى زر الإغلاق عند فتح النافذة
     const timer = window.setTimeout(() => {
       closeButtonRef.current?.focus();
     }, 10);
@@ -100,10 +106,18 @@ export function MobileMenu({
         className="mobile-menu-trigger"
         aria-expanded={isOpen}
         aria-controls="mobile-navigation-dialog"
-        aria-label={isOpen ? "إغلاق القائمة" : "فتح القائمة الرئيسية"}
+        aria-label={
+          isOpen
+            ? isEn
+              ? "Close menu"
+              : "إغلاق القائمة"
+            : isEn
+            ? "Open main menu"
+            : "فتح القائمة الرئيسية"
+        }
         onClick={() => setIsOpen((prev) => !prev)}
       >
-        <span>القائمة</span>
+        <span>{isEn ? "Menu" : "القائمة"}</span>
         <svg
           width="18"
           height="18"
@@ -135,13 +149,13 @@ export function MobileMenu({
             id="mobile-navigation-dialog"
             role="dialog"
             aria-modal="true"
-            aria-label="القائمة الرئيسية"
+            aria-label={isEn ? "Main menu" : "القائمة الرئيسية"}
             className="mobile-menu-dialog"
           >
             <div>
               <div className="mobile-menu-dialog__top">
                 <Link
-                  href="/ar"
+                  href={`/${locale}`}
                   className="site-header__brand"
                   onClick={() => setIsOpen(false)}
                 >
@@ -153,10 +167,10 @@ export function MobileMenu({
                   ref={closeButtonRef}
                   type="button"
                   className="mobile-menu-trigger"
-                  aria-label="إغلاق القائمة"
+                  aria-label={isEn ? "Close menu" : "إغلاق القائمة"}
                   onClick={() => setIsOpen(false)}
                 >
-                  <span>إغلاق</span>
+                  <span>{isEn ? "Close" : "إغلاق"}</span>
                   <svg
                     width="16"
                     height="16"
@@ -175,15 +189,67 @@ export function MobileMenu({
                 </button>
               </div>
 
-              <nav aria-label="روابط الجوال">
+              <div
+                style={{
+                  marginBlockStart: "var(--space-4)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingBlock: "0.5rem",
+                  paddingInline: "0.75rem",
+                  backgroundColor: "var(--color-card-bg)",
+                  borderRadius: "var(--control-radius)",
+                  border: "1px solid var(--color-border)",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "var(--text-caption)",
+                    color: "var(--color-secondary)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {isEn ? "Language" : "اللغة"}
+                </span>
+                <div className="lang-switcher">
+                  <Link
+                    href={arHref}
+                    lang="ar"
+                    className={`lang-switcher__link ${
+                      !isEn ? "lang-switcher__link--active" : ""
+                    }`.trim()}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    عربي
+                  </Link>
+                  <span className="lang-switcher__divider" aria-hidden="true">
+                    |
+                  </span>
+                  <Link
+                    href={enHref}
+                    lang="en"
+                    className={`lang-switcher__link ${
+                      isEn ? "lang-switcher__link--active" : ""
+                    }`.trim()}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    EN
+                  </Link>
+                </div>
+              </div>
+
+              <nav aria-label={isEn ? "Mobile navigation" : "روابط الجوال"}>
                 <ul className="mobile-menu-dialog__list">
                   {navItems.map((item) => {
                     const isHashLink = item.href.includes("#");
+                    const isHome = item.href === `/${locale}`;
                     const isActive =
                       !isHashLink &&
                       Boolean(
-                        pathname === item.href ||
-                          pathname?.startsWith(`${item.href}/`)
+                        isHome
+                          ? pathname === item.href
+                          : pathname === item.href ||
+                              pathname?.startsWith(`${item.href}/`)
                       );
                     return (
                       <li key={item.href}>
@@ -194,7 +260,7 @@ export function MobileMenu({
                           onClick={() => setIsOpen(false)}
                         >
                           <span>{item.label}</span>
-                          <span aria-hidden="true">←</span>
+                          <span aria-hidden="true">{isEn ? "→" : "←"}</span>
                         </Link>
                       </li>
                     );

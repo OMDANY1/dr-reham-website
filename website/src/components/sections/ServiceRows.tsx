@@ -1,24 +1,28 @@
 import React from "react";
 import Link from "next/link";
-import { siteConfig } from "@/config/site";
+import { siteConfig, type SupportedLocale } from "@/config/site";
 import { homeContent } from "@/content/ar/home";
 import { servicesPageCopy } from "@/content/ar/services";
+import { homeContentEn, servicesPageCopyEn } from "@/content/en";
 import { isLiveBookingReady, type ServiceRecord } from "@/lib/content-gates";
-import { validateExternalHttpsUrl } from "@/lib/booking-links";
+import {
+  buildWhatsAppBookingUrl,
+  validateExternalHttpsUrl,
+} from "@/lib/booking-links";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 
 export interface ServiceRowsProps {
   services: ServiceRecord[];
   context: "home" | "index";
+  locale?: SupportedLocale;
 }
 
-/**
- * يعرض الخدمات الفعلية المعتمدة فقط:
- * - في الصفحة الرئيسية (home): إذا لم توجد خدمات معتمدة، يُحذف القسم تمامًا بدل عرض صندوق فارغ.
- * - في صفحة الفهرس المباشرة (/ar/services): يعرض بطاقة استفسار أنيقة دون عبارات تنفيذ داخلية.
- */
-export function ServiceRows({ services, context }: ServiceRowsProps) {
+export function ServiceRows({
+  services,
+  context,
+  locale = "ar",
+}: ServiceRowsProps) {
   const displayedServices =
     context === "home" ? services.slice(0, 4) : services;
 
@@ -26,9 +30,20 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
     return null;
   }
 
+  const isEn = locale === "en";
+  const pageCopy = isEn ? servicesPageCopyEn : servicesPageCopy;
+  const homeSec = isEn
+    ? homeContentEn.specialtySection
+    : homeContent.servicesSection;
+
   const liveReady = isLiveBookingReady(siteConfig);
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
-  const inquiryHref = liveReady ? "/ar/book" : instagramHref ?? "/ar/book";
+  const inquiryHref = liveReady
+    ? `/${locale}/book`
+    : whatsappHref ?? instagramHref ?? `/${locale}/book`;
+  const isExternal = inquiryHref.startsWith("https://");
 
   return (
     <section
@@ -40,9 +55,7 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
       <Container>
         <div className="editorial-split">
           <div className="editorial-split__lead">
-            <span className="eyebrow">
-              {homeContent.servicesSection.eyebrow}
-            </span>
+            <span className="eyebrow">{homeSec.eyebrow}</span>
             <h2
               id={
                 context === "home"
@@ -51,10 +64,10 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
               }
               className="section-title"
             >
-              {homeContent.servicesSection.title}
+              {homeSec.title}
             </h2>
             <p className="section-lead">
-              {homeContent.servicesSection.intro}
+              {"intro" in homeSec ? homeSec.intro : homeSec.lead}
             </p>
           </div>
 
@@ -66,7 +79,7 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
                   return (
                     <Link
                       key={service.slug}
-                      href={`/ar/services/${service.slug}`}
+                      href={`/${locale}/services/${service.slug}`}
                       className="service-link-row"
                     >
                       <span className="numbered-row__index" aria-hidden="true">
@@ -77,7 +90,7 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
                         <p className="numbered-row__desc">{service.summary}</p>
                       </div>
                       <span className="service-link-row__action">
-                        تفاصيل الخدمة ←
+                        {isEn ? "Service Details →" : "تفاصيل الخدمة ←"}
                       </span>
                     </Link>
                   );
@@ -85,8 +98,10 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
 
                 {context === "home" ? (
                   <div style={{ marginBlockStart: "var(--space-5)" }}>
-                    <Button href="/ar/services" variant="secondary">
-                      {homeContent.servicesSection.viewAllLabel}
+                    <Button href={`/${locale}/services`} variant="secondary">
+                      {isEn
+                        ? "Explore Subspecialty Areas"
+                        : homeContent.servicesSection.viewAllLabel}
                     </Button>
                   </div>
                 ) : null}
@@ -94,21 +109,21 @@ export function ServiceRows({ services, context }: ServiceRowsProps) {
             ) : (
               <div className="inquiry-channel-card">
                 <h3 className="empty-state__title">
-                  {servicesPageCopy.directVisitState.title}
+                  {pageCopy.directVisitState.title}
                 </h3>
                 <p className="empty-state__message">
-                  {servicesPageCopy.directVisitState.message}
+                  {pageCopy.directVisitState.message}
                 </p>
                 <div className="empty-state__actions">
                   <Button
                     href={inquiryHref}
                     variant="primary"
-                    external={!liveReady && Boolean(instagramHref)}
+                    external={isExternal}
                   >
-                    {servicesPageCopy.directVisitState.primaryCta}
+                    {pageCopy.directVisitState.primaryCta}
                   </Button>
-                  <Button href="/ar/about" variant="secondary">
-                    {servicesPageCopy.directVisitState.secondaryCta}
+                  <Button href={`/${locale}/about`} variant="secondary">
+                    {pageCopy.directVisitState.secondaryCta}
                   </Button>
                 </div>
               </div>

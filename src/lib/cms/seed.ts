@@ -3,6 +3,12 @@ import { homeContent } from "@/content/ar/home";
 import { articlesRecords, journalPageCopy } from "@/content/ar/articles";
 import { faqRecords } from "@/content/ar/faq";
 import { privacyPageCopy } from "@/content/ar/privacy";
+import {
+  articlesTranslationsEn,
+  faqTranslationsEn,
+  homeContentEn,
+  journalPageCopyEn,
+} from "@/content/en";
 import type {
   CmsArticle,
   CmsClinicItem,
@@ -22,6 +28,7 @@ export function buildInitialHomePageData(): HomePageCmsData {
       specialtyTag: homeContent.hero.specialtyTag,
       headlineLine1: homeContent.hero.headlineLine1,
       headlineLine2: homeContent.hero.headlineLine2,
+      tagline: homeContent.hero.tagline,
       support: homeContent.hero.support,
       primaryCta: homeContent.hero.primaryCta,
       primaryHref: siteConfig.whatsappUrl,
@@ -31,18 +38,42 @@ export function buildInitialHomePageData(): HomePageCmsData {
       image: {
         src: homeContent.hero.image.src,
         alt: homeContent.hero.image.alt,
-        focalX: 36,
-        focalY: 35,
+        altEn: homeContentEn.hero.image.alt,
+        focalX: 68,
+        focalY: 42,
       },
     },
+    specialtiesStrip: homeContent.specialtiesStrip.map((item, idx) => ({
+      id: item.id,
+      icon: item.icon,
+      title: item.title,
+      titleEn:
+        homeContentEn.specialtiesStrip[idx]?.title ?? item.title,
+      subtitle: item.subtitle,
+      subtitleEn:
+        homeContentEn.specialtiesStrip[idx]?.subtitle ?? item.subtitle,
+      enabled: true,
+    })),
     doctorIntro: {
       id: homeContent.doctorIntro.id,
       eyebrow: homeContent.doctorIntro.eyebrow,
       name: homeContent.doctorIntro.name,
+      heading: homeContent.doctorIntro.heading,
       specialty: homeContent.doctorIntro.specialty,
       professionalRank: siteConfig.profile.professionalRank,
       city: homeContent.doctorIntro.city,
       leadStatement: homeContent.doctorIntro.leadStatement,
+      sculptureImage: {
+        src: homeContent.doctorIntro.sculptureImage.src,
+        alt: homeContent.doctorIntro.sculptureImage.alt,
+        altEn: homeContentEn.doctorIntro.sculptureImage.alt,
+      },
+      principles: homeContent.doctorIntro.principles.map((p, idx) => ({
+        icon: p.icon,
+        title: p.title,
+        titleEn:
+          homeContentEn.doctorIntro.principles[idx]?.title ?? p.title,
+      })),
       pillars: homeContent.doctorIntro.pillars.map((p) => ({
         title: p.title,
         text: p.text,
@@ -57,6 +88,18 @@ export function buildInitialHomePageData(): HomePageCmsData {
       moreLinkLabel: homeContent.doctorIntro.moreLinkLabel,
       moreLinkHref: homeContent.doctorIntro.moreLinkHref,
     },
+    resultsSection: {
+      id: homeContent.resultsSection.id,
+      eyebrow: homeContent.resultsSection.eyebrow,
+      eyebrowEn: homeContentEn.resultsSection.eyebrow,
+      title: homeContent.resultsSection.title,
+      titleEn: homeContentEn.resultsSection.title,
+      description: homeContent.resultsSection.description,
+      descriptionEn: homeContentEn.resultsSection.description,
+      ctaLabel: homeContent.resultsSection.ctaLabel,
+      ctaLabelEn: homeContentEn.resultsSection.ctaLabel,
+      cases: [],
+    },
     specialtySection: {
       id: homeContent.specialtySection.id,
       eyebrow: homeContent.specialtySection.eyebrow,
@@ -65,8 +108,8 @@ export function buildInitialHomePageData(): HomePageCmsData {
       image: {
         src: homeContent.specialtySection.image.src,
         alt: homeContent.specialtySection.image.alt,
-        focalX: 45,
-        focalY: 42,
+        focalX: 50,
+        focalY: 45,
       },
       highlights: homeContent.specialtySection.highlights.map((h) => ({
         number: h.number,
@@ -144,21 +187,69 @@ export function buildInitialHomePageData(): HomePageCmsData {
       footerDisclaimer:
         "الصور المنشورة في الموقع تعبيرية وتحريرية ولا تمثل حالات مرضى أو نتائج علاجية.",
     },
+    en: {
+      hero: {
+        doctorTag: homeContentEn.hero.doctorTag,
+        specialtyTag: homeContentEn.hero.specialtyTag,
+        headlineLine1: homeContentEn.hero.headlineLine1,
+        headlineLine2: homeContentEn.hero.headlineLine2,
+        tagline: homeContentEn.hero.tagline,
+        support: homeContentEn.hero.support,
+        primaryCta: homeContentEn.hero.primaryCta,
+        secondaryCta: homeContentEn.hero.secondaryCta,
+        destinationHint: homeContentEn.hero.destinationHint,
+      },
+      doctorIntro: {
+        eyebrow: homeContentEn.doctorIntro.eyebrow,
+        name: homeContentEn.doctorIntro.name,
+        heading: homeContentEn.doctorIntro.heading,
+        specialty: homeContentEn.doctorIntro.specialty,
+        city: homeContentEn.doctorIntro.city,
+        leadStatement: homeContentEn.doctorIntro.leadStatement,
+        moreLinkLabel: homeContentEn.doctorIntro.moreLinkLabel,
+        principles: homeContentEn.doctorIntro.principles.map((p) => ({
+          icon: p.icon,
+          title: p.title,
+        })),
+      },
+      knowledgeSection: {
+        eyebrow: homeContentEn.knowledgeSection.eyebrow,
+        title: homeContentEn.knowledgeSection.title,
+        intro: homeContentEn.knowledgeSection.intro,
+        viewAllLabel: homeContentEn.knowledgeSection.viewAllLabel,
+        readArticleLabel: homeContentEn.knowledgeSection.readArticleLabel,
+      },
+      faqSection: {
+        eyebrow: homeContentEn.faqSection.eyebrow,
+        title: homeContentEn.faqSection.title,
+        intro: homeContentEn.faqSection.intro,
+        viewAllLabel: homeContentEn.faqSection.viewAllLabel,
+      },
+      finalInquiry: {
+        eyebrow: homeContentEn.finalInquiry.eyebrow,
+        heading: homeContentEn.finalInquiry.heading,
+        support: homeContentEn.finalInquiry.support,
+        primaryCta: homeContentEn.finalInquiry.primaryCta,
+        destinationCaption: homeContentEn.finalInquiry.destinationCaption,
+      },
+    },
+    statusEn: "published",
     sectionVisibility: {
+      specialtiesStrip: true,
       doctorIntro: true,
-      specialtySection: true,
-      beforeConsultationSection: true,
+      resultsSection: true,
       knowledgeSection: true,
-      contentStyleSection: true,
+      specialtySection: false,
+      beforeConsultationSection: false,
+      contentStyleSection: false,
       faqSection: true,
       finalInquiry: true,
     },
     sectionOrder: [
+      "specialtiesStrip",
       "doctorIntro",
-      "specialtySection",
-      "beforeConsultationSection",
+      "resultsSection",
       "knowledgeSection",
-      "contentStyleSection",
       "faqSection",
       "finalInquiry",
     ],
@@ -169,7 +260,7 @@ export function buildInitialPageRecord(): CmsPageRecord {
   const data = buildInitialHomePageData();
   return {
     slug: "home",
-    title: "الصفحة الرئيسية",
+    title: "الصفحة الرئيسية (AR / EN)",
     draftData: structuredClone(data),
     publishedData: structuredClone(data),
     hasUnpublishedChanges: false,
@@ -183,48 +274,77 @@ export function buildInitialPageRecord(): CmsPageRecord {
 }
 
 export function buildInitialArticles(): CmsArticle[] {
-  return articlesRecords.map((record, index) => ({
-    id: `article-${index + 1}-${record.slug}`,
-    slug: record.slug,
-    title: record.title,
-    excerpt: record.excerpt ?? "",
-    category: record.category,
-    featured: Boolean(record.featured),
-    image: {
-      src: record.image?.src ?? "/media/article-hooded-vs-deepset.jpg",
-      alt: record.image?.alt ?? record.title,
-      focalX: 50,
-      focalY: 50,
-    },
-    body: record.body.map((section, sIdx) => ({
-      id: section.id ?? `section-${sIdx + 1}`,
-      heading: section.heading,
-      paragraphs: [...section.paragraphs],
-      ...(section.bullets ? { bullets: [...section.bullets] } : {}),
-    })),
-    author: record.author,
-    reviewedBy: record.reviewedBy,
-    reviewedAt: record.reviewedAt,
-    approvedBy: null,
-    approvedAt: null,
-    publishedAt: record.publishedAt,
-    updatedAt: INITIAL_TIMESTAMP,
-    updatedBy: "تهيئة المحتوى الأولي",
-    status: record.status === "published" ? "published" : "draft",
-    seo: {
-      title: record.seo.title ?? record.title,
-      description: record.seo.description ?? record.excerpt ?? "",
-      ogImage: record.image?.src ?? null,
-    },
-    sources: (record.sources ?? []).map((src) =>
-      typeof src === "string"
-        ? { title: src, institution: src, url: "https://www.aao.org/" }
-        : { title: src.title, institution: src.institution, url: src.url }
-    ),
-    disclaimer: journalPageCopy.articleLabels.disclaimer,
-    version: 1,
-    deletedAt: null,
-  }));
+  return articlesRecords.map((record, index) => {
+    const enTrans = articlesTranslationsEn[record.slug];
+    return {
+      id: `article-${index + 1}-${record.slug}`,
+      slug: record.slug,
+      title: record.title,
+      excerpt: record.excerpt ?? "",
+      category: record.category,
+      featured: Boolean(record.featured),
+      image: {
+        src: record.image?.src ?? "/media/article-eyelid-indication.jpg",
+        alt: record.image?.alt ?? record.title,
+        altEn: enTrans?.title ?? record.title,
+        focalX: 50,
+        focalY: 50,
+      },
+      body: record.body.map((section, sIdx) => ({
+        id: section.id ?? `section-${sIdx + 1}`,
+        heading: section.heading,
+        paragraphs: [...section.paragraphs],
+        ...(section.bullets ? { bullets: [...section.bullets] } : {}),
+      })),
+      author: record.author,
+      reviewedBy: record.reviewedBy,
+      reviewedAt: record.reviewedAt,
+      approvedBy: null,
+      approvedAt: null,
+      publishedAt: record.publishedAt,
+      updatedAt: INITIAL_TIMESTAMP,
+      updatedBy: "تهيئة المحتوى الأولي",
+      status: record.status === "published" ? "published" : "draft",
+      seo: {
+        title: record.seo.title ?? record.title,
+        description: record.seo.description ?? record.excerpt ?? "",
+        ogImage: record.image?.src ?? null,
+      },
+      en: enTrans
+        ? {
+            title: enTrans.title,
+            excerpt: enTrans.excerpt ?? "",
+            category: enTrans.category,
+            body: enTrans.body.map((section, sIdx) => ({
+              id: section.id ?? `section-${sIdx + 1}`,
+              heading: section.heading,
+              paragraphs: [...section.paragraphs],
+              ...(section.bullets ? { bullets: [...section.bullets] } : {}),
+            })),
+            status: "draft",
+            reviewedBy: null,
+            reviewedAt: null,
+            approvedBy: null,
+            approvedAt: null,
+            publishedAt: null,
+            seo: {
+              title: enTrans.seo.title ?? enTrans.title,
+              description: enTrans.seo.description ?? enTrans.excerpt ?? "",
+              ogImage: record.image?.src ?? null,
+            },
+            disclaimer: journalPageCopyEn.articleLabels.disclaimer,
+          }
+        : undefined,
+      sources: (record.sources ?? []).map((src) =>
+        typeof src === "string"
+          ? { title: src, institution: src, url: "https://www.aao.org/" }
+          : { title: src.title, institution: src.institution, url: src.url }
+      ),
+      disclaimer: journalPageCopy.articleLabels.disclaimer,
+      version: 1,
+      deletedAt: null,
+    };
+  });
 }
 
 export function buildInitialMediaItems(): CmsMediaItem[] {
@@ -239,58 +359,58 @@ export function buildInitialMediaItems(): CmsMediaItem[] {
     isPublic: boolean;
   }> = [
     {
-      id: "media-hero-gaze-editorial",
-      name: "صورة الافتتاحية الفوتوغرافية",
-      filename: "hero-gaze-editorial.jpg",
-      url: "/media/hero-gaze-editorial.jpg",
+      id: "media-hero-eye-plum-ivory",
+      name: "صورة الافتتاحية التحريرية (Hero Eye)",
+      filename: "hero-eye-plum-ivory.jpg",
+      url: "/media/hero-eye-plum-ivory.jpg",
       alt: homeContent.hero.image.alt,
-      focalX: 36,
-      focalY: 35,
-      isPublic: true,
-    },
-    {
-      id: "media-specialty-eyelid-profile",
-      name: "صورة قسم التخصص",
-      filename: "specialty-eyelid-profile.jpg",
-      url: "/media/specialty-eyelid-profile.jpg",
-      alt: homeContent.specialtySection.image.alt,
-      focalX: 45,
+      focalX: 68,
       focalY: 42,
       isPublic: true,
     },
     {
-      id: "media-article-hooded-vs-deepset",
+      id: "media-about-eyelid-sculpture",
+      name: "العمل الفني النحتي (قسم عن الدكتورة)",
+      filename: "about-eyelid-sculpture.jpg",
+      url: "/media/about-eyelid-sculpture.jpg",
+      alt: homeContent.doctorIntro.sculptureImage.alt,
+      focalX: 50,
+      focalY: 50,
+      isPublic: true,
+    },
+    {
+      id: "media-article-eyelid-indication",
       name: "صورة مقال الجفن المبطن والعين الغائرة",
-      filename: "article-hooded-vs-deepset.jpg",
-      url: "/media/article-hooded-vs-deepset.jpg",
+      filename: "article-eyelid-indication.jpg",
+      url: "/media/article-eyelid-indication.jpg",
       alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي وقوس الحاجب تحت إضاءة نهارية ناعمة",
       focalX: 50,
       focalY: 50,
       isPublic: false,
     },
     {
-      id: "media-article-tired-eye-factors",
-      name: "صورة مقال مظهر الإرهاق حول العين",
-      filename: "article-tired-eye-factors.jpg",
-      url: "/media/article-tired-eye-factors.jpg",
-      alt: "صورة تحريرية هادئة لمنطقة العين وأعلى الوجنة في ضوء الصباح الطبيعي",
+      id: "media-article-tear-comfort",
+      name: "صورة مقال راحة العين والدموع",
+      filename: "article-tear-comfort.jpg",
+      url: "/media/article-tear-comfort.jpg",
+      alt: "صورة تحريرية هادئة لقطرة نقية ترمز لراحة سطح العين والدموع",
       focalX: 50,
       focalY: 50,
       isPublic: false,
     },
     {
-      id: "media-article-consultation-prep",
-      name: "صورة مقال الاستعداد للاستشارة",
-      filename: "article-consultation-prep.jpg",
-      url: "/media/article-consultation-prep.jpg",
-      alt: "تكوين فوتوغرافي هادئ لدفتر ملاحظات وقلم ونظارة طبية على سطح أبيض وسماوي فاتح",
+      id: "media-article-brow-lid-harmony",
+      name: "صورة مقال تناغم الحاجب والجفن",
+      filename: "article-brow-lid-harmony.jpg",
+      url: "/media/article-brow-lid-harmony.jpg",
+      alt: "صورة تحريرية مقرّبة لتناغم الحاجب والجفن العلوي في إضاءة دافئة",
       focalX: 50,
       focalY: 50,
-      isPublic: false,
+      isPublic: true,
     },
     {
       id: "media-article-consultation-questions",
-      name: "صورة مقال أسئلة الاستشارة وأسلوب المحتوى",
+      name: "صورة مقال أسئلة الاستشارة",
       filename: "article-consultation-questions.jpg",
       url: "/media/article-consultation-questions.jpg",
       alt: "تفصيل معماري هادئ لغرفة استشارة مضاءة بنور النهار الطبيعي",
@@ -313,7 +433,7 @@ export function buildInitialMediaItems(): CmsMediaItem[] {
       name: "صورة مقال القراءة الواقعية لصور قبل وبعد",
       filename: "article-realistic-expectations.jpg",
       url: "/media/article-realistic-expectations.jpg",
-      alt: "عدسة بصرية صافية تعكس ضوءًا هادئًا على سطح أبيض ناصع",
+      alt: "عدسة بصرية صافية تعكس ضوءًا هادئًا على سطح عاجي دافئ",
       focalX: 50,
       focalY: 50,
       isPublic: false,
@@ -341,37 +461,45 @@ export function buildInitialMediaItems(): CmsMediaItem[] {
 }
 
 export function buildInitialFaqs(): CmsFaqItem[] {
-  return faqRecords.map((faq, idx) => ({
-    id: faq.id,
-    question: faq.question,
-    answer: faq.answer ?? "",
-    category: faq.category,
-    sortOrder: idx + 1,
-    status:
-      faq.status === "published" && faq.answer && faq.answer.trim().length > 0
-        ? "published"
-        : "draft",
-    reviewedBy: faq.reviewedBy,
-    version: 1,
-    deletedAt: null,
-    updatedAt: INITIAL_TIMESTAMP,
-    updatedBy: "تهيئة النظام",
-  }));
+  return faqRecords.map((faq, idx) => {
+    const enTrans = faqTranslationsEn[faq.id];
+    const isPub =
+      faq.status === "published" && faq.answer && faq.answer.trim().length > 0;
+    return {
+      id: faq.id,
+      question: faq.question,
+      questionEn: enTrans?.question ?? "",
+      answer: faq.answer ?? "",
+      answerEn: enTrans?.answer ?? "",
+      category: faq.category,
+      sortOrder: idx + 1,
+      status: isPub ? "published" : "draft",
+      statusEn: isPub && enTrans ? "published" : "draft",
+      reviewedBy: faq.reviewedBy,
+      version: 1,
+      deletedAt: null,
+      updatedAt: INITIAL_TIMESTAMP,
+      updatedBy: "تهيئة النظام",
+    };
+  });
 }
 
 export function buildInitialClinics(): CmsClinicItem[] {
   return siteConfig.clinics.map((clinic, idx) => ({
     id: clinic.id,
     name: clinic.name,
+    nameEn: clinic.nameEn,
     source: clinic.source,
     affiliationVerified: clinic.affiliationVerified,
     enabled: clinic.enabled,
     address: clinic.address,
+    addressEn: clinic.addressEn,
     mapsUrl: clinic.mapsUrl,
     bookingUrl: clinic.bookingUrl,
     whatsappE164: clinic.whatsappE164,
     phone: null,
     hours: clinic.hours,
+    hoursEn: clinic.hoursEn,
     sortOrder: idx + 1,
     version: 1,
     updatedAt: INITIAL_TIMESTAMP,
@@ -382,12 +510,16 @@ export function buildInitialClinics(): CmsClinicItem[] {
 export function buildInitialSettings(): CmsSiteSettings {
   return {
     siteName: siteConfig.profile.nameAr,
+    siteNameEn: siteConfig.profile.nameEn,
     siteDescription: homeContent.meta.description,
+    siteDescriptionEn: homeContentEn.meta.description,
     specialtyTitle: siteConfig.profile.specialtyAr,
+    specialtyTitleEn: siteConfig.profile.specialtyEn,
     city: siteConfig.profile.city,
+    cityEn: siteConfig.profile.cityEn,
     logoPath: "/brand/logo-original.png",
     faviconPath: "/brand/logo-original.png",
-    defaultOgImage: "/media/hero-gaze-editorial.jpg",
+    defaultOgImage: "/media/hero-eye-plum-ivory.jpg",
     seoTitleTemplate: "%s | د. ريهام القحطاني",
     seoDefaultDescription: homeContent.meta.description,
     domain: siteConfig.domain,

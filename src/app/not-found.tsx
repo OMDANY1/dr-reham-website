@@ -1,6 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFoundCopy } from "@/content/ar/not-found";
+import { notFoundCopyEn } from "@/content/en";
 import { siteConfig } from "@/config/site";
 import { getBookingCtaLabel } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
@@ -14,8 +16,11 @@ export const metadata: Metadata = buildRouteMetadata({
   forceNoIndex: true,
 });
 
-export default function NotFound() {
-  const bookingLabel = getBookingCtaLabel(siteConfig);
+export default async function NotFound() {
+  const reqHeaders = await headers();
+  const locale = reqHeaders.get("x-site-locale") === "en" ? "en" : "ar";
+  const copy = locale === "en" ? notFoundCopyEn : notFoundCopy;
+  const bookingLabel = getBookingCtaLabel(siteConfig, undefined, locale);
 
   return (
     <section
@@ -29,7 +34,7 @@ export default function NotFound() {
             paddingBlock: "var(--space-7)",
           }}
         >
-          <span className="eyebrow">{notFoundCopy.code}</span>
+          <span className="eyebrow">{copy.code}</span>
           <h1
             id="not-found-heading"
             style={{
@@ -37,7 +42,7 @@ export default function NotFound() {
               marginBlockEnd: "var(--space-4)",
             }}
           >
-            {notFoundCopy.headline}
+            {copy.headline}
           </h1>
           <p
             style={{
@@ -46,14 +51,14 @@ export default function NotFound() {
               marginBlockEnd: "var(--space-6)",
             }}
           >
-            {notFoundCopy.description}
+            {copy.description}
           </p>
 
           <div className="hero-editorial__cta-row">
-            <Button href="/ar" variant="primary">
-              {notFoundCopy.homeCta}
+            <Button href={`/${locale}`} variant="primary">
+              {copy.homeCta}
             </Button>
-            <Button href="/ar/book" variant="secondary">
+            <Button href={`/${locale}/book`} variant="secondary">
               {bookingLabel}
             </Button>
           </div>

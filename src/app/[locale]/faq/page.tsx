@@ -1,14 +1,18 @@
 import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { siteConfig } from "@/config/site";
+import { siteConfig, type SupportedLocale } from "@/config/site";
 import { faqPageCopy } from "@/content/ar/faq";
+import { faqPageCopyEn } from "@/content/en";
 import {
   isLiveBookingReady,
   isSupportedLocale,
   type FaqCategory,
 } from "@/lib/content-gates";
-import { validateExternalHttpsUrl } from "@/lib/booking-links";
+import {
+  buildWhatsAppBookingUrl,
+  validateExternalHttpsUrl,
+} from "@/lib/booking-links";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { getPublicOrPreviewFaqs } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
@@ -18,11 +22,21 @@ import { BookingPanel } from "@/components/sections/BookingPanel";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildRouteMetadata({
-  title: faqPageCopy.meta.title,
-  description: faqPageCopy.meta.description,
-  pathname: "/ar/faq",
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const activeLocale: SupportedLocale = locale === "en" ? "en" : "ar";
+  const copy = activeLocale === "en" ? faqPageCopyEn : faqPageCopy;
+  return buildRouteMetadata({
+    title: copy.meta.title,
+    description: copy.meta.description,
+    pathname: `/${activeLocale}/faq`,
+    locale: activeLocale,
+  });
+}
 
 const CATEGORY_ORDER: FaqCategory[] = [
   "appointments",
@@ -42,15 +56,23 @@ export default async function FaqPage({
     notFound();
   }
 
+  const isEn = locale === "en";
+  const copy = isEn ? faqPageCopyEn : faqPageCopy;
+
   const sp = await searchParams;
-  const publicFaqs = await getPublicOrPreviewFaqs(sp?.preview === "1");
+  const publicFaqs = await getPublicOrPreviewFaqs(sp?.preview === "1", locale);
   const liveReady = isLiveBookingReady(siteConfig);
+  const whatsappHref =
+    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
   const instagramHref = validateExternalHttpsUrl(siteConfig.instagramUrl);
-  const inquiryHref = liveReady ? "/ar/book" : instagramHref ?? "/ar/book";
+  const inquiryHref = liveReady
+    ? `/${locale}/book`
+    : whatsappHref ?? instagramHref ?? `/${locale}/book`;
+  const isExternal = inquiryHref.startsWith("https://");
 
   const groupedFaqs = CATEGORY_ORDER.map((category) => ({
     category,
-    title: faqPageCopy.categoryTitles[category],
+    title: copy.categoryTitles[category],
     items: publicFaqs.filter((item) => item.category === category),
   })).filter((group) => group.items.length > 0);
 
@@ -58,16 +80,16 @@ export default async function FaqPage({
     <>
       <header className="page-header">
         <Container>
-          <span className="eyebrow">{faqPageCopy.eyebrow}</span>
+          <span className="eyebrow">{copy.eyebrow}</span>
           <h1
             style={{
               fontSize: "var(--text-h1)",
               marginBlockEnd: "var(--space-3)",
             }}
           >
-            {faqPageCopy.headline}
+            {copy.headline}
           </h1>
-          <p className="section-lead">{faqPageCopy.intro}</p>
+          <p className="section-lead">{copy.intro}</p>
         </Container>
       </header>
 
@@ -77,7 +99,7 @@ export default async function FaqPage({
       >
         <Container>
           <h2 id="faq-main-heading" className="sr-only">
-            الأسئلة الشائعة
+            {isEn ? "Frequently Asked Questions" : "الأسئلة الشائعة"}
           </h2>
 
           {groupedFaqs.length > 0 ? (
@@ -109,21 +131,21 @@ export default async function FaqPage({
           ) : (
             <div className="inquiry-channel-card">
               <h3 className="empty-state__title">
-                {faqPageCopy.directVisitState.title}
+                {copy.directVisitState.title}
               </h3>
               <p className="empty-state__message">
-                {faqPageCopy.directVisitState.message}
+                {copy.directVisitState.message}
               </p>
               <div className="empty-state__actions">
                 <Button
                   href={inquiryHref}
                   variant="primary"
-                  external={!liveReady && Boolean(instagramHref)}
+                  external={isExternal}
                 >
-                  {faqPageCopy.directVisitState.primaryCta}
+                  {copy.directVisitState.primaryCta}
                 </Button>
-                <Button href="/ar" variant="secondary">
-                  {faqPageCopy.directVisitState.secondaryCta}
+                <Button href={`/${locale}/journal`} variant="secondary">
+                  {copy.directVisitState.secondaryCta}
                 </Button>
               </div>
             </div>
@@ -131,7 +153,7 @@ export default async function FaqPage({
         </Container>
       </section>
 
-      <BookingPanel mode="cta-banner" />
+      <BookingPanel mode="cta-banner" locale={locale} />
     </>
   );
 }

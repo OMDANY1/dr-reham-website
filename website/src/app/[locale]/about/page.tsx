@@ -1,9 +1,10 @@
 import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { siteConfig } from "@/config/site";
+import { siteConfig, type SupportedLocale } from "@/config/site";
 import { aboutContent } from "@/content/ar/about";
 import { homeContent } from "@/content/ar/home";
+import { aboutContentEn, homeContentEn } from "@/content/en";
 import { getVerifiedBookableClinics } from "@/lib/booking-links";
 import { isSupportedLocale } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
@@ -11,11 +12,21 @@ import { Container } from "@/components/ui/Container";
 import { BookingPanel } from "@/components/sections/BookingPanel";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
-export const metadata: Metadata = buildRouteMetadata({
-  title: aboutContent.meta.title,
-  description: aboutContent.meta.description,
-  pathname: "/ar/about",
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const activeLocale: SupportedLocale = locale === "en" ? "en" : "ar";
+  const copy = activeLocale === "en" ? aboutContentEn : aboutContent;
+  return buildRouteMetadata({
+    title: copy.meta.title,
+    description: copy.meta.description,
+    pathname: `/${activeLocale}/about`,
+    locale: activeLocale,
+  });
+}
 
 export default async function AboutPage({
   params,
@@ -26,6 +37,9 @@ export default async function AboutPage({
   if (!isSupportedLocale(locale)) {
     notFound();
   }
+
+  const isEn = locale === "en";
+  const copy = isEn ? aboutContentEn : aboutContent;
 
   const verifiedCredentials = siteConfig.profile.credentials.filter(
     (c) => c.verified
@@ -38,26 +52,26 @@ export default async function AboutPage({
         <Container>
           <div className="editorial-split" style={{ alignItems: "center" }}>
             <div className="editorial-split__lead">
-              <span className="eyebrow">{aboutContent.header.eyebrow}</span>
+              <span className="eyebrow">{copy.header.eyebrow}</span>
               <h1
                 style={{
                   fontSize: "var(--text-h1)",
                   marginBlockEnd: "var(--space-2)",
                 }}
               >
-                {aboutContent.header.name}
+                {copy.header.name}
               </h1>
               <p
                 style={{
                   fontSize: "var(--text-body-lg)",
-                  color: "var(--color-teal)",
+                  color: "var(--color-plum)",
                   fontWeight: 700,
                   marginBlockEnd: "var(--space-3)",
                 }}
               >
-                {aboutContent.header.specialty} — {aboutContent.header.city}
+                {copy.header.specialty} — {copy.header.city}
               </p>
-              <p className="section-lead">{aboutContent.header.lead}</p>
+              <p className="section-lead">{copy.header.lead}</p>
             </div>
 
             <div className="editorial-split__content">
@@ -66,16 +80,20 @@ export default async function AboutPage({
                 style={{
                   borderRadius: "var(--control-radius)",
                   overflow: "hidden",
-                  aspectRatio: "16 / 9",
+                  aspectRatio: "16 / 10",
                   border: "1.5px solid var(--color-border)",
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={homeContent.specialtySection.image.src}
-                  alt={homeContent.specialtySection.image.alt}
+                  src={homeContent.doctorIntro.sculptureImage.src}
+                  alt={
+                    isEn
+                      ? homeContentEn.doctorIntro.sculptureImage.alt
+                      : homeContent.doctorIntro.sculptureImage.alt
+                  }
                   width={1200}
-                  height={675}
+                  height={750}
                   className="specialty-photo-img editorial-photo-zoom"
                 />
               </div>
@@ -93,20 +111,26 @@ export default async function AboutPage({
             <div className="editorial-split">
               <aside
                 className="editorial-split__lead"
-                aria-label="البيانات الأساسية الموثقة"
+                aria-label={
+                  isEn
+                    ? "Verified Professional Details"
+                    : "البيانات الأساسية الموثقة"
+                }
               >
                 <div className="factual-spine">
                   <h2
                     style={{
                       fontSize: "var(--text-small)",
-                      color: "var(--color-navy)",
+                      color: "var(--color-plum-dark)",
                       marginBlockEnd: "var(--space-3)",
                     }}
                   >
-                    بطاقة التعريف المهنية
+                    {isEn
+                      ? "Professional Profile"
+                      : "بطاقة التعريف المهنية"}
                   </h2>
                   <dl className="factual-spine__list">
-                    {aboutContent.factualSpine.map((item) => (
+                    {copy.factualSpine.map((item) => (
                       <div key={item.label} className="factual-spine__row">
                         <dt className="factual-spine__term">{item.label}</dt>
                         <dd className="factual-spine__value">
@@ -133,9 +157,9 @@ export default async function AboutPage({
 
               <div className="editorial-split__content">
                 <h2 id="about-intro-heading" className="section-title">
-                  {aboutContent.introduction.heading}
+                  {copy.introduction.heading}
                 </h2>
-                {aboutContent.introduction.paragraphs.map((paragraph, idx) => (
+                {copy.introduction.paragraphs.map((paragraph, idx) => (
                   <p
                     key={idx}
                     style={{
@@ -150,7 +174,11 @@ export default async function AboutPage({
 
                 {verifiedCredentials.length > 0 ? (
                   <div style={{ marginBlockStart: "var(--space-7)" }}>
-                    <h2 className="section-title">المؤهلات العلمية والتدريب</h2>
+                    <h2 className="section-title">
+                      {isEn
+                        ? "Academic Credentials & Training"
+                        : "المؤهلات العلمية والتدريب"}
+                    </h2>
                     <ul className="numbered-rows">
                       {verifiedCredentials.map((cred, idx) => (
                         <li key={cred.id} className="numbered-row">
@@ -173,11 +201,9 @@ export default async function AboutPage({
                 ) : null}
 
                 <div style={{ marginBlockStart: "var(--space-7)" }}>
-                  <h2 className="section-title">
-                    {aboutContent.approach.heading}
-                  </h2>
+                  <h2 className="section-title">{copy.approach.heading}</h2>
                   <ol className="numbered-rows">
-                    {aboutContent.approach.items.map((item) => (
+                    {copy.approach.items.map((item) => (
                       <li key={item.title} className="numbered-row">
                         <span
                           className="numbered-row__index"
@@ -196,7 +222,11 @@ export default async function AboutPage({
 
                 {verifiedClinics.length > 0 ? (
                   <div style={{ marginBlockStart: "var(--space-7)" }}>
-                    <h2 className="section-title">جهات الممارسة المعتمدة</h2>
+                    <h2 className="section-title">
+                      {isEn
+                        ? "Verified Practice Locations"
+                        : "جهات الممارسة المعتمدة"}
+                    </h2>
                     <ul className="numbered-rows">
                       {verifiedClinics.map((clinic, idx) => (
                         <li key={clinic.id} className="numbered-row">
@@ -205,7 +235,9 @@ export default async function AboutPage({
                           </span>
                           <div>
                             <h3 className="numbered-row__title">
-                              {clinic.name}
+                              {isEn && clinic.nameEn
+                                ? clinic.nameEn
+                                : clinic.name}
                             </h3>
                             {clinic.address ? (
                               <p className="numbered-row__desc">
@@ -224,7 +256,7 @@ export default async function AboutPage({
         </Container>
       </section>
 
-      <BookingPanel mode="cta-banner" />
+      <BookingPanel mode="cta-banner" locale={locale} />
     </>
   );
 }

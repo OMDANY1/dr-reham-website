@@ -5,40 +5,93 @@ export const homeContent = {
       "عناية دقيقة بتفاصيل نظرتك — د. ريهام القحطاني، طب وجراحة تجميل العيون والجفون في الرياض.",
   },
   navigation: {
+    home: "الرئيسية",
     about: "عن الدكتورة",
-    specialty: "التخصص",
+    specialty: "التخصصات",
     services: "الخدمات",
+    results: "النتائج",
+    education: "التوعية",
+    research: "الأبحاث",
     journal: "المقالات",
     faq: "الأسئلة الشائعة",
     contact: "التواصل",
     privacy: "الخصوصية",
-    home: "الرئيسية",
     backHome: "العودة للرئيسية",
-    primaryInquiryCta: "تواصل عبر واتساب",
+    primaryInquiryCta: "حجز استشارة",
   },
   hero: {
     doctorTag: "د. ريهام القحطاني",
     specialtyTag: "طب وجراحة تجميل العيون والجفون",
-    headlineLine1: "عناية دقيقة",
-    headlineLine2: "بتفاصيل نظرتك",
-    support: "د. ريهام القحطاني — طب وجراحة تجميل العيون والجفون في الرياض.",
+    headlineLine1: "د. ريهام",
+    headlineLine2: "القحطاني",
+    tagline: "عناية دقيقة بتفاصيل نظرتك",
+    support: "طب وجراحة تجميل العيون والجفون في الرياض.",
     primaryCta: "تواصل عبر واتساب",
     secondaryCta: "عن الدكتورة",
-    secondaryHref: "#about-doctor",
+    secondaryHref: "/ar/about",
     destinationHint: "التواصل المباشر عبر واتساب الرسمي:",
     image: {
-      src: "/media/hero-gaze-editorial.jpg",
-      alt: "صورة تحريرية تعبيرية مقرّبة لمنطقة العين والحاجب بإضاءة طبيعية هادئة",
+      src: "/media/hero-eye-plum-ivory.jpg",
+      alt: "صورة تحريرية تعبيرية مقرّبة لمنطقة العين والحاجب بإضاءة دافئة وهادئة",
     },
   },
+  specialtiesStrip: [
+    {
+      id: "eyelid-care",
+      icon: "eye" as const,
+      title: "جراحة وتجميل الجفون",
+      subtitle: "توازن الوظيفة والمظهر",
+    },
+    {
+      id: "periocular-harmony",
+      icon: "spark" as const,
+      title: "عناية محيط العين",
+      subtitle: "تقييم دقيق للملامح الطبيعية",
+    },
+    {
+      id: "tear-surface",
+      icon: "droplet" as const,
+      title: "راحة سطح العين والدموع",
+      subtitle: "حماية العين الحيوية أولًا",
+    },
+    {
+      id: "consultation-assessment",
+      icon: "layers" as const,
+      title: "التقييم السريري المتأني",
+      subtitle: "خطة فردية بعد الفحص المباشر",
+    },
+  ],
   doctorIntro: {
     id: "about-doctor",
     eyebrow: "عن الدكتورة",
     name: "د. ريهام القحطاني",
+    heading: "تخصص دقيق في جراحة وتجميل العيون والجفون",
     specialty: "طب وجراحة تجميل العيون والجفون",
     city: "الرياض",
     leadStatement:
       "ممارسة طبية متخصصة في منطقة العين والجفون، تجمع بين الدقة الوظيفية والحس التجميلي الهادئ الذي يحترم الملامح الطبيعية لكل وجه.",
+    sculptureImage: {
+      src: "/media/about-eyelid-sculpture.jpg",
+      alt: "عمل فني نحتي مستوحى من انحناءة الجفن بخامات عاجية وبرقوقية دافئة",
+    },
+    principles: [
+      {
+        icon: "cap" as const,
+        title: "تخصص دقيق في الجفون ومحيط العين",
+      },
+      {
+        icon: "gem" as const,
+        title: "عناية مبنية على الدليل الطبي",
+      },
+      {
+        icon: "contour" as const,
+        title: "نتائج طبيعية تحترم وظيفة العين",
+      },
+      {
+        icon: "shield" as const,
+        title: "نهج يضع سلامة المراجع أولًا",
+      },
+    ],
     pillars: [
       {
         title: "تقييم فردي متأنٍّ",
@@ -49,8 +102,20 @@ export const homeContent = {
         text: "التعامل مع منطقة الجفون يتطلب معرفة دقيقة بتشريح العين الحيوي للحفاظ على راحتها وسلامتها إلى جانب تناسق النظرة.",
       },
     ],
-    moreLinkLabel: "قراءة الملف التعريفي",
+    moreLinkLabel: "عن د. ريهام",
     moreLinkHref: "/ar/about",
+  },
+  resultsSection: {
+    id: "results",
+    eyebrow: "حالات مختارة",
+    title: "نتائج واقعية",
+    description:
+      "نماذج مختارة توضح التحسن الوظيفي والنتائج الطبيعية المتناغمة مع ملامح الوجه بعد اكتمال المراجعة والموافقة الموثقة.",
+    ctaLabel: "استعراض الحالات",
+    beforeLabel: "قبل",
+    afterLabel: "بعد",
+    previewNotice:
+      "معاينة هيكلية فقط (محمية) — يختفي هذا القسم تلقائيًا في الموقع العام حتى اعتماد صور حالات حقيقية بموافقة موثقة.",
   },
   specialtySection: {
     id: "specialty",
@@ -58,8 +123,8 @@ export const homeContent = {
     title: "جراحة وتجميل الجفون ومحيط العين",
     lead: "يركز تخصص طب وجراحة تجميل العيون والجفون على أدق منطقة في الوجه، حيث يؤثر كل تفصيل صغير في راحة العين وإشراقة النظرة.",
     image: {
-      src: "/media/specialty-eyelid-profile.jpg",
-      alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي والحاجب بزاوية جانبية هادئة",
+      src: "/media/article-brow-lid-harmony.jpg",
+      alt: "صورة تحريرية تعبيرية مقرّبة لانحناءة الجفن العلوي والحاجب بإضاءة دافئة",
     },
     highlights: [
       {
@@ -118,9 +183,10 @@ export const homeContent = {
     viewAllLabel: "جميع الخدمات",
   },
   knowledgeSection: {
-    eyebrow: "من المقالات",
-    title: "تفاصيل تستحق المعرفة",
-    intro: "قراءات مبسّطة حول العين والجفون والاستعداد للاستشارة.",
+    eyebrow: "التثقيف الطبي",
+    title: "تعلّم واطّلع بوعي",
+    intro:
+      "مقالات توعوية وإرشادات عملية مبسطة حول صحة الجفون ومحيط العين والاستعداد للاستشارة.",
     viewAllLabel: "جميع المقالات",
     readArticleLabel: "قراءة المقال",
   },
@@ -147,7 +213,7 @@ export const homeContent = {
         "يمكنكم زيارة الحساب الرسمي للدكتورة ريهام القحطاني على منصة إنستجرام للاطلاع على المحتوى التعريفي والتواصل للاستفسار.",
       ctaLabel: "زيارة الحساب الرسمي في إنستجرام",
       image: {
-        src: "/media/article-consultation-questions.jpg",
+        src: "/media/article-eyelid-indication.jpg",
         alt: "صورة تحريرية تعبيرية هادئة تعبر عن الهوية البصرية للمحتوى التوعوي",
       },
     },
@@ -166,7 +232,6 @@ export const homeContent = {
     support:
       "للاستفسار عن المواعيد والتواصل في الرياض، يسعدنا استقبال رسائلكم مباشرة عبر واتساب الرسمي للدكتورة ريهام القحطاني.",
     primaryCta: "تواصل عبر واتساب",
-    destinationCaption:
-      "ينقلك الزر مباشرة إلى محادثة واتساب الرسمية:",
+    destinationCaption: "ينقلك الزر مباشرة إلى محادثة واتساب الرسمية:",
   },
 };

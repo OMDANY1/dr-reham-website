@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/site";
 import { privacyPageCopy } from "@/content/ar/privacy";
+import { privacyPageCopyEn } from "@/content/en";
 import { isSupportedLocale } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { getCmsSiteSettings } from "@/lib/cms/repository";
@@ -10,12 +11,22 @@ import { Container } from "@/components/ui/Container";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildRouteMetadata({
-  title: privacyPageCopy.meta.title,
-  description: privacyPageCopy.meta.description,
-  pathname: "/ar/privacy",
-  forceNoIndex: siteConfig.mode === "preview" || !siteConfig.legalEntity,
-});
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const validLocale = isSupportedLocale(locale) ? locale : "ar";
+  const copy = validLocale === "en" ? privacyPageCopyEn : privacyPageCopy;
+  return buildRouteMetadata({
+    title: copy.meta.title,
+    description: copy.meta.description,
+    pathname: `/${validLocale}/privacy`,
+    locale: validLocale,
+    forceNoIndex: siteConfig.mode === "preview" || !siteConfig.legalEntity,
+  });
+}
 
 export default async function PrivacyPage({
   params,
@@ -27,24 +38,27 @@ export default async function PrivacyPage({
     notFound();
   }
 
+  const isEn = locale === "en";
+  const copy = isEn ? privacyPageCopyEn : privacyPageCopy;
   const settings = getCmsSiteSettings();
-  const sections =
-    settings.privacySections && settings.privacySections.length > 0
-      ? settings.privacySections
-      : privacyPageCopy.sections;
+  const sections = isEn
+    ? copy.sections
+    : settings.privacySections && settings.privacySections.length > 0
+    ? settings.privacySections
+    : copy.sections;
 
   return (
     <>
       <header className="page-header">
         <Container>
-          <span className="eyebrow">{privacyPageCopy.eyebrow}</span>
+          <span className="eyebrow">{copy.eyebrow}</span>
           <h1
             style={{
               fontSize: "var(--text-h1)",
               marginBlockEnd: "var(--space-3)",
             }}
           >
-            {privacyPageCopy.headline}
+            {copy.headline}
           </h1>
         </Container>
       </header>

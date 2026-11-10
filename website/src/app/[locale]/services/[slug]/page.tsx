@@ -6,6 +6,11 @@ import { homeContent } from "@/content/ar/home";
 import { notFoundCopy } from "@/content/ar/not-found";
 import { servicesPageCopy, servicesRecords } from "@/content/ar/services";
 import {
+  homeContentEn,
+  notFoundCopyEn,
+  servicesPageCopyEn,
+} from "@/content/en";
+import {
   getPublicServiceBySlug,
   getPublicServices,
   isSupportedLocale,
@@ -30,20 +35,25 @@ export async function generateMetadata({
     });
   }
 
+  const nfCopy = locale === "en" ? notFoundCopyEn : notFoundCopy;
   const service = getPublicServiceBySlug(servicesRecords, slug);
   if (!service) {
     return buildRouteMetadata({
-      title: notFoundCopy.meta.title,
-      description: notFoundCopy.meta.description,
-      pathname: "/ar/services",
+      title: nfCopy.meta.title,
+      description: nfCopy.meta.description,
+      pathname: `/${locale}/services`,
+      locale,
       forceNoIndex: true,
     });
   }
 
   return buildRouteMetadata({
-    title: `${service.title} | د. ريهام القحطاني`,
+    title: `${service.title} | ${
+      locale === "en" ? "Dr. Reham Alqahtani" : "د. ريهام القحطاني"
+    }`,
     description: service.summary,
-    pathname: `/ar/services/${service.slug}`,
+    pathname: `/${locale}/services/${service.slug}`,
+    locale,
   });
 }
 
@@ -62,6 +72,10 @@ export default async function ServiceDetailPage({
     notFound();
   }
 
+  const isEn = locale === "en";
+  const copy = isEn ? servicesPageCopyEn : servicesPageCopy;
+  const home = isEn ? homeContentEn : homeContent;
+
   const relatedServices = getPublicServices(servicesRecords).filter(
     (s) => s.slug !== service.slug
   );
@@ -70,15 +84,15 @@ export default async function ServiceDetailPage({
     <>
       <header className="page-header">
         <Container>
-          <nav aria-label="مسار الصفحة">
+          <nav aria-label={isEn ? "Breadcrumb" : "مسار الصفحة"}>
             <ol className="breadcrumb">
               <li>
-                <Link href="/ar">{homeContent.navigation.home}</Link>
+                <Link href={`/${locale}`}>{home.navigation.home}</Link>
               </li>
               <li aria-hidden="true">/</li>
               <li>
-                <Link href="/ar/services">
-                  {servicesPageCopy.detailLabels.breadcrumbServices}
+                <Link href={`/${locale}/services`}>
+                  {copy.detailLabels.breadcrumbServices}
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
@@ -105,9 +119,9 @@ export default async function ServiceDetailPage({
                 color: "var(--color-secondary)",
               }}
             >
-              {servicesPageCopy.detailLabels.reviewedByPrefix}{" "}
+              {copy.detailLabels.reviewedByPrefix}{" "}
               <strong>{service.approvedBy}</strong> —{" "}
-              {servicesPageCopy.detailLabels.reviewedAtPrefix}{" "}
+              {copy.detailLabels.reviewedAtPrefix}{" "}
               <span>{service.reviewedAt}</span>
             </p>
           ) : null}
@@ -127,7 +141,7 @@ export default async function ServiceDetailPage({
             {service.overview ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.overviewHeading}
+                  {copy.detailLabels.overviewHeading}
                 </h2>
                 <p>{service.overview}</p>
               </section>
@@ -136,7 +150,7 @@ export default async function ServiceDetailPage({
             {service.consultationNotes ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.consultationHeading}
+                  {copy.detailLabels.consultationHeading}
                 </h2>
                 <p>{service.consultationNotes}</p>
               </section>
@@ -145,7 +159,7 @@ export default async function ServiceDetailPage({
             {service.preparation ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.preparationHeading}
+                  {copy.detailLabels.preparationHeading}
                 </h2>
                 <p>{service.preparation}</p>
               </section>
@@ -154,7 +168,7 @@ export default async function ServiceDetailPage({
             {service.recovery ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.recoveryHeading}
+                  {copy.detailLabels.recoveryHeading}
                 </h2>
                 <p>{service.recovery}</p>
               </section>
@@ -163,7 +177,7 @@ export default async function ServiceDetailPage({
             {service.risks ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.risksHeading}
+                  {copy.detailLabels.risksHeading}
                 </h2>
                 <p>{service.risks}</p>
               </section>
@@ -172,7 +186,7 @@ export default async function ServiceDetailPage({
             {service.faq.length > 0 ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.faqHeading}
+                  {copy.detailLabels.faqHeading}
                 </h2>
                 <Accordion
                   items={service.faq.map((f, idx) => ({
@@ -187,13 +201,13 @@ export default async function ServiceDetailPage({
             {relatedServices.length > 0 ? (
               <section>
                 <h2 className="section-title">
-                  {servicesPageCopy.detailLabels.relatedHeading}
+                  {copy.detailLabels.relatedHeading}
                 </h2>
                 <div>
                   {relatedServices.map((rel, idx) => (
                     <Link
                       key={rel.slug}
-                      href={`/ar/services/${rel.slug}`}
+                      href={`/${locale}/services/${rel.slug}`}
                       className="service-link-row"
                     >
                       <span className="numbered-row__index">
@@ -204,7 +218,7 @@ export default async function ServiceDetailPage({
                         <p className="numbered-row__desc">{rel.summary}</p>
                       </div>
                       <span className="service-link-row__action">
-                        عرض الخدمة ←
+                        {isEn ? "View Service →" : "عرض الخدمة ←"}
                       </span>
                     </Link>
                   ))}
@@ -215,7 +229,7 @@ export default async function ServiceDetailPage({
         </Container>
       </article>
 
-      <BookingPanel mode="cta-banner" />
+      <BookingPanel mode="cta-banner" locale={locale} />
     </>
   );
 }

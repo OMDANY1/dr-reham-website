@@ -14,9 +14,20 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  const locale =
+    pathname === "/en" || pathname.startsWith("/en/") ? "en" : "ar";
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-site-locale", locale);
+
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|media|brand|fonts|favicon.ico).*)",
+  ],
 };

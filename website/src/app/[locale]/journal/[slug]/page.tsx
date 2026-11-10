@@ -9,9 +9,14 @@ import { notFoundCopy } from "@/content/ar/not-found";
 import { journalPageCopy } from "@/content/ar/articles";
 import { servicesRecords } from "@/content/ar/services";
 import {
+  homeContentEn,
+  journalPageCopyEn,
+  notFoundCopyEn,
+} from "@/content/en";
+import {
   calculateArticleWordCount,
   calculateReadingTimeMinutes,
-  formatReadingTimeAr,
+  formatReadingTime,
   getPublicServices,
   isSupportedLocale,
 } from "@/lib/content-gates";
@@ -45,26 +50,33 @@ export async function generateMetadata({
     });
   }
 
+  const nfCopy = locale === "en" ? notFoundCopyEn : notFoundCopy;
   const sp = await searchParams;
   const { article } = await getPublicOrPreviewArticleBySlug(
     slug,
-    sp?.preview === "1"
+    sp?.preview === "1",
+    locale
   );
   if (!article) {
     return buildRouteMetadata({
-      title: notFoundCopy.meta.title,
-      description: notFoundCopy.meta.description,
-      pathname: "/ar/journal",
+      title: nfCopy.meta.title,
+      description: nfCopy.meta.description,
+      pathname: `/${locale}/journal`,
+      locale,
       forceNoIndex: true,
     });
   }
 
+  const brandSuffix =
+    locale === "en" ? "Dr. Reham Alqahtani" : "د. ريهام القحطاني";
+
   return buildRouteMetadata({
     title: article.seo.title
-      ? `${article.seo.title} | د. ريهام القحطاني`
-      : `${article.title} | د. ريهام القحطاني`,
+      ? `${article.seo.title} | ${brandSuffix}`
+      : `${article.title} | ${brandSuffix}`,
     description: article.seo.description ?? article.excerpt ?? "",
-    pathname: `/ar/journal/${article.slug}`,
+    pathname: `/${locale}/journal/${article.slug}`,
+    locale,
     forceNoIndex: article.status === "draft",
   });
 }
@@ -81,14 +93,18 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
+  const isEn = locale === "en";
+  const copy = isEn ? journalPageCopyEn : journalPageCopy;
+  const home = isEn ? homeContentEn : homeContent;
+
   const sp = await searchParams;
   const isPreviewParam = sp?.preview === "1";
 
   const { article, cmsArticle, redirectToSlug, isPreviewSession } =
-    await getPublicOrPreviewArticleBySlug(slug, isPreviewParam);
+    await getPublicOrPreviewArticleBySlug(slug, isPreviewParam, locale);
 
   if (redirectToSlug && redirectToSlug !== slug) {
-    permanentRedirect(`/ar/journal/${redirectToSlug}`);
+    permanentRedirect(`/${locale}/journal/${redirectToSlug}`);
   }
 
   if (!article) {
@@ -100,7 +116,8 @@ export default async function ArticleDetailPage({
   const showTableOfContents = article.body.length >= 3 || wordCount >= 350;
 
   const { articles: allVisible } = await getPublicOrPreviewArticles(
-    isPreviewParam
+    isPreviewParam,
+    locale
   );
   const allVisibleArticles = allVisible.filter(
     (item) => item.slug !== article.slug
@@ -126,21 +143,35 @@ export default async function ArticleDetailPage({
     article.author || article.reviewedBy || article.publishedAt
   );
 
+  const readingBody =
+    isEn && cmsArticle?.en?.body && cmsArticle.en.body.length > 0
+      ? cmsArticle.en.body
+      : article.body.length > 0
+      ? article.body
+      : cmsArticle?.body ?? [];
+
+  const disclaimerText = isEn
+    ? cmsArticle?.en?.disclaimer || copy.articleLabels.disclaimer
+    : cmsArticle?.disclaimer ?? copy.articleLabels.disclaimer;
+
   return (
     <>
       {isPreviewSession ? <PreviewBanner /> : null}
 
       <header className="article-detail-header">
         <Container>
-          <nav aria-label="مسار الصفحة" className="article-breadcrumb-nav">
+          <nav
+            aria-label={isEn ? "Breadcrumb" : "مسار الصفحة"}
+            className="article-breadcrumb-nav"
+          >
             <ol className="breadcrumb">
               <li>
-                <Link href="/ar">{homeContent.navigation.home}</Link>
+                <Link href={`/${locale}`}>{home.navigation.home}</Link>
               </li>
               <li aria-hidden="true">/</li>
               <li>
-                <Link href="/ar/journal">
-                  {journalPageCopy.articleLabels.breadcrumbJournal}
+                <Link href={`/${locale}/journal`}>
+                  {copy.articleLabels.breadcrumbJournal}
                 </Link>
               </li>
               <li aria-hidden="true">/</li>
@@ -157,14 +188,14 @@ export default async function ArticleDetailPage({
                 className="journal-reading-time"
                 data-testid="article-reading-time"
               >
-                {formatReadingTimeAr(readingMinutes)}
+                {formatReadingTime(readingMinutes, locale)}
               </span>
-              {article.status === "draft" ? (
+              {isPreviewSession && article.status === "draft" ? (
                 <span
                   className="draft-preview-badge"
                   data-testid="draft-preview-badge"
                 >
-                  {journalPageCopy.articleLabels.draftBadge}
+                  {copy.articleLabels.draftBadge}
                 </span>
               ) : null}
             </div>
@@ -179,19 +210,19 @@ export default async function ArticleDetailPage({
               <div className="article-attribution-row">
                 {article.author ? (
                   <span>
-                    {journalPageCopy.articleLabels.authorPrefix}{" "}
+                    {copy.articleLabels.authorPrefix}{" "}
                     <strong>{article.author}</strong>
                   </span>
                 ) : null}
                 {article.reviewedBy ? (
                   <span>
-                    {journalPageCopy.articleLabels.reviewedByPrefix}{" "}
+                    {copy.articleLabels.reviewedByPrefix}{" "}
                     <strong>{article.reviewedBy}</strong>
                   </span>
                 ) : null}
                 {article.publishedAt ? (
                   <span>
-                    {journalPageCopy.articleLabels.publishedAtPrefix}{" "}
+                    {copy.articleLabels.publishedAtPrefix}{" "}
                     <span>{article.publishedAt}</span>
                   </span>
                 ) : null}
@@ -232,10 +263,10 @@ export default async function ArticleDetailPage({
               >
                 <div className="article-toc__box">
                   <h2 id="article-toc-heading" className="article-toc__title">
-                    {journalPageCopy.articleLabels.tocHeading}
+                    {copy.articleLabels.tocHeading}
                   </h2>
                   <ol className="article-toc__list">
-                    {article.body.map((section, idx) => {
+                    {readingBody.map((section, idx) => {
                       const sectionId = section.id ?? `section-${idx + 1}`;
                       return (
                         <li key={sectionId}>
@@ -254,7 +285,7 @@ export default async function ArticleDetailPage({
             ) : null}
 
             <div className="article-reading-column">
-              {(cmsArticle?.body ?? article.body).map((section, idx) => {
+              {readingBody.map((section, idx) => {
                 const sectionId = section.id ?? `section-${idx + 1}`;
                 const cmsSec = section as {
                   id?: string;
@@ -323,7 +354,7 @@ export default async function ArticleDetailPage({
                               : undefined
                           }
                         >
-                          {cmsSec.linkLabel} ←
+                          {cmsSec.linkLabel} {isEn ? "→" : "←"}
                         </a>
                       </p>
                     ) : null}
@@ -332,10 +363,7 @@ export default async function ArticleDetailPage({
               })}
 
               <div className="article-disclaimer-box">
-                <p>
-                  {cmsArticle?.disclaimer ??
-                    journalPageCopy.articleLabels.disclaimer}
-                </p>
+                <p>{disclaimerText}</p>
               </div>
 
               {article.sources && article.sources.length > 0 ? (
@@ -348,7 +376,7 @@ export default async function ArticleDetailPage({
                     id="article-sources-heading"
                     className="article-sources__title"
                   >
-                    {journalPageCopy.articleLabels.sourcesHeading}
+                    {copy.articleLabels.sourcesHeading}
                   </h2>
                   <ul className="article-sources__list">
                     {article.sources.map((src, idx) => {
@@ -383,21 +411,23 @@ export default async function ArticleDetailPage({
                 <ArticleShareBar
                   title={article.title}
                   excerpt={article.excerpt}
+                  locale={locale}
                 />
-                <Link href="/ar/journal" className="text-link">
-                  ← {journalPageCopy.articleLabels.backToJournal}
+                <Link href={`/${locale}/journal`} className="text-link">
+                  {isEn ? "← " : "← "}
+                  {copy.articleLabels.backToJournal}
                 </Link>
               </div>
 
               {approvedRelatedServices.length > 0 ? (
                 <section className="article-related-services">
                   <h2 className="article-sources__title">
-                    {journalPageCopy.articleLabels.relatedServicesHeading}
+                    {copy.articleLabels.relatedServicesHeading}
                   </h2>
                   {approvedRelatedServices.map((srv, idx) => (
                     <Link
                       key={srv.slug}
-                      href={`/ar/services/${srv.slug}`}
+                      href={`/${locale}/services/${srv.slug}`}
                       className="service-link-row"
                     >
                       <span className="numbered-row__index">
@@ -408,7 +438,7 @@ export default async function ArticleDetailPage({
                         <p className="numbered-row__desc">{srv.summary}</p>
                       </div>
                       <span className="service-link-row__action">
-                        تفاصيل الخدمة ←
+                        {isEn ? "View Service →" : "تفاصيل الخدمة ←"}
                       </span>
                     </Link>
                   ))}
@@ -421,30 +451,30 @@ export default async function ArticleDetailPage({
               >
                 <div>
                   <span className="eyebrow">
-                    {journalPageCopy.articleLabels.calmInquiryEyebrow}
+                    {copy.articleLabels.calmInquiryEyebrow}
                   </span>
                   <h2
                     id="article-calm-inquiry-heading"
                     className="article-calm-inquiry__title"
                   >
-                    {journalPageCopy.articleLabels.calmInquiryTitle}
+                    {copy.articleLabels.calmInquiryTitle}
                   </h2>
                   <p className="article-calm-inquiry__text">
-                    {journalPageCopy.articleLabels.calmInquiryText}
+                    {copy.articleLabels.calmInquiryText}
                   </p>
                 </div>
                 <div className="article-calm-inquiry__actions">
                   {whatsappHref ? (
                     <Button href={whatsappHref} variant="primary" external>
-                      تواصل عبر واتساب ↗
+                      {isEn ? "Contact via WhatsApp ↗" : "تواصل عبر واتساب ↗"}
                     </Button>
                   ) : instagramHref ? (
                     <Button href={instagramHref} variant="primary" external>
-                      {journalPageCopy.articleLabels.calmInquiryCta} ↗
+                      {copy.articleLabels.calmInquiryCta} ↗
                     </Button>
                   ) : (
-                    <Button href="/ar/book" variant="primary">
-                      {journalPageCopy.articleLabels.calmInquiryCta}
+                    <Button href={`/${locale}/book`} variant="primary">
+                      {copy.articleLabels.calmInquiryCta}
                     </Button>
                   )}
                 </div>
@@ -465,11 +495,11 @@ export default async function ArticleDetailPage({
               <div>
                 <span className="eyebrow">{article.category}</span>
                 <h2 id="related-articles-heading" className="section-title">
-                  {journalPageCopy.articleLabels.relatedArticlesHeading}
+                  {copy.articleLabels.relatedArticlesHeading}
                 </h2>
               </div>
-              <Button href="/ar/journal" variant="secondary">
-                {homeContent.knowledgeSection.viewAllLabel}
+              <Button href={`/${locale}/journal`} variant="secondary">
+                {home.knowledgeSection.viewAllLabel}
               </Button>
             </div>
 
@@ -483,7 +513,7 @@ export default async function ArticleDetailPage({
                     data-testid="related-article-card"
                   >
                     <Link
-                      href={`/ar/journal/${related.slug}`}
+                      href={`/${locale}/journal/${related.slug}`}
                       className="journal-card__media editorial-photo-wrap"
                       tabIndex={-1}
                       aria-hidden="true"
@@ -505,18 +535,18 @@ export default async function ArticleDetailPage({
                           {related.category}
                         </span>
                         <span className="journal-reading-time">
-                          {formatReadingTimeAr(relMinutes)}
+                          {formatReadingTime(relMinutes, locale)}
                         </span>
-                        {related.status === "draft" ? (
+                        {isPreviewSession && related.status === "draft" ? (
                           <span className="draft-preview-badge">
-                            {journalPageCopy.articleLabels.draftBadge}
+                            {copy.articleLabels.draftBadge}
                           </span>
                         ) : null}
                       </div>
 
                       <h3 className="journal-card__title">
                         <Link
-                          href={`/ar/journal/${related.slug}`}
+                          href={`/${locale}/journal/${related.slug}`}
                           className="journal-card__title-link"
                         >
                           {related.title}
@@ -531,10 +561,10 @@ export default async function ArticleDetailPage({
 
                       <div className="journal-card__footer">
                         <Link
-                          href={`/ar/journal/${related.slug}`}
+                          href={`/${locale}/journal/${related.slug}`}
                           className="text-link"
                         >
-                          {journalPageCopy.readArticleCta} ←
+                          {copy.readArticleCta} {isEn ? "→" : "←"}
                         </Link>
                       </div>
                     </div>

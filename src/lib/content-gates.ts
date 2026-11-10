@@ -17,9 +17,13 @@ export interface ServiceFaqItem {
 export interface ServiceRecord {
   slug: string;
   title: string;
+  titleEn?: string;
   summary: string;
+  summaryEn?: string;
   category: string;
+  categoryEn?: string;
   overview: string | null;
+  overviewEn?: string | null;
   consultationNotes: string | null;
   preparation: string | null;
   recovery: string | null;
@@ -44,7 +48,29 @@ export interface ArticleSection {
   bullets?: string[];
 }
 
-export type ArticleCategory = "العين والجفون" | "حول العين" | "قبل الاستشارة" | string;
+export type ArticleCategory =
+  | "العين والجفون"
+  | "حول العين"
+  | "قبل الاستشارة"
+  | "Eyelids & Orbit"
+  | "Periocular Care"
+  | "Consultation Prep"
+  | string;
+
+export interface ArticleLocaleContent {
+  title: string;
+  excerpt: string | null;
+  category: ArticleCategory;
+  body: ArticleSection[];
+  status: RecordStatus;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  publishedAt: string | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+  };
+}
 
 export interface ArticleRecord {
   slug: string;
@@ -56,6 +82,7 @@ export interface ArticleRecord {
   image?: {
     src: string;
     alt: string;
+    altEn?: string;
   };
   author: string | null;
   reviewedBy: string | null;
@@ -66,6 +93,7 @@ export interface ArticleRecord {
     title: string | null;
     description: string | null;
   };
+  en?: ArticleLocaleContent;
   sources?: (string | ArticleSource)[];
   relatedServiceSlugs?: string[];
   sourceNote?: string;
@@ -76,9 +104,12 @@ export type FaqCategory = "appointments" | "consultation" | "procedure";
 export interface FaqRecord {
   id: string;
   question: string;
+  questionEn?: string;
   answer: string | null;
+  answerEn?: string | null;
   category: FaqCategory;
   status: RecordStatus;
+  statusEn?: RecordStatus;
   reviewedBy: string | null;
   isAdministrativeSeed?: boolean;
 }
@@ -94,7 +125,7 @@ export interface AssetRecord {
 }
 
 export function isSupportedLocale(locale: string): locale is SupportedLocale {
-  return locale === "ar";
+  return locale === "ar" || locale === "en";
 }
 
 /**
@@ -114,7 +145,6 @@ export function isPublicService(service: ServiceRecord): boolean {
 /**
  * بوابة نشر المقال التوعوي للإنتاج العام (Production):
  * تتطلب status === "published" ومراجعًا وتاريخ مراجعة ونشر ومحتوى فعليًا.
- * المسودات لا تمر عبر هذه البوابة أبدًا، فلا تدخل خريطة الموقع أو البيانات المنظمة أو وضع الإنتاج.
  */
 export function isPublicArticle(article: ArticleRecord): boolean {
   return (
@@ -144,10 +174,6 @@ export function isPreviewableDraftArticle(article: ArticleRecord): boolean {
   );
 }
 
-/**
- * يتحقق مما إذا كان الخادم في وضع المعاينة الذي يسمح بعرض مسودات المقالات لتقييم التجربة.
- * يعتمد حصريًا على إعداد الخادم (siteConfig.mode / SITE_STAGE) وليس على أي query parameter عام.
- */
 export function isArticlePreviewStage(
   modeOverride?: SiteMode,
   enablePreviewDraftsOverride?: boolean
@@ -158,9 +184,6 @@ export function isArticlePreviewStage(
   return mode === "preview" && draftsEnabled;
 }
 
-/**
- * بوابة نشر السؤال الشائع: تتطلب status === "published" ومراجعًا معتمدًا ونص سؤال وإجابة.
- */
 export function isPublicFaq(faq: FaqRecord): boolean {
   return (
     faq.status === "published" &&
@@ -170,9 +193,6 @@ export function isPublicFaq(faq: FaqRecord): boolean {
   );
 }
 
-/**
- * بوابة نشر الأصول البصرية: تمنع أي حالة سريرية بدون موافقة موثقة وحقوق استخدام.
- */
 export function isPublicAsset(asset: AssetRecord): boolean {
   if (!asset.approved || !asset.rights || !asset.alt.trim()) {
     return false;
@@ -201,9 +221,6 @@ export function getPublicServiceBySlug(
   return found;
 }
 
-/**
- * يعيد المقالات المعتمدة للنشر العام فقط (للإنتاج، خريطة الموقع، والبيانات المنظمة).
- */
 export function getPublicArticles(records: ArticleRecord[]): ArticleRecord[] {
   return records.filter(isPublicArticle);
 }
@@ -219,11 +236,6 @@ export function getPublicArticleBySlug(
   return found;
 }
 
-/**
- * يعيد المقالات المتاحة للعرض في الواجهة حسب مرحلة التشغيل الخادمية:
- * - في وضع الإنتاج (production): يعيد المقالات المعتمدة فقط (`isPublicArticle`).
- * - في وضع المعاينة (preview): يعيد المقالات المعتمدة + المسودات المكتملة للمراجعة.
- */
 export function getVisibleArticles(
   records: ArticleRecord[],
   modeOverride?: SiteMode,
@@ -260,9 +272,6 @@ export function getVisibleArticleBySlug(
   return null;
 }
 
-/**
- * يحسب عدد الكلمات الفعلي للمقال من العنوان والملخص وجميع الفقرات والقوائم.
- */
 export function calculateArticleWordCount(
   article: Pick<ArticleRecord, "title" | "excerpt" | "body">
 ): number {
@@ -282,9 +291,6 @@ export function calculateArticleWordCount(
   return words.length;
 }
 
-/**
- * يحسب وقت القراءة التقديري بالدقائق بناءً على المحتوى الفعلي للمقال (~150 كلمة/دقيقة للقراءة الطبية المتأنية).
- */
 export function calculateReadingTimeMinutes(
   article: Pick<ArticleRecord, "title" | "excerpt" | "body">
 ): number {
@@ -299,9 +305,19 @@ export function formatReadingTimeAr(minutes: number): string {
   return `${minutes} دقيقة للقراءة`;
 }
 
-/**
- * فلترة المقالات حسب التصنيف ونص البحث في العنوان والملخص.
- */
+export function formatReadingTimeEn(minutes: number): string {
+  return `${Math.max(1, minutes)} min read`;
+}
+
+export function formatReadingTime(
+  minutes: number,
+  locale: SupportedLocale = "ar"
+): string {
+  return locale === "en"
+    ? formatReadingTimeEn(minutes)
+    : formatReadingTimeAr(minutes);
+}
+
 export function filterArticles(
   articles: ArticleRecord[],
   options: { category?: string; query?: string }
@@ -313,6 +329,7 @@ export function filterArticles(
     const matchesCategory =
       !normalizedCategory ||
       normalizedCategory === "الكل" ||
+      normalizedCategory === "All" ||
       article.category === normalizedCategory;
 
     if (!matchesCategory) {
@@ -332,9 +349,6 @@ export function getPublicFaqs(records: FaqRecord[]): FaqRecord[] {
   return records.filter(isPublicFaq);
 }
 
-/**
- * يتحقق مما إذا كان الحجز المباشر مفعلًا فعليًا ولديه عيادة موثقة واحدة على الأقل.
- */
 export function isLiveBookingReady(
   config: SiteConfig,
   clinicsOverride?: Clinic[]
@@ -346,15 +360,14 @@ export function isLiveBookingReady(
   return getVerifiedBookableClinics(clinics).length > 0;
 }
 
-/**
- * يعيد نص زر التواصل/المواعيد الصادق حسب جاهزية التكامل:
- * «تواصل للاستفسار» عند عدم وجود قناة حجز مباشر مؤكدة، و«احجز موعدًا» عند التفعيل الموثق.
- */
 export function getBookingCtaLabel(
   config: SiteConfig,
-  clinicsOverride?: Clinic[]
+  clinicsOverride?: Clinic[],
+  locale: SupportedLocale = "ar"
 ): string {
-  return isLiveBookingReady(config, clinicsOverride)
-    ? "احجز موعدًا"
-    : "تواصل للاستفسار";
+  const ready = isLiveBookingReady(config, clinicsOverride);
+  if (locale === "en") {
+    return ready ? "Book a Consultation" : "Book a Consultation";
+  }
+  return ready ? "احجز موعدًا" : "تواصل للاستفسار";
 }

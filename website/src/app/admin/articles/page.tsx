@@ -5,11 +5,41 @@ import { useSearchParams } from "next/navigation";
 import { AdminShell } from "@/components/admin/AdminShell";
 import type {
   CmsArticle,
+  CmsArticleEnglishLocaleData,
   CmsArticleSection,
   CmsArticleStatus,
   CmsMediaItem,
   CmsRevision,
 } from "@/lib/cms/types";
+
+function createBlankEnglishData(): CmsArticleEnglishLocaleData {
+  return {
+    title: "",
+    excerpt: "",
+    category: "Eyelids & Orbit",
+    status: "draft",
+    reviewedBy: null,
+    reviewedAt: null,
+    approvedBy: null,
+    approvedAt: null,
+    publishedAt: null,
+    body: [
+      {
+        id: "intro",
+        heading: "Introduction",
+        paragraphs: [""],
+        bullets: [],
+      },
+    ],
+    disclaimer:
+      "This content is for general patient education only and does not constitute a personal medical diagnosis or replace a direct clinical examination.",
+    seo: {
+      title: "",
+      description: "",
+      ogImage: "/media/article-eyelid-indication.jpg",
+    },
+  };
+}
 
 function createBlankArticle(): CmsArticle {
   return {
@@ -26,7 +56,7 @@ function createBlankArticle(): CmsArticle {
     approvedBy: null,
     approvedAt: null,
     image: {
-      src: "/media/article-consultation-prep.png",
+      src: "/media/article-eyelid-indication.jpg",
       alt: "",
       focalX: 50,
       focalY: 50,
@@ -52,10 +82,11 @@ function createBlankArticle(): CmsArticle {
     seo: {
       title: "",
       description: "",
-      ogImage: "/media/article-consultation-prep.png",
+      ogImage: "/media/article-eyelid-indication.jpg",
     },
     disclaimer:
       "هذه المادة مخصصة للتثقيف الصحي العام فقط، ولا تمثل تشخيصًا شخصيًا أو توصية علاجية ولا تُغني عن الفحص الطبي المباشر.",
+    en: createBlankEnglishData(),
     deletedAt: null,
     version: 1,
   };
@@ -74,6 +105,7 @@ function AdminArticlesInner() {
   const [showDeleted, setShowDeleted] = useState(false);
 
   const [editing, setEditing] = useState<CmsArticle | null>(null);
+  const [editorLang, setEditorLang] = useState<"ar" | "en">("ar");
   const [approveCheckbox, setApproveCheckbox] = useState(false);
   const [originalSlug, setOriginalSlug] = useState<string>("");
   const [revisions, setRevisions] = useState<CmsRevision[]>([]);
@@ -105,6 +137,7 @@ function AdminArticlesInner() {
   useEffect(() => {
     if (searchParams?.get("new") === "1" && !editing) {
       setEditing(createBlankArticle());
+      setEditorLang("ar");
       setApproveCheckbox(false);
       setOriginalSlug("");
     }
@@ -119,7 +152,12 @@ function AdminArticlesInner() {
   }, [searchParams, articles]);
 
   const openArticleEditor = async (article: CmsArticle) => {
-    setEditing(structuredClone(article));
+    const cloned = structuredClone(article);
+    if (!cloned.en) {
+      cloned.en = createBlankEnglishData();
+    }
+    setEditing(cloned);
+    setEditorLang("ar");
     setApproveCheckbox(Boolean(article.approvedAt));
     setOriginalSlug(article.slug);
     setError("");
@@ -157,6 +195,7 @@ function AdminArticlesInner() {
         const q = searchQuery.trim().toLowerCase();
         const match =
           a.title.toLowerCase().includes(q) ||
+          (a.en?.title || "").toLowerCase().includes(q) ||
           a.slug.toLowerCase().includes(q) ||
           a.excerpt.toLowerCase().includes(q);
         if (!match) return false;
@@ -207,6 +246,16 @@ function AdminArticlesInner() {
       const isExisting = Boolean(
         editing.id && articles.some((a) => a.id === editing.id)
       );
+      const enPayload = editing.en
+        ? {
+            ...editing.en,
+            status:
+              targetStatus === "published"
+                ? ("published" as const)
+                : editing.en.status || statusToSave,
+          }
+        : undefined;
+
       const payload = {
         ...(isExisting ? { id: editing.id } : {}),
         slug: editing.slug,
@@ -223,6 +272,7 @@ function AdminArticlesInner() {
         seo: editing.seo,
         sources: editing.sources,
         disclaimer: editing.disclaimer,
+        en: enPayload,
         expectedVersion: isExisting ? editing.version : undefined,
       };
       const res = await fetch("/api/admin/articles", {
@@ -302,6 +352,24 @@ function AdminArticlesInner() {
 
   const addSection = () => {
     if (!editing) return;
+    if (editorLang === "en") {
+      const currentEn = editing.en ?? createBlankEnglishData();
+      const nextSec: CmsArticleSection = {
+        id: `sec-en-${Date.now()}`,
+        heading: "New Section Heading",
+        paragraphs: [""],
+        bullets: [],
+      };
+      setEditing({
+        ...editing,
+        en: {
+          ...currentEn,
+          body: [...currentEn.body, nextSec],
+        },
+      });
+      return;
+    }
+
     const nextSec: CmsArticleSection = {
       id: `sec-${Date.now()}`,
       heading: "عنوان قسم جديد",
@@ -314,10 +382,12 @@ function AdminArticlesInner() {
     });
   };
 
+  const enData = editing?.en ?? createBlankEnglishData();
+
   return (
     <AdminShell
-      title="إدارة المقالات والمحتوى الطبي"
-      subtitle="إنشاء وتحرير المقالات، المراجعة الطبية، التحكم في الحالة، وسجل النسخ"
+      title="إدارة المقالات والمحتوى الطبي (AR & EN)"
+      subtitle="إنشاء وتحرير المقالات بالعربية والإنجليزية، المراجعة الطبية، التحكم في الحالة، وسجل النسخ"
       actions={
         <div className="admin-btn-group">
           {editing ? (
@@ -334,6 +404,7 @@ function AdminArticlesInner() {
               className="admin-btn admin-btn--primary"
               onClick={() => {
                 setEditing(createBlankArticle());
+                setEditorLang("ar");
                 setApproveCheckbox(false);
                 setOriginalSlug("");
                 setError("");
@@ -420,7 +491,7 @@ function AdminArticlesInner() {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>العنوان</th>
+                  <th>العنوان (AR / EN)</th>
                   <th>الرابط المختصر (Slug)</th>
                   <th>التصنيف</th>
                   <th>وقت القراءة</th>
@@ -432,7 +503,20 @@ function AdminArticlesInner() {
               <tbody>
                 {filteredArticles.map((art) => (
                   <tr key={art.id}>
-                    <td style={{ fontWeight: 700 }}>{art.title}</td>
+                    <td>
+                      <div style={{ fontWeight: 700 }}>{art.title}</div>
+                      {art.en?.title ? (
+                        <div
+                          dir="ltr"
+                          style={{
+                            fontSize: "0.82rem",
+                            color: "var(--color-secondary)",
+                          }}
+                        >
+                          {art.en.title}
+                        </div>
+                      ) : null}
+                    </td>
                     <td dir="ltr">{art.slug}</td>
                     <td>{art.category}</td>
                     <td>{art.readingTimeMinutes || 2} د</td>
@@ -481,7 +565,15 @@ function AdminArticlesInner() {
                               rel="noopener noreferrer"
                               className="admin-btn"
                             >
-                              معاينة
+                              معاينة AR
+                            </a>
+                            <a
+                              href={`/en/journal/${art.slug}?preview=1`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="admin-btn"
+                            >
+                              Preview EN
                             </a>
                             {userRole === "admin" ? (
                               <button
@@ -513,9 +605,35 @@ function AdminArticlesInner() {
       ) : (
         <section className="admin-card">
           <div className="admin-toolbar">
-            <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
-              تحرير المقال: {editing.title || "مقال جديد"}
-            </h2>
+            <div>
+              <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                تحرير المقال: {editing.title || "مقال جديد"}
+              </h2>
+              <div
+                className="admin-btn-group"
+                style={{ marginBlockStart: "0.6rem" }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setEditorLang("ar")}
+                  className={`admin-btn ${
+                    editorLang === "ar" ? "admin-btn--primary" : ""
+                  }`}
+                >
+                  المحتوى العربي (AR)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditorLang("en")}
+                  className={`admin-btn ${
+                    editorLang === "en" ? "admin-btn--primary" : ""
+                  }`}
+                >
+                  English Content (EN)
+                </button>
+              </div>
+            </div>
+
             <div className="admin-btn-group">
               <button
                 type="button"
@@ -556,327 +674,551 @@ function AdminArticlesInner() {
             </div>
           </div>
 
-          <div className="admin-form-grid admin-form-grid--2">
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-title">
-                عنوان المقال
-              </label>
-              <input
-                id="edit-title"
-                className="admin-input"
-                value={editing.title}
-                onChange={(e) =>
-                  setEditing({ ...editing, title: e.target.value })
-                }
-              />
-            </div>
+          {editorLang === "ar" ? (
+            <>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-title">
+                    عنوان المقال (العربية)
+                  </label>
+                  <input
+                    id="edit-title"
+                    className="admin-input"
+                    value={editing.title}
+                    onChange={(e) =>
+                      setEditing({ ...editing, title: e.target.value })
+                    }
+                  />
+                </div>
 
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-slug">
-                الرابط المختصر (Slug — حروف إنجليزية وأرقام وشرطات)
-              </label>
-              <input
-                id="edit-slug"
-                dir="ltr"
-                className="admin-input"
-                value={editing.slug}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    slug: e.target.value
-                      .toLowerCase()
-                      .replace(/[^a-z0-9-_]/g, "-"),
-                  })
-                }
-                placeholder="example-eyelid-guide"
-              />
-            </div>
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-slug">
+                    الرابط المختصر (Slug — مشترك بين اللغتين)
+                  </label>
+                  <input
+                    id="edit-slug"
+                    dir="ltr"
+                    className="admin-input"
+                    value={editing.slug}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        slug: e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9-_]/g, "-"),
+                      })
+                    }
+                    placeholder="example-eyelid-guide"
+                  />
+                </div>
 
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-category">
-                التصنيف
-              </label>
-              <select
-                id="edit-category"
-                className="admin-select"
-                value={editing.category}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    category: e.target.value as CmsArticle["category"],
-                  })
-                }
-              >
-                <option value="العين والجفون">العين والجفون</option>
-                <option value="التحضير للاستشارة">التحضير للاستشارة</option>
-                <option value="أسئلة شائعة موسعة">أسئلة شائعة موسعة</option>
-              </select>
-            </div>
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-category">
+                    التصنيف (العربية)
+                  </label>
+                  <select
+                    id="edit-category"
+                    className="admin-select"
+                    value={editing.category}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        category: e.target.value as CmsArticle["category"],
+                      })
+                    }
+                  >
+                    <option value="العين والجفون">العين والجفون</option>
+                    <option value="التحضير للاستشارة">التحضير للاستشارة</option>
+                    <option value="أسئلة شائعة موسعة">أسئلة شائعة موسعة</option>
+                  </select>
+                </div>
 
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-author">
-                الكاتب / جهة الإعداد
-              </label>
-              <input
-                id="edit-author"
-                className="admin-input"
-                value={editing.author || ""}
-                onChange={(e) =>
-                  setEditing({ ...editing, author: e.target.value })
-                }
-              />
-            </div>
-          </div>
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-author">
+                    الكاتب / جهة الإعداد
+                  </label>
+                  <input
+                    id="edit-author"
+                    className="admin-input"
+                    value={editing.author || ""}
+                    onChange={(e) =>
+                      setEditing({ ...editing, author: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
 
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="edit-excerpt">
-              ملخص المقال
-            </label>
-            <textarea
-              id="edit-excerpt"
-              className="admin-textarea"
-              value={editing.excerpt}
-              onChange={(e) =>
-                setEditing({ ...editing, excerpt: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="admin-field">
-            <label className="admin-label" htmlFor="edit-reviewer">
-              المراجع الطبي (لا يُفترض تلقائياً أن د. ريهام راجعت المحتوى ما لم
-              يُكتب صراحة)
-            </label>
-            <input
-              id="edit-reviewer"
-              className="admin-input"
-              value={editing.reviewedBy || ""}
-              onChange={(e) =>
-                setEditing({
-                  ...editing,
-                  reviewedBy: e.target.value || null,
-                })
-              }
-              placeholder="يُترك فارغاً حتى تتم المراجعة الطبية الفعلية"
-            />
-          </div>
-
-          {userRole === "admin" ? (
-            <div
-              className="admin-card admin-card--tinted"
-              style={{ padding: "1rem" }}
-            >
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.65rem",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  id="edit-content-approved"
-                  type="checkbox"
-                  checked={approveCheckbox}
-                  onChange={(e) => setApproveCheckbox(e.target.checked)}
-                  style={{ width: "1.2rem", height: "1.2rem" }}
-                />
-                <span>
-                  اعتماد صريح للمحتوى الطبي من المدير للظهور في الموقع العام
-                </span>
-              </label>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.65rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={editing.featured}
+              <div className="admin-field">
+                <label className="admin-label" htmlFor="edit-excerpt">
+                  ملخص المقال (العربية)
+                </label>
+                <textarea
+                  id="edit-excerpt"
+                  className="admin-textarea"
+                  value={editing.excerpt}
                   onChange={(e) =>
-                    setEditing({ ...editing, featured: e.target.checked })
+                    setEditing({ ...editing, excerpt: e.target.value })
                   }
-                  style={{ width: "1.1rem", height: "1.1rem" }}
                 />
-                <span>تمييز المقال في الصفحة الرئيسية</span>
-              </label>
-            </div>
-          ) : null}
+              </div>
 
-          <div className="admin-form-grid admin-form-grid--2">
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-image">
-                الصورة الرئيسية للمقال
-              </label>
-              <select
-                id="edit-image"
-                className="admin-select"
-                value={editing.image.src}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    image: { ...editing.image, src: e.target.value },
-                  })
-                }
-              >
-                {mediaList.map((m) => (
-                  <option key={m.id} value={m.url}>
-                    {m.name} ({m.url})
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="admin-field">
+                <label className="admin-label" htmlFor="edit-reviewer">
+                  المراجع الطبي (لا يُفترض تلقائياً أن د. ريهام راجعت المحتوى ما
+                  لم يُكتب صراحة)
+                </label>
+                <input
+                  id="edit-reviewer"
+                  className="admin-input"
+                  value={editing.reviewedBy || ""}
+                  onChange={(e) =>
+                    setEditing({
+                      ...editing,
+                      reviewedBy: e.target.value || null,
+                    })
+                  }
+                  placeholder="يُترك فارغاً حتى تتم المراجعة الطبية الفعلية"
+                />
+              </div>
 
-            <div className="admin-field">
-              <label className="admin-label" htmlFor="edit-image-alt">
-                النص البديل للصورة (Alt Text)
-              </label>
-              <input
-                id="edit-image-alt"
-                className="admin-input"
-                value={editing.image.alt}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    image: { ...editing.image, alt: e.target.value },
-                  })
-                }
-              />
-            </div>
-          </div>
-
-          <div className="admin-toolbar">
-            <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
-              أقسام المحتوى الكامل ({editing.body.length})
-            </h3>
-            <button
-              type="button"
-              className="admin-btn admin-btn--primary"
-              onClick={addSection}
-            >
-              + إضافة قسم للمقال
-            </button>
-          </div>
-
-          {editing.body.map((sec, sIdx) => (
-            <div
-              key={sec.id || sIdx}
-              className="admin-card admin-card--tinted"
-              style={{ padding: "1.15rem" }}
-            >
-              <div className="admin-toolbar">
-                <strong style={{ color: "var(--color-navy)" }}>
-                  القسم {sIdx + 1}
-                </strong>
-                {editing.body.length > 1 ? (
-                  <button
-                    type="button"
-                    className="admin-btn"
-                    onClick={() => {
-                      const next = editing.body.filter((_, i) => i !== sIdx);
-                      setEditing({ ...editing, body: next });
+              {userRole === "admin" ? (
+                <div
+                  className="admin-card admin-card--tinted"
+                  style={{ padding: "1rem" }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.65rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
                     }}
                   >
-                    حذف القسم
-                  </button>
-                ) : null}
+                    <input
+                      id="edit-content-approved"
+                      type="checkbox"
+                      checked={approveCheckbox}
+                      onChange={(e) => setApproveCheckbox(e.target.checked)}
+                      style={{ width: "1.2rem", height: "1.2rem" }}
+                    />
+                    <span>
+                      اعتماد صريح للمحتوى الطبي من المدير للظهور في الموقع العام
+                    </span>
+                  </label>
+
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.65rem",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={editing.featured}
+                      onChange={(e) =>
+                        setEditing({ ...editing, featured: e.target.checked })
+                      }
+                      style={{ width: "1.1rem", height: "1.1rem" }}
+                    />
+                    <span>تمييز المقال في الصفحة الرئيسية</span>
+                  </label>
+                </div>
+              ) : null}
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-image">
+                    الصورة الرئيسية للمقال
+                  </label>
+                  <select
+                    id="edit-image"
+                    className="admin-select"
+                    value={editing.image.src}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        image: { ...editing.image, src: e.target.value },
+                      })
+                    }
+                  >
+                    {mediaList.map((m) => (
+                      <option key={m.id} value={m.url}>
+                        {m.name} ({m.url})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-image-alt">
+                    النص البديل للصورة (Alt Text)
+                  </label>
+                  <input
+                    id="edit-image-alt"
+                    className="admin-input"
+                    value={editing.image.alt}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        image: { ...editing.image, alt: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="admin-toolbar">
+                <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
+                  أقسام المحتوى العربي ({editing.body.length})
+                </h3>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--primary"
+                  onClick={addSection}
+                >
+                  + إضافة قسم للمقال
+                </button>
+              </div>
+
+              {editing.body.map((sec, sIdx) => (
+                <div
+                  key={sec.id || sIdx}
+                  className="admin-card admin-card--tinted"
+                  style={{ padding: "1.15rem" }}
+                >
+                  <div className="admin-toolbar">
+                    <strong style={{ color: "var(--color-navy)" }}>
+                      القسم {sIdx + 1}
+                    </strong>
+                    {editing.body.length > 1 ? (
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={() => {
+                          const next = editing.body.filter(
+                            (_, i) => i !== sIdx
+                          );
+                          setEditing({ ...editing, body: next });
+                        }}
+                      >
+                        حذف القسم
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">عنوان القسم الفرعي</label>
+                    <input
+                      className="admin-input"
+                      value={sec.heading}
+                      onChange={(e) => {
+                        const next = [...editing.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          heading: e.target.value,
+                        };
+                        setEditing({ ...editing, body: next });
+                      }}
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">
+                      الفقرات (فقرة في كل سطر مزدوج)
+                    </label>
+                    <textarea
+                      className="admin-textarea"
+                      value={sec.paragraphs.join("\n\n")}
+                      onChange={(e) => {
+                        const next = [...editing.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          paragraphs: e.target.value
+                            .split(/\n\s*\n/)
+                            .map((p) => p.trim())
+                            .filter(Boolean),
+                        };
+                        setEditing({ ...editing, body: next });
+                      }}
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">
+                      قائمة النقاط (نقطة في كل سطر — اختياري)
+                    </label>
+                    <textarea
+                      className="admin-textarea"
+                      style={{ minBlockSize: "4.5rem" }}
+                      value={(sec.bullets || []).join("\n")}
+                      onChange={(e) => {
+                        const next = [...editing.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          bullets: e.target.value
+                            .split("\n")
+                            .map((b) => b.trim())
+                            .filter(Boolean),
+                        };
+                        setEditing({ ...editing, body: next });
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
+                حقول SEO والمشاركة (العربية)
+              </h3>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">عنوان الميتا (SEO Title)</label>
+                  <input
+                    className="admin-input"
+                    value={editing.seo.title || ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        seo: { ...editing.seo, title: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">
+                    وصف الميتا (SEO Description)
+                  </label>
+                  <input
+                    className="admin-input"
+                    value={editing.seo.description || ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        seo: { ...editing.seo, description: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <div dir="ltr" style={{ textAlign: "left" }}>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-en-title">
+                    Article Title (English)
+                  </label>
+                  <input
+                    id="edit-en-title"
+                    className="admin-input"
+                    value={enData.title}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        en: { ...enData, title: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="admin-field">
+                  <label className="admin-label" htmlFor="edit-en-category">
+                    Category (English)
+                  </label>
+                  <select
+                    id="edit-en-category"
+                    className="admin-select"
+                    value={enData.category}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        en: {
+                          ...enData,
+                          category:
+                            e.target.value as CmsArticleEnglishLocaleData["category"],
+                        },
+                      })
+                    }
+                  >
+                    <option value="Eyelids & Orbit">Eyelids & Orbit</option>
+                    <option value="Periocular Care">Periocular Care</option>
+                    <option value="Consultation Prep">Consultation Prep</option>
+                  </select>
+                </div>
               </div>
 
               <div className="admin-field">
-                <label className="admin-label">عنوان القسم الفرعي</label>
-                <input
-                  className="admin-input"
-                  value={sec.heading}
-                  onChange={(e) => {
-                    const next = [...editing.body];
-                    next[sIdx] = { ...next[sIdx], heading: e.target.value };
-                    setEditing({ ...editing, body: next });
-                  }}
-                />
-              </div>
-
-              <div className="admin-field">
-                <label className="admin-label">
-                  الفقرات (فقرة في كل سطر مزدوج)
+                <label className="admin-label" htmlFor="edit-en-excerpt">
+                  Excerpt (English)
                 </label>
                 <textarea
+                  id="edit-en-excerpt"
                   className="admin-textarea"
-                  value={sec.paragraphs.join("\n\n")}
-                  onChange={(e) => {
-                    const next = [...editing.body];
-                    next[sIdx] = {
-                      ...next[sIdx],
-                      paragraphs: e.target.value
-                        .split(/\n\s*\n/)
-                        .map((p) => p.trim())
-                        .filter(Boolean),
-                    };
-                    setEditing({ ...editing, body: next });
-                  }}
+                  value={enData.excerpt}
+                  onChange={(e) =>
+                    setEditing({
+                      ...editing,
+                      en: { ...enData, excerpt: e.target.value },
+                    })
+                  }
                 />
               </div>
 
-              <div className="admin-field">
-                <label className="admin-label">
-                  قائمة النقاط (نقطة في كل سطر — اختياري)
-                </label>
-                <textarea
-                  className="admin-textarea"
-                  style={{ minBlockSize: "4.5rem" }}
-                  value={(sec.bullets || []).join("\n")}
-                  onChange={(e) => {
-                    const next = [...editing.body];
-                    next[sIdx] = {
-                      ...next[sIdx],
-                      bullets: e.target.value
-                        .split("\n")
-                        .map((b) => b.trim())
-                        .filter(Boolean),
-                    };
-                    setEditing({ ...editing, body: next });
-                  }}
-                />
+              <div className="admin-toolbar">
+                <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
+                  English Body Sections ({enData.body.length})
+                </h3>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--primary"
+                  onClick={addSection}
+                >
+                  + Add English Section
+                </button>
+              </div>
+
+              {enData.body.map((sec, sIdx) => (
+                <div
+                  key={sec.id || sIdx}
+                  className="admin-card admin-card--tinted"
+                  style={{ padding: "1.15rem" }}
+                >
+                  <div className="admin-toolbar">
+                    <strong style={{ color: "var(--color-navy)" }}>
+                      Section {sIdx + 1}
+                    </strong>
+                    {enData.body.length > 1 ? (
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={() => {
+                          const next = enData.body.filter(
+                            (_, i) => i !== sIdx
+                          );
+                          setEditing({
+                            ...editing,
+                            en: { ...enData, body: next },
+                          });
+                        }}
+                      >
+                        Remove Section
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">Section Heading</label>
+                    <input
+                      className="admin-input"
+                      value={sec.heading}
+                      onChange={(e) => {
+                        const next = [...enData.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          heading: e.target.value,
+                        };
+                        setEditing({
+                          ...editing,
+                          en: { ...enData, body: next },
+                        });
+                      }}
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">
+                      Paragraphs (separate paragraphs with a blank line)
+                    </label>
+                    <textarea
+                      className="admin-textarea"
+                      value={sec.paragraphs.join("\n\n")}
+                      onChange={(e) => {
+                        const next = [...enData.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          paragraphs: e.target.value
+                            .split(/\n\s*\n/)
+                            .map((p) => p.trim())
+                            .filter(Boolean),
+                        };
+                        setEditing({
+                          ...editing,
+                          en: { ...enData, body: next },
+                        });
+                      }}
+                    />
+                  </div>
+
+                  <div className="admin-field">
+                    <label className="admin-label">
+                      Bullet Points (one per line — optional)
+                    </label>
+                    <textarea
+                      className="admin-textarea"
+                      style={{ minBlockSize: "4.5rem" }}
+                      value={(sec.bullets || []).join("\n")}
+                      onChange={(e) => {
+                        const next = [...enData.body];
+                        next[sIdx] = {
+                          ...next[sIdx],
+                          bullets: e.target.value
+                            .split("\n")
+                            .map((b) => b.trim())
+                            .filter(Boolean),
+                        };
+                        setEditing({
+                          ...editing,
+                          en: { ...enData, body: next },
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <h3 style={{ fontSize: "1.15rem", margin: 0 }}>
+                English SEO Fields
+              </h3>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">SEO Title (EN)</label>
+                  <input
+                    className="admin-input"
+                    value={enData.seo.title || ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        en: {
+                          ...enData,
+                          seo: { ...enData.seo, title: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">SEO Description (EN)</label>
+                  <input
+                    className="admin-input"
+                    value={enData.seo.description || ""}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        en: {
+                          ...enData,
+                          seo: { ...enData.seo, description: e.target.value },
+                        },
+                      })
+                    }
+                  />
+                </div>
               </div>
             </div>
-          ))}
-
-          <h3 style={{ fontSize: "1.15rem", margin: 0 }}>حقول SEO والمشاركة</h3>
-          <div className="admin-form-grid admin-form-grid--2">
-            <div className="admin-field">
-              <label className="admin-label">عنوان الميتا (SEO Title)</label>
-              <input
-                className="admin-input"
-                value={editing.seo.title || ""}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    seo: { ...editing.seo, title: e.target.value },
-                  })
-                }
-              />
-            </div>
-            <div className="admin-field">
-              <label className="admin-label">
-                وصف الميتا (SEO Description)
-              </label>
-              <input
-                className="admin-input"
-                value={editing.seo.description || ""}
-                onChange={(e) =>
-                  setEditing({
-                    ...editing,
-                    seo: { ...editing.seo, description: e.target.value },
-                  })
-                }
-              />
-            </div>
-          </div>
+          )}
 
           {revisions.length > 0 ? (
             <div style={{ marginBlockStart: "1rem" }}>

@@ -51,16 +51,18 @@ export function handleCmsApiError(err: unknown): NextResponse {
 export function revalidatePublicSitePaths(articleSlug?: string): void {
   try {
     revalidatePath("/", "layout");
-    revalidatePath("/ar");
-    revalidatePath("/ar/journal");
-    revalidatePath("/ar/faq");
-    revalidatePath("/ar/book");
-    revalidatePath("/ar/about");
-    revalidatePath("/ar/privacy");
-    revalidatePath("/sitemap.xml");
-    if (articleSlug) {
-      revalidatePath(`/ar/journal/${articleSlug}`);
+    for (const locale of ["ar", "en"]) {
+      revalidatePath(`/${locale}`);
+      revalidatePath(`/${locale}/journal`);
+      revalidatePath(`/${locale}/faq`);
+      revalidatePath(`/${locale}/book`);
+      revalidatePath(`/${locale}/about`);
+      revalidatePath(`/${locale}/privacy`);
+      if (articleSlug) {
+        revalidatePath(`/${locale}/journal/${articleSlug}`);
+      }
     }
+    revalidatePath("/sitemap.xml");
   } catch {
     // Ignore revalidatePath errors when called outside Next.js request context (e.g. unit tests)
   }

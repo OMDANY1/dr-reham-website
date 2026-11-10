@@ -24,6 +24,7 @@ import {
 } from "./sanitize";
 import type {
   CmsArticle,
+  CmsArticleLocaleData,
   CmsArticleStatus,
   CmsAuditLog,
   CmsClinicItem,
@@ -139,7 +140,119 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 1) {
+      if (parsed && parsed.schemaVersion >= 2) {
+        return parsed;
+      }
+      if (parsed && parsed.schemaVersion === 1) {
+        // Migrate schema v1 -> v2: enrich with bilingual English data & editorial plum imagery while preserving users
+        const freshPage = buildInitialPageRecord();
+        const freshArticles = buildInitialArticles();
+        const freshMedia = buildInitialMediaItems();
+        const freshFaqs = buildInitialFaqs();
+        const freshClinics = buildInitialClinics();
+        const freshSettings = buildInitialSettings();
+
+        parsed.schemaVersion = 2;
+        if (parsed.pages?.home) {
+          parsed.pages.home.publishedData = {
+            ...freshPage.publishedData,
+            ...parsed.pages.home.publishedData,
+            hero: {
+              ...freshPage.publishedData.hero,
+              ...parsed.pages.home.publishedData.hero,
+              image: freshPage.publishedData.hero.image,
+            },
+            specialtiesStrip:
+              parsed.pages.home.publishedData.specialtiesStrip ??
+              freshPage.publishedData.specialtiesStrip,
+            doctorIntro: {
+              ...freshPage.publishedData.doctorIntro,
+              ...parsed.pages.home.publishedData.doctorIntro,
+              sculptureImage:
+                parsed.pages.home.publishedData.doctorIntro?.sculptureImage ??
+                freshPage.publishedData.doctorIntro.sculptureImage,
+              principles:
+                parsed.pages.home.publishedData.doctorIntro?.principles ??
+                freshPage.publishedData.doctorIntro.principles,
+            },
+            resultsSection:
+              parsed.pages.home.publishedData.resultsSection ??
+              freshPage.publishedData.resultsSection,
+            en:
+              parsed.pages.home.publishedData.en ??
+              freshPage.publishedData.en,
+            statusEn:
+              parsed.pages.home.publishedData.statusEn ?? "published",
+          };
+          parsed.pages.home.draftData = structuredClone(
+            parsed.pages.home.publishedData
+          );
+        } else {
+          parsed.pages = { home: freshPage };
+        }
+
+        // Backfill article English translations & updated first 3 article images
+        const freshArticleMap = new Map(freshArticles.map((a) => [a.slug, a]));
+        parsed.articles = (parsed.articles ?? []).map((art) => {
+          const fresh = freshArticleMap.get(art.slug);
+          if (!fresh) return art;
+          return {
+            ...art,
+            image: fresh.image,
+            seo: {
+              ...art.seo,
+              ogImage: fresh.image.src,
+            },
+            en: art.en ?? fresh.en,
+          };
+        });
+
+        // Backfill FAQ English fields
+        const freshFaqMap = new Map(freshFaqs.map((f) => [f.id, f]));
+        parsed.faqs = (parsed.faqs ?? []).map((f) => {
+          const fresh = freshFaqMap.get(f.id);
+          return {
+            ...f,
+            questionEn: f.questionEn ?? fresh?.questionEn,
+            answerEn: f.answerEn ?? fresh?.answerEn,
+            statusEn: f.statusEn ?? fresh?.statusEn ?? f.status,
+          };
+        });
+
+        // Backfill Clinics English fields
+        const freshClinicMap = new Map(freshClinics.map((c) => [c.id, c]));
+        parsed.clinics = (parsed.clinics ?? []).map((c) => {
+          const fresh = freshClinicMap.get(c.id);
+          return {
+            ...c,
+            nameEn: c.nameEn ?? fresh?.nameEn,
+            addressEn: c.addressEn ?? fresh?.addressEn,
+            hoursEn: c.hoursEn ?? fresh?.hoursEn,
+          };
+        });
+
+        // Merge new media items
+        const existingMediaUrls = new Set((parsed.media ?? []).map((m) => m.url));
+        for (const m of freshMedia) {
+          if (!existingMediaUrls.has(m.url)) {
+            parsed.media.push(m);
+          }
+        }
+
+        // Merge settings English fields
+        parsed.settings = {
+          ...freshSettings,
+          ...parsed.settings,
+          siteNameEn: parsed.settings?.siteNameEn ?? freshSettings.siteNameEn,
+          siteDescriptionEn:
+            parsed.settings?.siteDescriptionEn ?? freshSettings.siteDescriptionEn,
+          specialtyTitleEn:
+            parsed.settings?.specialtyTitleEn ?? freshSettings.specialtyTitleEn,
+          cityEn: parsed.settings?.cityEn ?? freshSettings.cityEn,
+          defaultOgImage: freshSettings.defaultOgImage,
+        };
+
+        saveStore(parsed);
         return parsed;
       }
     } catch {
@@ -155,7 +268,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},
@@ -276,6 +389,8 @@ function syncMediaPublicVisibility(store: PersistentCmsStore): void {
   const homePub = store.pages.home?.publishedData;
   if (homePub) {
     if (homePub.hero?.image?.src) publicUrls.add(homePub.hero.image.src);
+    if (homePub.doctorIntro?.sculptureImage?.src)
+      publicUrls.add(homePub.doctorIntro.sculptureImage.src);
     if (homePub.specialtySection?.image?.src)
       publicUrls.add(homePub.specialtySection.image.src);
     if (homePub.contentStyleSection?.instagramCard?.image?.src)
@@ -1082,6 +1197,7 @@ export function saveCmsArticle(
     seo?: { title?: string | null; description?: string | null; ogImage?: string | null };
     sources?: CmsArticle["sources"];
     disclaimer?: string;
+    en?: Partial<CmsArticleLocaleData>;
     expectedVersion?: number;
   }
 ): CmsArticle {
@@ -1278,6 +1394,115 @@ export function saveCmsArticle(
     existing.sources = cleanedSources;
     if (input.disclaimer) {
       existing.disclaimer = sanitizeText(input.disclaimer, 500);
+    }
+    if (input.en) {
+      const enStatus: CmsArticleStatus =
+        input.en.status ?? existing.en?.status ?? requestedStatus;
+      if (
+        actor.role !== "admin" &&
+        (enStatus === "published" || enStatus === "archived")
+      ) {
+        throw new CmsError(
+          "صلاحية المحرر لا تسمح بنشر أو أرشفة النسخة الإنجليزية للمقال.",
+          403,
+          "FORBIDDEN"
+        );
+      }
+      const enTitle =
+        sanitizeText(input.en.title ?? existing.en?.title, 220) || title;
+      const enExcerpt =
+        sanitizeText(input.en.excerpt ?? existing.en?.excerpt, 600) || excerpt;
+      const enCategory =
+        sanitizeText(input.en.category ?? existing.en?.category, 80) ||
+        "Eyelid & Orbit";
+      const enBodyRaw = input.en.body ?? existing.en?.body ?? [];
+      const enBody =
+        enBodyRaw.length > 0
+          ? enBodyRaw
+              .map((sec, idx) => ({
+                id:
+                  sanitizeSlug(sec.id || `section-en-${idx + 1}`) ||
+                  `section-en-${idx + 1}`,
+                heading: sanitizeText(sec.heading, 200),
+                paragraphs: (sec.paragraphs ?? [])
+                  .map((p) => sanitizeText(p, 5000))
+                  .filter(Boolean),
+                ...(sec.bullets && sec.bullets.length > 0
+                  ? {
+                      bullets: sec.bullets
+                        .map((b) => sanitizeText(b, 1000))
+                        .filter(Boolean),
+                    }
+                  : {}),
+                ...(sec.linkLabel
+                  ? { linkLabel: sanitizeText(sec.linkLabel, 120) }
+                  : {}),
+                ...(sec.linkUrl ? { linkUrl: sec.linkUrl.trim() } : {}),
+                ...(sec.imageSrc ? { imageSrc: sec.imageSrc.trim() } : {}),
+                ...(sec.imageAlt
+                  ? { imageAlt: sanitizeText(sec.imageAlt, 220) }
+                  : {}),
+              }))
+              .filter((s) => s.heading && s.paragraphs.length > 0)
+          : existing.en?.body ?? cleanedBody;
+
+      const enApprovedBy =
+        enStatus === "published" && actor.role === "admin"
+          ? existing.en?.approvedBy ?? approvedBy ?? `${actor.name} (${actor.email})`
+          : existing.en?.approvedBy ?? null;
+      const enApprovedAt =
+        enStatus === "published" && actor.role === "admin"
+          ? existing.en?.approvedAt ?? approvedAt ?? now
+          : existing.en?.approvedAt ?? null;
+
+      existing.en = {
+        title: enTitle,
+        excerpt: enExcerpt,
+        category: enCategory,
+        imageAlt:
+          sanitizeText(input.en.imageAlt ?? existing.en?.imageAlt, 220) ||
+          enTitle,
+        body: enBody,
+        author:
+          sanitizeNullableText(input.en.author ?? existing.en?.author, 140) ??
+          "Dr. Reham Alqahtani",
+        reviewedBy:
+          sanitizeNullableText(
+            input.en.reviewedBy ?? existing.en?.reviewedBy,
+            160
+          ) ?? "Dr. Reham Alqahtani — Oculoplastic & Eyelid Surgery",
+        reviewedAt:
+          input.en.reviewedAt ?? existing.en?.reviewedAt ?? reviewedAt,
+        approvedBy: enApprovedBy,
+        approvedAt: enApprovedAt,
+        publishedAt:
+          enStatus === "published"
+            ? existing.en?.publishedAt ?? now.slice(0, 10)
+            : existing.en?.publishedAt ?? null,
+        status: enStatus,
+        seo: {
+          title:
+            sanitizeNullableText(
+              input.en.seo?.title ?? existing.en?.seo?.title,
+              200
+            ) ?? `${enTitle} | Dr. Reham Alqahtani`,
+          description:
+            sanitizeNullableText(
+              input.en.seo?.description ?? existing.en?.seo?.description,
+              320
+            ) ?? enExcerpt,
+          ogImage:
+            input.en.seo?.ogImage?.trim() ||
+            existing.en?.seo?.ogImage ||
+            existing.image.src,
+        },
+        disclaimer:
+          sanitizeText(
+            input.en.disclaimer ?? existing.en?.disclaimer,
+            500
+          ) ||
+          "This educational material provides general medical awareness only and does not replace a direct clinical examination.",
+      };
     }
     existing.version += 1;
 
@@ -1862,16 +2087,29 @@ export function saveCmsFaq(
     id?: string;
     question: string;
     answer: string;
+    questionEn?: string;
+    answerEn?: string;
     category?: CmsFaqItem["category"];
     sortOrder?: number;
     status?: "draft" | "published";
+    statusEn?: "draft" | "published";
     expectedVersion?: number;
   }
 ): CmsFaqItem {
   const store = ensureStoreInitialized();
   const question = sanitizeText(input.question, 300);
   const answer = sanitizeText(input.answer, 3000);
+  const questionEn =
+    input.questionEn !== undefined ? sanitizeText(input.questionEn, 300) : undefined;
+  const answerEn =
+    input.answerEn !== undefined ? sanitizeText(input.answerEn, 3000) : undefined;
   const status = input.status === "published" ? "published" : "draft";
+  const statusEn =
+    input.statusEn !== undefined
+      ? input.statusEn === "published"
+        ? "published"
+        : "draft"
+      : undefined;
 
   if (!question) {
     throw new CmsError("نص السؤال مطلوب.", 400);
@@ -1879,7 +2117,7 @@ export function saveCmsFaq(
   if (status === "published" && !answer) {
     throw new CmsError("لا يمكن نشر سؤال بدون إجابة مكتملة.", 400);
   }
-  if (status === "published" && actor.role !== "admin") {
+  if ((status === "published" || statusEn === "published") && actor.role !== "admin") {
     throw new CmsError("نشر الأسئلة للعامة متاح للمدير فقط.", 403, "FORBIDDEN");
   }
 
@@ -1899,9 +2137,12 @@ export function saveCmsFaq(
     }
     existing.question = question;
     existing.answer = answer;
+    if (questionEn !== undefined) existing.questionEn = questionEn;
+    if (answerEn !== undefined) existing.answerEn = answerEn;
     if (input.category) existing.category = input.category;
     if (typeof input.sortOrder === "number") existing.sortOrder = input.sortOrder;
     existing.status = status;
+    if (statusEn !== undefined) existing.statusEn = statusEn;
     if (status === "published" && !existing.reviewedBy) {
       existing.reviewedBy = actor.name;
     }
@@ -1926,12 +2167,15 @@ export function saveCmsFaq(
     id: `faq-${Date.now()}-${randomBytes(3).toString("hex")}`,
     question,
     answer,
+    questionEn: questionEn ?? question,
+    answerEn: answerEn ?? answer,
     category: input.category ?? "consultation",
     sortOrder:
       typeof input.sortOrder === "number"
         ? input.sortOrder
         : store.faqs.length + 1,
     status,
+    statusEn: statusEn ?? status,
     reviewedBy: status === "published" ? actor.name : null,
     version: 1,
     deletedAt: null,

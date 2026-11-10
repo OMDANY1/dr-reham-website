@@ -1,15 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
+import type { SupportedLocale } from "@/config/site";
 import { journalPageCopy } from "@/content/ar/articles";
+import { journalPageCopyEn } from "@/content/en";
 
 export interface ArticleShareBarProps {
   title: string;
   excerpt?: string | null;
+  locale?: SupportedLocale;
 }
 
-export function ArticleShareBar({ title, excerpt }: ArticleShareBarProps) {
+export function ArticleShareBar({
+  title,
+  excerpt,
+  locale = "ar",
+}: ArticleShareBarProps) {
   const [copied, setCopied] = useState(false);
+  const labels =
+    locale === "en"
+      ? journalPageCopyEn.articleLabels
+      : journalPageCopy.articleLabels;
 
   const copyCurrentUrl = async () => {
     if (typeof window === "undefined") return;
@@ -56,10 +67,10 @@ export function ArticleShareBar({ title, excerpt }: ArticleShareBarProps) {
   return (
     <div
       className="article-share-bar"
-      aria-label={journalPageCopy.articleLabels.shareHeading}
+      aria-label={labels.shareHeading}
     >
       <span className="article-share-bar__label">
-        {journalPageCopy.articleLabels.shareHeading}:
+        {labels.shareHeading}:
       </span>
       <div className="article-share-bar__actions">
         <button
@@ -98,7 +109,7 @@ export function ArticleShareBar({ title, excerpt }: ArticleShareBarProps) {
               strokeLinecap="round"
             />
           </svg>
-          <span>{journalPageCopy.articleLabels.shareButton}</span>
+          <span>{labels.shareButton}</span>
         </button>
 
         <button
@@ -135,8 +146,8 @@ export function ArticleShareBar({ title, excerpt }: ArticleShareBarProps) {
           </svg>
           <span role="status" aria-live="polite">
             {copied
-              ? journalPageCopy.articleLabels.copiedFeedback
-              : journalPageCopy.articleLabels.copyLinkButton}
+              ? labels.copiedFeedback
+              : labels.copyLinkButton}
           </span>
         </button>
       </div>

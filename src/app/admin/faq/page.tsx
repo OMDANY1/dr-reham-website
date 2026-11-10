@@ -64,8 +64,8 @@ export default function AdminFaqPage() {
 
   return (
     <AdminShell
-      title="إدارة الأسئلة الشائعة (FAQ)"
-      subtitle="إضافة وتعديل وترتيب وإظهار أو إخفاء ونشر الأسئلة الشائعة"
+      title="إدارة الأسئلة الشائعة (FAQ — AR & EN)"
+      subtitle="إضافة وتعديل وترتيب وإظهار أو إخفاء ونشر الأسئلة الشائعة بالعربية والإنجليزية"
       actions={
         <button
           type="button"
@@ -74,9 +74,12 @@ export default function AdminFaqPage() {
             setEditing({
               question: "",
               answer: "",
+              questionEn: "",
+              answerEn: "",
               category: "consultation",
               sortOrder: faqs.length + 1,
               status: "draft",
+              statusEn: "draft",
             })
           }
         >
@@ -103,28 +106,56 @@ export default function AdminFaqPage() {
           </h2>
 
           <form onSubmit={handleSave} className="admin-form-grid">
-            <div className="admin-field">
-              <label className="admin-label">السؤال</label>
-              <input
-                required
-                className="admin-input"
-                value={editing.question || ""}
-                onChange={(e) =>
-                  setEditing({ ...editing, question: e.target.value })
-                }
-              />
+            <div className="admin-form-grid admin-form-grid--2">
+              <div className="admin-field">
+                <label className="admin-label">السؤال (العربية)</label>
+                <input
+                  required
+                  className="admin-input"
+                  value={editing.question || ""}
+                  onChange={(e) =>
+                    setEditing({ ...editing, question: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="admin-field">
+                <label className="admin-label">Question (English)</label>
+                <input
+                  dir="ltr"
+                  className="admin-input"
+                  value={editing.questionEn || ""}
+                  onChange={(e) =>
+                    setEditing({ ...editing, questionEn: e.target.value })
+                  }
+                />
+              </div>
             </div>
 
-            <div className="admin-field">
-              <label className="admin-label">الإجابة التوعوية</label>
-              <textarea
-                required
-                className="admin-textarea"
-                value={editing.answer || ""}
-                onChange={(e) =>
-                  setEditing({ ...editing, answer: e.target.value })
-                }
-              />
+            <div className="admin-form-grid admin-form-grid--2">
+              <div className="admin-field">
+                <label className="admin-label">الإجابة التوعوية (العربية)</label>
+                <textarea
+                  required
+                  className="admin-textarea"
+                  value={editing.answer || ""}
+                  onChange={(e) =>
+                    setEditing({ ...editing, answer: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="admin-field">
+                <label className="admin-label">Answer (English)</label>
+                <textarea
+                  dir="ltr"
+                  className="admin-textarea"
+                  value={editing.answerEn || ""}
+                  onChange={(e) =>
+                    setEditing({ ...editing, answerEn: e.target.value })
+                  }
+                />
+              </div>
             </div>
 
             <div className="admin-form-grid admin-form-grid--2">
@@ -163,21 +194,40 @@ export default function AdminFaqPage() {
             </div>
 
             {userRole === "admin" ? (
-              <div className="admin-field">
-                <label className="admin-label">حالة الظهور والنشر</label>
-                <select
-                  className="admin-select"
-                  value={editing.status || "draft"}
-                  onChange={(e) =>
-                    setEditing({
-                      ...editing,
-                      status: e.target.value as CmsFaqItem["status"],
-                    })
-                  }
-                >
-                  <option value="draft">مسودة (مخفي عن الزوار)</option>
-                  <option value="published">منشور للجمهور</option>
-                </select>
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">حالة النشر (العربية)</label>
+                  <select
+                    className="admin-select"
+                    value={editing.status || "draft"}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        status: e.target.value as CmsFaqItem["status"],
+                      })
+                    }
+                  >
+                    <option value="draft">مسودة (مخفي عن الزوار)</option>
+                    <option value="published">منشور للجمهور</option>
+                  </select>
+                </div>
+
+                <div className="admin-field">
+                  <label className="admin-label">حالة النشر (English)</label>
+                  <select
+                    className="admin-select"
+                    value={editing.statusEn || editing.status || "draft"}
+                    onChange={(e) =>
+                      setEditing({
+                        ...editing,
+                        statusEn: e.target.value as CmsFaqItem["status"],
+                      })
+                    }
+                  >
+                    <option value="draft">Draft (Hidden)</option>
+                    <option value="published">Published (EN)</option>
+                  </select>
+                </div>
               </div>
             ) : null}
 
@@ -203,7 +253,8 @@ export default function AdminFaqPage() {
             <thead>
               <tr>
                 <th>الترتيب</th>
-                <th>السؤال</th>
+                <th>السؤال (AR)</th>
+                <th>Question (EN)</th>
                 <th>التصنيف</th>
                 <th>الحالة</th>
                 <th>إجراءات</th>
@@ -214,6 +265,7 @@ export default function AdminFaqPage() {
                 <tr key={f.id}>
                   <td>{f.sortOrder}</td>
                   <td style={{ fontWeight: 700 }}>{f.question}</td>
+                  <td dir="ltr">{f.questionEn || "—"}</td>
                   <td>{f.category}</td>
                   <td>
                     <span

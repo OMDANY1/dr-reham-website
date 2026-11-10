@@ -1,5 +1,6 @@
 /* ==========================================================================
-   Design Tokens — د. ريهام القحطاني (Approved Color System)
+   Design Tokens — د. ريهام القحطاني | Dr. Reham Alqahtani
+   Warm Ivory & Deep Plum Editorial Design System (RTL Arabic + LTR English)
    ========================================================================== */
 
 @font-face {
@@ -75,47 +76,68 @@
 }
 
 :root {
-  /* نظام الألوان المعتمد — المرجع الوحيد لألوان الواجهة */
-  --color-navy: #0F2A3D;           /* العناوين واللوجو */
-  --color-teal: #0B7A9A;           /* اللون المميز للأزرار والروابط والتفاصيل */
-  --color-teal-hover: #086680;     /* تفاعل الأزرار الأساسية */
-  --color-sand: #C9A27A;           /* التفصيلة الرملية تحت عنوان الافتتاحية */
-  --color-sand-light: #F0DFC4;     /* القيمة المرشحة للعنوان الفرعي (تباينها 3.77:1 على #0B7A9A، لذا يُستخدم الأبيض 4.92:1 لتحقيق >= 4.5:1) */
-  --color-eyebrow-on-teal: #FFFFFF;/* لون عبارة «التواصل المباشر» فوق خلفية التيل لتحقيق تباين 4.92:1 (>= 4.5:1) */
-  --color-lead-statement: #1E3A4C; /* الفقرة البارزة في قسم «عن الدكتورة» */
-  --color-paragraph: #475569;      /* الفقرات */
-  --color-secondary: #556070;      /* النصوص الثانوية الصغيرة (تباين 6.01:1–6.38:1) */
-  --color-page-bg: #F8FBFD;        /* خلفية الصفحة */
-  --color-card-bg: #F4F9FC;        /* خلفية الكروت */
-  --color-border: #B8D4E3;         /* الحدود */
-  --color-tag-bg: #E6F1F7;         /* خلفية وسوم التصنيفات */
-  --color-white: #FFFFFF;          /* الأبيض */
+  /* ========================================================================
+     Warm Ivory & Deep Plum Editorial Palette (Single Source of Truth)
+     ======================================================================== */
+  --color-page-bg: #F5ECE6;          /* خلفية الصفحة العاجية الدافئة */
+  --color-surface-light: #FBF7F3;    /* خلفية فاتحة للأقسام وشريط التخصصات */
+  --color-card-bg: #FAF5F0;          /* خلفية الكروت الدافئة */
+  --color-plum-dark: #321C30;        /* العناوين واللوجو البرقوقي العميق (12.56:1 على #F5ECE6) */
+  --color-plum: #60334F;             /* اللون الأساسي للأزرار والعناصر البرقوقية (8.97:1 مع الأبيض) */
+  --color-plum-hover: #452239;       /* تفاعل الأزرار الأساسية Hover (11.79:1 مع الأبيض) */
+  --color-olive: #77734F;            /* التفاصيل والأيقونات والخطوط الزيتونية الذهبية */
+  --color-olive-text: #575337;       /* زيتوني غامق للنصوص الصغيرة فوق الخلفية العاجية (6.54:1) */
+  --color-paragraph: #383238;        /* نص الفقرات الأساسي (10.42:1 على #F5ECE6) */
+  --color-secondary: #5E525C;        /* النص الثانوي (5.92:1 على #F5ECE6، >= 4.5:1) */
+  --color-border: #D8CBC2;           /* الحدود والفواصل الدافئة */
+  --color-tag-bg: #EFE5DD;           /* خلفية وسوم التصنيفات */
+  --color-white: #FFFFFF;            /* الأبيض */
 
-  /* متغيرات دلالية مرتبطة مباشرة باللوحة المعتمدة فقط (دون أي درجات زرقاء إضافية) */
-  --ink: var(--color-navy);
+  /* قسم النتائج البرقوقي الداكن */
+  --color-results-bg-start: #421E36;
+  --color-results-bg-end: #2E1426;
+  --color-ivory-on-plum: #FBF7F3;
+
+  /* توافق دلالي مع المتغيرات المركزية عبر المشروع بالكامل */
+  --color-navy: var(--color-plum-dark);
+  --color-teal: var(--color-plum);
+  --color-teal-hover: var(--color-plum-hover);
+  --color-sand: var(--color-olive);
+  --color-sand-light: #E8DCD5;
+  --color-eyebrow-on-teal: #FBF7F3;
+  --color-lead-statement: #321C30;
+
+  --ink: var(--color-plum-dark);
   --muted: var(--color-secondary);
   --border: var(--color-border);
   --white: var(--color-white);
 
-  /* Typography — High-contrast Editorial Scale */
+  /* ========================================================================
+     Editorial Typography Families (Bilingual AR + EN)
+     ======================================================================== */
   --font-ar: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
-  --text-hero: clamp(2.45rem, 3.85vw + 0.65rem, 4.15rem);
-  --text-h1: clamp(2.25rem, 3.4vw + 1rem, 3.75rem);
-  --text-h2: clamp(1.875rem, 2.4vw + 0.9rem, 2.875rem);
-  --text-statement: clamp(1.45rem, 1.5vw + 0.9rem, 2.05rem);
-  --text-h3: clamp(1.25rem, 0.9vw + 0.95rem, 1.55rem);
-  --text-body-lg: clamp(1.125rem, 0.3vw + 1.02rem, 1.25rem);
-  --text-body: clamp(1.0625rem, 0.22vw + 1rem, 1.1875rem);
-  --text-small: 0.95rem;
-  --text-caption: 0.875rem;
+  --font-serif-ar: "Noto Naskh Arabic", "IBM Plex Sans Arabic", Georgia, serif;
+  --font-serif-en: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans-en: "Plus Jakarta Sans", "IBM Plex Sans Arabic", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Fluid Editorial Type Scale */
+  --text-hero: clamp(2.65rem, 4.2vw + 0.85rem, 4.5rem);
+  --text-h1: clamp(2.25rem, 3.4vw + 0.9rem, 3.75rem);
+  --text-h2: clamp(1.85rem, 2.3vw + 0.85rem, 2.85rem);
+  --text-statement: clamp(1.35rem, 1.35vw + 0.85rem, 1.95rem);
+  --text-h3: clamp(1.18rem, 0.75vw + 0.92rem, 1.45rem);
+  --text-body-lg: clamp(1.0625rem, 0.25vw + 0.98rem, 1.1875rem);
+  --text-body: clamp(1rem, 0.18vw + 0.95rem, 1.09375rem);
+  --text-small: 0.925rem;
+  --text-caption: 0.84rem;
 
   /* Line Heights */
-  --leading-hero: 1.18;
-  --leading-heading: 1.32;
-  --leading-statement: 1.62;
-  --leading-body: 1.82;
+  --leading-hero: 1.08;
+  --leading-heading: 1.24;
+  --leading-statement: 1.56;
+  --leading-body: 1.76;
 
-  /* Spacing Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96, 128 */
+  /* Spacing Scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -124,18 +146,18 @@
   --space-6: 2rem;
   --space-7: 3rem;
   --space-8: 4rem;
-  --space-9: 6rem;
-  --space-10: 8rem;
+  --space-9: 5.5rem;
+  --space-10: 7.5rem;
 
   /* Layout & Controls */
   --content-width: 82rem; /* 1312px */
-  --reading-measure: 60ch;
+  --reading-measure: 62ch;
   --gutter-mobile: 1.25rem; /* 20px */
   --gutter-desktop: 3rem; /* 48px */
-  --control-height: 3.25rem; /* 52px */
+  --control-height: 2.875rem; /* 46px refined editorial button height */
   --touch-min: 2.75rem; /* 44px */
-  --control-radius: 0.625rem; /* 10px */
-  --overlay-shadow: 0 24px 48px -12px rgba(15, 42, 61, 0.18);
+  --control-radius: 0.5rem; /* 8px subtle editorial rounding */
+  --overlay-shadow: 0 24px 48px -14px rgba(50, 28, 48, 0.16);
 }
 
 @media (max-width: 375px) {
