@@ -141,16 +141,17 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 4) {
+      if (parsed && parsed.schemaVersion >= 5) {
         return parsed;
       }
       if (
         parsed &&
         (parsed.schemaVersion === 1 ||
           parsed.schemaVersion === 2 ||
-          parsed.schemaVersion === 3)
+          parsed.schemaVersion === 3 ||
+          parsed.schemaVersion === 4)
       ) {
-        // Migrate schema v1/v2/v3 -> v4: enrich with bilingual English data, updated WhatsApp (+966 580779630), and Before/After section copy & initial cases while preserving users
+        // Migrate schema v1..v4 -> v5: enrich with bilingual English data, updated WhatsApp (+966 580779630), Before/After section, and Follower Testimonials section
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -158,10 +159,25 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 4;
+        parsed.schemaVersion = 5;
         if (parsed.pages?.home) {
           const prevPub = parsed.pages.home.publishedData;
           const prevResults = prevPub.resultsSection;
+          const prevTestimonials = prevPub.testimonialsSection;
+          const prevOrder = prevPub.sectionOrder ?? freshPage.publishedData.sectionOrder;
+          const nextOrder = prevOrder.includes("testimonialsSection")
+            ? prevOrder
+            : (() => {
+                const copy = [...prevOrder];
+                const faqIdx = copy.indexOf("faqSection");
+                if (faqIdx >= 0) {
+                  copy.splice(faqIdx, 0, "testimonialsSection");
+                } else {
+                  copy.push("testimonialsSection");
+                }
+                return copy;
+              })();
+
           parsed.pages.home.publishedData = {
             ...freshPage.publishedData,
             ...prevPub,
@@ -220,6 +236,23 @@ function ensureStoreInitialized(): PersistentCmsStore {
                       : prevResults.descriptionEn,
                 }
               : freshPage.publishedData.resultsSection,
+            testimonialsSection: prevTestimonials
+              ? {
+                  ...freshPage.publishedData.testimonialsSection!,
+                  ...prevTestimonials,
+                  items:
+                    prevTestimonials.items && prevTestimonials.items.length > 0
+                      ? prevTestimonials.items
+                      : freshPage.publishedData.testimonialsSection!.items,
+                }
+              : freshPage.publishedData.testimonialsSection,
+            sectionVisibility: {
+              ...freshPage.publishedData.sectionVisibility,
+              ...prevPub.sectionVisibility,
+              testimonialsSection:
+                prevPub.sectionVisibility?.testimonialsSection ?? true,
+            },
+            sectionOrder: nextOrder,
             finalInquiry: {
               ...freshPage.publishedData.finalInquiry,
               ...prevPub.finalInquiry,
@@ -319,7 +352,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 4,
+    schemaVersion: 5,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},

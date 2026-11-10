@@ -15,6 +15,7 @@ import {
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import { renderBidiSafeText } from "@/lib/bidi";
 import type { HomePageCmsData } from "@/lib/cms/types";
 
 export interface BookingPanelProps {
@@ -211,7 +212,7 @@ export function BookingPanel({
                   ) : null}
                   {instagramHref ? (
                     <Button href={instagramHref} variant="secondary" external>
-                      <span>{copy.directInquiryCard.actionLabel}</span>
+                      <span>{renderBidiSafeText(copy.directInquiryCard.actionLabel)}</span>
                       <span aria-hidden="true">{isEn ? "→" : "↗"}</span>
                     </Button>
                   ) : null}

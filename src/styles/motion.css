@@ -1,22 +1,23 @@
 /* ==========================================================================
-   Refined & Perceptible Editorial Motion (Respects prefers-reduced-motion)
+   Site-Wide 60fps Editorial Motion & Micro-Interactions
+   GPU-Composited (transform & opacity) + Tiered prefers-reduced-motion
    ========================================================================== */
 
 @keyframes heroTextReveal {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translate3d(0, 24px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @keyframes heroPhotoReveal {
   from {
     opacity: 0;
-    transform: scale(1.035);
+    transform: scale(1.055);
   }
   to {
     opacity: 1;
@@ -24,68 +25,294 @@
   }
 }
 
-@keyframes editorialSectionReveal {
+@keyframes oliveRuleDraw {
   from {
-    opacity: 0.35;
-    transform: translateY(18px);
+    opacity: 0;
+    transform: scaleX(0.15);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: scaleX(1);
+  }
+}
+
+@keyframes palmBreeze {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(4px, 3px, 0) rotate(1.2deg);
+  }
+}
+
+@keyframes palmBreezeRtl {
+  0%,
+  100% {
+    transform: scaleX(-1) translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: scaleX(-1) translate3d(4px, 3px, 0) rotate(1.2deg);
+  }
+}
+
+@keyframes editorialSectionReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes staggerCardReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes drawerSlideIn {
   from {
-    transform: translateX(20px);
+    opacity: 0;
+    transform: translate3d(20px, 0, 0);
   }
   to {
-    transform: translateX(0);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes floatingCtaReveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes whatsappIconPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes accordionContentFade {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .reveal-hero-1 {
-    animation: heroTextReveal 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* 1. Hero & Inner Page Header Entrance Choreography */
+  .reveal-hero-1,
+  .page-header .eyebrow {
+    animation: heroTextReveal 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .reveal-hero-2 {
-    animation: heroTextReveal 720ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+  .reveal-hero-2,
+  .page-header h1 {
+    animation: heroTextReveal 760ms cubic-bezier(0.16, 1, 0.3, 1) 90ms both;
   }
 
-  .reveal-hero-3 {
-    animation: heroTextReveal 760ms cubic-bezier(0.22, 1, 0.36, 1) 170ms both;
+  .hero-editorial__sand-line {
+    transform-origin: inline-start center;
+    animation: oliveRuleDraw 820ms cubic-bezier(0.16, 1, 0.3, 1) 180ms both;
+  }
+
+  .reveal-hero-3,
+  .page-header .section-lead {
+    animation: heroTextReveal 800ms cubic-bezier(0.16, 1, 0.3, 1) 190ms both;
   }
 
   .reveal-hero-4 {
-    animation: heroTextReveal 800ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+    animation: heroTextReveal 840ms cubic-bezier(0.16, 1, 0.3, 1) 280ms both;
   }
 
   .reveal-hero-photo {
-    animation: heroPhotoReveal 950ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+    animation: heroPhotoReveal 1050ms cubic-bezier(0.16, 1, 0.3, 1) 60ms both;
   }
 
-  /* Scroll-triggered reveal for editorial sections — always visible when static */
+  html[dir="ltr"] .hero-editorial__palm-shadow {
+    animation: palmBreeze 9s ease-in-out infinite;
+  }
+
+  html[dir="rtl"] .hero-editorial__palm-shadow {
+    animation: palmBreezeRtl 9s ease-in-out infinite;
+  }
+
+  /* 2. Scroll-Triggered Section & Staggered Children Reveal */
   .scroll-reveal {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
+  }
+
+  .scroll-reveal--pending {
+    opacity: 0.01;
+    transform: translate3d(0, 28px, 0);
   }
 
   .scroll-reveal--entering {
-    animation: editorialSectionReveal 680ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: editorialSectionReveal 720ms cubic-bezier(0.16, 1, 0.3, 1)
+      var(--reveal-delay, 0ms) both;
   }
 
-  /* Subtle editorial image zoom on hover */
-  .editorial-photo-zoom {
-    transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  .scroll-reveal--entering .stagger-item {
+    animation: staggerCardReveal 680ms cubic-bezier(0.16, 1, 0.3, 1)
+      calc(var(--reveal-delay, 0ms) + var(--stagger-index, 0) * 95ms) both;
   }
 
-  .editorial-photo-wrap:hover .editorial-photo-zoom {
-    transform: scale(1.028);
+  /* 3. Editorial Photo Zoom & Card Hover Micro-Interactions (60fps) */
+  .editorial-photo-zoom,
+  .results-photo-card__img {
+    transition: transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .editorial-photo-wrap:hover .editorial-photo-zoom,
+  .results-photo-card:hover .results-photo-card__img {
+    transform: scale(1.032);
+  }
+
+  .specialties-strip__item {
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .specialties-strip__item:hover {
+    transform: translate3d(0, -3px, 0);
+  }
+
+  .specialties-strip__icon,
+  .about-editorial__principle-icon {
+    transition:
+      transform 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      color 220ms ease;
+  }
+
+  .specialties-strip__item:hover .specialties-strip__icon,
+  .about-editorial__principle-item:hover .about-editorial__principle-icon {
+    transform: translate3d(0, -2px, 0) scale(1.1);
+    color: var(--color-plum);
+  }
+
+  .about-editorial__principle-item {
+    transition:
+      transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 220ms ease;
+  }
+
+  html[dir="rtl"] .about-editorial__principle-item:hover {
+    transform: translate3d(-5px, 0, 0);
+  }
+
+  html[dir="ltr"] .about-editorial__principle-item:hover {
+    transform: translate3d(5px, 0, 0);
+  }
+
+  .education-article-card,
+  .prep-step-card,
+  .content-style-card,
+  .content-style-pillar,
+  .testimonial-card,
+  .inquiry-channel-card,
+  .numbered-row {
+    transition:
+      transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 240ms ease,
+      background-color 240ms ease;
+  }
+
+  .education-article-card:hover,
+  .prep-step-card:hover,
+  .content-style-card:hover,
+  .content-style-pillar:hover,
+  .testimonial-card:hover,
+  .inquiry-channel-card:hover {
+    transform: translate3d(0, -5px, 0);
+  }
+
+  /* 4. Buttons, Directional Arrows & Floating WhatsApp CTA */
+  .btn,
+  .header-cta-pill {
+    transition:
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease,
+      box-shadow 220ms ease;
+  }
+
+  .btn:hover,
+  .header-cta-pill:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .btn:active,
+  .header-cta-pill:active {
+    transform: scale(0.97);
+  }
+
+  .btn span[aria-hidden="true"],
+  .text-link span[aria-hidden="true"] {
+    display: inline-block;
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html[dir="rtl"] .btn:hover span[aria-hidden="true"],
+  html[dir="rtl"] .text-link:hover span[aria-hidden="true"] {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  html[dir="ltr"] .btn:hover span[aria-hidden="true"],
+  html[dir="ltr"] .text-link:hover span[aria-hidden="true"] {
+    transform: translate3d(4px, 0, 0);
+  }
+
+  /* 5. Smooth Accordion Open Animation */
+  .accordion-item {
+    transition:
+      border-color 220ms ease,
+      box-shadow 240ms ease,
+      transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .accordion-item:hover {
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .accordion-item[open] .accordion-body__inner {
+    animation: accordionContentFade 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* 6. Floating WhatsApp Entrance & Subtle Pulse */
+  .floating-whatsapp-cta {
+    animation: floatingCtaReveal 650ms cubic-bezier(0.16, 1, 0.3, 1) 420ms both;
+  }
+
+  .floating-whatsapp-cta__icon {
+    animation: whatsappIconPulse 3.2s ease-in-out infinite;
   }
 
   .mobile-menu-dialog {
-    animation: drawerSlideIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: drawerSlideIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }
 
@@ -96,9 +323,28 @@
   .reveal-hero-3,
   .reveal-hero-4,
   .reveal-hero-photo,
+  .hero-editorial__sand-line,
+  .hero-editorial__palm-shadow,
   .scroll-reveal,
+  .scroll-reveal--pending,
   .scroll-reveal--entering,
+  .stagger-item,
   .editorial-photo-zoom,
+  .results-photo-card__img,
+  .specialties-strip__item,
+  .specialties-strip__icon,
+  .about-editorial__principle-item,
+  .about-editorial__principle-icon,
+  .education-article-card,
+  .prep-step-card,
+  .content-style-card,
+  .content-style-pillar,
+  .testimonial-card,
+  .inquiry-channel-card,
+  .accordion-item,
+  .accordion-body__inner,
+  .floating-whatsapp-cta,
+  .floating-whatsapp-cta__icon,
   .mobile-menu-dialog {
     animation: none !important;
     transition: none !important;

@@ -20,6 +20,7 @@ const SECTION_LABELS: Record<HomeSectionKey, string> = {
   beforeConsultationSection: "قسم ما قبل الاستشارة",
   knowledgeSection: "قسم التثقيف الطبي والمقالات",
   contentStyleSection: "قسم أسلوب المحتوى التوعوي",
+  testimonialsSection: "قسم آراء المتابعين",
   faqSection: "قسم الأسئلة الشائعة",
   finalInquiry: "قسم التواصل النهائي",
 };
@@ -38,6 +39,7 @@ export default function AdminPagesEditor() {
     | "beforeConsultationSection"
     | "knowledgeSection"
     | "contentStyleSection"
+    | "testimonialsSection"
     | "faqSection"
     | "finalInquiry"
     | "headerFooter"
@@ -442,10 +444,11 @@ export default function AdminPagesEditor() {
                 { id: "specialtySection", label: "٦. التخصص التفصيلي" },
                 { id: "beforeConsultationSection", label: "٧. ما قبل الاستشارة" },
                 { id: "contentStyleSection", label: "٨. أسلوب المحتوى" },
-                { id: "faqSection", label: "٩. الأسئلة الشائعة" },
-                { id: "finalInquiry", label: "١٠. التواصل النهائي" },
-                { id: "headerFooter", label: "١١. الهيدر والفوتر" },
-                { id: "englishContent", label: "١٢. المحتوى الإنجليزي (EN)" },
+                { id: "testimonialsSection", label: "٩. آراء المتابعين" },
+                { id: "faqSection", label: "١٠. الأسئلة الشائعة" },
+                { id: "finalInquiry", label: "١١. التواصل النهائي" },
+                { id: "headerFooter", label: "١٢. الهيدر والفوتر" },
+                { id: "englishContent", label: "١٣. المحتوى الإنجليزي (EN)" },
                 { id: "order", label: "ترتيب وإظهار الأقسام" },
                 { id: "revisions", label: `سجل النسخ (${revisions.length})` },
               ].map((tab) => (
@@ -1961,6 +1964,303 @@ export default function AdminPagesEditor() {
                     })
                   }
                 />
+              </div>
+            </section>
+          ) : null}
+
+          {activeTab === "testimonialsSection" ? (
+            <section className="admin-card">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                  marginBottom: "1rem",
+                }}
+              >
+                <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                  تحرير قسم «آراء المتابعين» (AR / EN)
+                </h2>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--primary"
+                  onClick={() =>
+                    updateDraft((d) => {
+                      if (!d.testimonialsSection) {
+                        d.testimonialsSection = {
+                          id: "follower-testimonials",
+                          eyebrow: "انطباعات المجتمع",
+                          eyebrowEn: "COMMUNITY IMPRESSIONS",
+                          title: "آراء المتابعين",
+                          titleEn: "Follower Reflections",
+                          subtitle:
+                            "انطباعات المتابعين والمراجعين حول أسلوب التثقيف الطبي وتجربة الاستشارة الهادئة.",
+                          subtitleEn:
+                            "Reflections from followers and visitors on our educational approach and calm consultation experience.",
+                          items: [],
+                        };
+                      }
+                      const nextIdx = (d.testimonialsSection.items?.length || 0) + 1;
+                      d.testimonialsSection.items = [
+                        ...(d.testimonialsSection.items || []),
+                        {
+                          id: `follower-feedback-${Date.now()}`,
+                          authorAr: `متابع ${nextIdx}`,
+                          authorEn: `Follower ${nextIdx}`,
+                          roleAr: "متابع للمحتوى التثقيفي",
+                          roleEn: "Educational Content Follower",
+                          topicTagAr: "وضوح الشرح الطبي",
+                          topicTagEn: "Clarity of Explanation",
+                          quoteAr:
+                            "محتوى طبي هادئ وواضح يساعد على فهم تفاصيل الجفون ومحيط العين.",
+                          quoteEn:
+                            "Calm and clear medical guidance that helps explain eyelid and periocular details.",
+                          platformLabelAr: "عبر حساب إنستجرام @dr.rehamdq",
+                          platformLabelEn: "Via Instagram @dr.rehamdq",
+                          status: "published",
+                          sortOrder: nextIdx,
+                        },
+                      ];
+                      return d;
+                    })
+                  }
+                >
+                  + إضافة رأي متابع جديد
+                </button>
+              </div>
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">العنوان الفرعي (AR)</label>
+                  <input
+                    className="admin-input"
+                    value={draft.testimonialsSection?.eyebrow || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.eyebrow = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">العنوان الرئيسي (AR)</label>
+                  <input
+                    className="admin-input"
+                    value={draft.testimonialsSection?.title || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.title = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Eyebrow (EN)</label>
+                  <input
+                    className="admin-input"
+                    dir="ltr"
+                    value={draft.testimonialsSection?.eyebrowEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.eyebrowEn = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Title (EN)</label>
+                  <input
+                    className="admin-input"
+                    dir="ltr"
+                    value={draft.testimonialsSection?.titleEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.titleEn = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">الوصف الفرعي (AR)</label>
+                  <textarea
+                    className="admin-textarea"
+                    value={draft.testimonialsSection?.subtitle || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.subtitle = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Subtitle (EN)</label>
+                  <textarea
+                    className="admin-textarea"
+                    dir="ltr"
+                    value={draft.testimonialsSection?.subtitleEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (!d.testimonialsSection) return d;
+                        d.testimonialsSection.subtitleEn = e.target.value;
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                  marginTop: "1rem",
+                }}
+              >
+                {(draft.testimonialsSection?.items || []).map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="admin-card admin-card--tinted"
+                    style={{ padding: "1.15rem" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "0.75rem",
+                      }}
+                    >
+                      <strong>
+                        رأي متابع #{idx + 1} — {item.authorAr}
+                      </strong>
+                      <button
+                        type="button"
+                        className="admin-btn"
+                        onClick={() =>
+                          updateDraft((d) => {
+                            if (!d.testimonialsSection?.items) return d;
+                            d.testimonialsSection.items.splice(idx, 1);
+                            return d;
+                          })
+                        }
+                      >
+                        حذف
+                      </button>
+                    </div>
+
+                    <div className="admin-form-grid admin-form-grid--2">
+                      <div className="admin-field">
+                        <label className="admin-label">اسم المتابع (AR)</label>
+                        <input
+                          className="admin-input"
+                          value={item.authorAr}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].authorAr =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">Author Name (EN)</label>
+                        <input
+                          className="admin-input"
+                          dir="ltr"
+                          value={item.authorEn}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].authorEn =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">الصفة / السياق (AR)</label>
+                        <input
+                          className="admin-input"
+                          value={item.roleAr}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].roleAr =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">Role / Context (EN)</label>
+                        <input
+                          className="admin-input"
+                          dir="ltr"
+                          value={item.roleEn}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].roleEn =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">نص الرأي (AR)</label>
+                        <textarea
+                          className="admin-textarea"
+                          value={item.quoteAr}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].quoteAr =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="admin-field">
+                        <label className="admin-label">Quote (EN)</label>
+                        <textarea
+                          className="admin-textarea"
+                          dir="ltr"
+                          value={item.quoteEn}
+                          onChange={(e) =>
+                            updateDraft((d) => {
+                              if (!d.testimonialsSection?.items?.[idx]) return d;
+                              d.testimonialsSection.items[idx].quoteEn =
+                                e.target.value;
+                              return d;
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           ) : null}

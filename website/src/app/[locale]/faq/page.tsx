@@ -18,6 +18,7 @@ import { getPublicOrPreviewFaqs } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
 import { Accordion } from "@/components/ui/Accordion";
 import { Button } from "@/components/ui/Button";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { BookingPanel } from "@/components/sections/BookingPanel";
 
 export const dynamic = "force-dynamic";
@@ -111,21 +112,23 @@ export default async function FaqPage({
               }}
             >
               {groupedFaqs.map((group) => (
-                <div key={group.category} className="editorial-split">
-                  <div className="editorial-split__lead">
-                    <h3 className="section-title">{group.title}</h3>
+                <ScrollReveal key={group.category}>
+                  <div className="editorial-split">
+                    <div className="editorial-split__lead">
+                      <h3 className="section-title">{group.title}</h3>
+                    </div>
+                    <div className="editorial-split__content">
+                      <Accordion
+                        items={group.items.map((item, idx) => ({
+                          id: item.id,
+                          question: item.question,
+                          answer: item.answer ?? "",
+                          defaultOpen: idx === 0,
+                        }))}
+                      />
+                    </div>
                   </div>
-                  <div className="editorial-split__content">
-                    <Accordion
-                      items={group.items.map((item, idx) => ({
-                        id: item.id,
-                        question: item.question,
-                        answer: item.answer ?? "",
-                        defaultOpen: idx === 0,
-                      }))}
-                    />
-                  </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           ) : (

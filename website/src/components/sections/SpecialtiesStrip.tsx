@@ -4,6 +4,7 @@ import { homeContent } from "@/content/ar/home";
 import { homeContentEn } from "@/content/en";
 import type { HomePageCmsData } from "@/lib/cms/types";
 import { Container } from "@/components/ui/Container";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 export interface SpecialtiesStripProps {
   data?: HomePageCmsData["specialtiesStrip"];
@@ -176,19 +177,25 @@ export function SpecialtiesStrip({
       }
     >
       <Container>
-        <ul className="specialties-strip__grid">
-          {activeItems.map((item) => (
-            <li key={item.id} className="specialties-strip__item">
-              <span className="specialties-strip__icon">
-                <SpecialtyIcon icon={item.icon} />
-              </span>
-              <div>
-                <h2 className="specialties-strip__title">{item.title}</h2>
-                <p className="specialties-strip__subtitle">{item.subtitle}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <ScrollReveal>
+          <ul className="specialties-strip__grid">
+            {activeItems.map((item, idx) => (
+              <li
+                key={item.id}
+                className="specialties-strip__item stagger-item"
+                style={{ "--stagger-index": idx } as React.CSSProperties}
+              >
+                <span className="specialties-strip__icon">
+                  <SpecialtyIcon icon={item.icon} />
+                </span>
+                <div>
+                  <h2 className="specialties-strip__title">{item.title}</h2>
+                  <p className="specialties-strip__subtitle">{item.subtitle}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </ScrollReveal>
       </Container>
     </section>
   );

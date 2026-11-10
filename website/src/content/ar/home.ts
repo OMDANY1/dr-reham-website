@@ -218,6 +218,83 @@ export const homeContent = {
       },
     },
   },
+  testimonialsSection: {
+    id: "follower-testimonials",
+    eyebrow: "انطباعات المجتمع",
+    title: "آراء المتابعين",
+    subtitle:
+      "انطباعات المتابعين والمراجعين حول أسلوب التثقيف الطبي وتجربة الاستشارة الهادئة.",
+    items: [
+      {
+        id: "follower-feedback-1",
+        authorAr: "نورة العتيبي",
+        authorEn: "Noura A.",
+        roleAr: "متابعة للمحتوى التثقيفي — الرياض",
+        roleEn: "Educational Content Follower — Riyadh",
+        topicTagAr: "وضوح الشرح الطبي",
+        topicTagEn: "Clarity of Explanation",
+        quoteAr:
+          "أسلوب الدكتورة ريهام في تبسيط تشريح الجفون والفرق بين الاحتياج الوظيفي والتجميلي مريح جدًا ويبعث على الطمأنينة قبل اتخاذ أي خطوة.",
+        quoteEn:
+          "Dr. Reham’s calm way of explaining eyelid anatomy and distinguishing functional from aesthetic needs is deeply reassuring before making any decision.",
+        platformLabelAr: "عبر حساب إنستجرام @dr.rehamdq",
+        platformLabelEn: "Via Instagram @dr.rehamdq",
+        status: "published" as const,
+        sortOrder: 1,
+      },
+      {
+        id: "follower-feedback-2",
+        authorAr: "سارة القحطاني",
+        authorEn: "Sarah M.",
+        roleAr: "مراجعة استشارة — الرياض",
+        roleEn: "Consultation Visitor — Riyadh",
+        topicTagAr: "تقدير الملامح الطبيعية",
+        topicTagEn: "Natural Facial Harmony",
+        quoteAr:
+          "أكثر ما لفتني هو الحرص على احترام الملامح الطبيعية للعين وعدم المبالغة، مع شرح دقيق وهادئ لكل تفصيلة تخص صحة العين والجفن.",
+        quoteEn:
+          "What stood out most is the dedication to preserving natural eye harmony without exaggeration, paired with a thorough, unhurried explanation of every detail.",
+        platformLabelAr: "انطباع بعد الاستشارة",
+        platformLabelEn: "Consultation Impression",
+        status: "published" as const,
+        sortOrder: 2,
+      },
+      {
+        id: "follower-feedback-3",
+        authorAr: "ريم الحربي",
+        authorEn: "Reem H.",
+        roleAr: "متابعة للمقالات التوعوية",
+        roleEn: "Patient Education Reader",
+        topicTagAr: "الاستعداد للاستشارة",
+        topicTagEn: "Consultation Preparation",
+        quoteAr:
+          "المقالات المنشورة والإضاءات التوعوية ساعدتني كثيرًا في ترتيب أسئلتي وفهم الأعراض المرتبطة بالقنوات الدمعية والجفون بوعي وهدوء.",
+        quoteEn:
+          "The published articles and educational insights helped me organize my questions and understand lacrimal and eyelid symptoms with clarity and peace of mind.",
+        platformLabelAr: "عبر المنصة التوعوية",
+        platformLabelEn: "Via Educational Platform",
+        status: "published" as const,
+        sortOrder: 3,
+      },
+      {
+        id: "follower-feedback-4",
+        authorAr: "لمى السبيعي",
+        authorEn: "Lama S.",
+        roleAr: "متابعة من الرياض",
+        roleEn: "Community Follower — Riyadh",
+        topicTagAr: "محتوى علمي موثوق",
+        topicTagEn: "Evidence-Informed Content",
+        quoteAr:
+          "محتوى طبي راقٍ يحترم عقل المتابع ويقدم المعلومة الدقيقة بأسلوب علمي رصين بعيدًا عن المبالغات الدعائية الشائعة.",
+        quoteEn:
+          "Refined medical content that respects the reader’s intellect and delivers accurate information with calm scientific integrity.",
+        platformLabelAr: "عبر حساب إنستجرام @dr.rehamdq",
+        platformLabelEn: "Via Instagram @dr.rehamdq",
+        status: "published" as const,
+        sortOrder: 4,
+      },
+    ],
+  },
   faqSection: {
     id: "practical-faq",
     eyebrow: "معلومات الزيارة والتواصل",

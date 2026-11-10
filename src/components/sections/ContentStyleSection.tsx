@@ -80,8 +80,12 @@ export function ContentStyleSection({
               <p className="content-style-narrative__lead">{lead}</p>
 
               <div className="content-style-pillars">
-                {pillars.map((pillar) => (
-                  <div key={pillar.title} className="content-style-pillar">
+                {pillars.map((pillar, idx) => (
+                  <div
+                    key={pillar.title}
+                    className="content-style-pillar stagger-item"
+                    style={{ "--stagger-index": idx } as React.CSSProperties}
+                  >
                     <h3 className="content-style-pillar__title">
                       {pillar.title}
                     </h3>

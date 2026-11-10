@@ -1,4 +1,5 @@
 import React from "react";
+import { renderBidiSafeText } from "@/lib/bidi";
 
 export interface AccordionItemData {
   id: string;
@@ -14,7 +15,7 @@ export interface AccordionProps {
 
 /**
  * أكورديون قياسي متوافق مع إمكانية الوصول ولوحة المفاتيح وبدون الحاجة إلى JavaScript.
- * يسمح بفتح عدة إجابات في آن واحد ويوفر منطقة لمس مريحة (≥ 48px).
+ * يسمح بفتح عدة إجابات في آن واحد ويوفر منطقة لمس مريحة (≥ 48px) مع حركة فتح سلسة وعزل اتجاه الأرقام الدولية.
  */
 export function Accordion({ items, className = "" }: AccordionProps) {
   if (items.length === 0) {
@@ -23,15 +24,16 @@ export function Accordion({ items, className = "" }: AccordionProps) {
 
   return (
     <div className={`accordion-list ${className}`.trim()}>
-      {items.map((item) => (
+      {items.map((item, idx) => (
         <details
           key={item.id}
           id={`faq-${item.id}`}
-          className="accordion-item"
+          className="accordion-item stagger-item"
+          style={{ "--stagger-index": idx } as React.CSSProperties}
           open={item.defaultOpen}
         >
           <summary className="accordion-summary">
-            <span>{item.question}</span>
+            <span>{renderBidiSafeText(item.question)}</span>
             <span className="accordion-indicator" aria-hidden="true">
               <svg
                 width="14"
@@ -51,7 +53,9 @@ export function Accordion({ items, className = "" }: AccordionProps) {
             </span>
           </summary>
           <div className="accordion-body">
-            <p>{item.answer}</p>
+            <div className="accordion-body__inner">
+              <p>{renderBidiSafeText(item.answer)}</p>
+            </div>
           </div>
         </details>
       ))}

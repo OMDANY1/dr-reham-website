@@ -111,6 +111,7 @@ export type HomeSectionKey =
   | "specialtySection"
   | "beforeConsultationSection"
   | "contentStyleSection"
+  | "testimonialsSection"
   | "faqSection"
   | "finalInquiry";
 
@@ -148,6 +149,22 @@ export interface ResultsCaseItem {
   consentConfirmed: boolean;
   approvedByDoctor: boolean;
   published: boolean;
+}
+
+export interface FollowerTestimonialItem {
+  id: string;
+  authorAr: string;
+  authorEn: string;
+  roleAr: string;
+  roleEn: string;
+  quoteAr: string;
+  quoteEn: string;
+  topicTagAr?: string;
+  topicTagEn?: string;
+  platformLabelAr?: string;
+  platformLabelEn?: string;
+  status?: "draft" | "published";
+  sortOrder?: number;
 }
 
 export interface HomePageLocaleOverride {
@@ -333,6 +350,16 @@ export interface HomePageCmsData {
         focalY?: number;
       };
     };
+  };
+  testimonialsSection?: {
+    id: string;
+    eyebrow: string;
+    eyebrowEn: string;
+    title: string;
+    titleEn: string;
+    subtitle: string;
+    subtitleEn: string;
+    items: FollowerTestimonialItem[];
   };
   faqSection: {
     id: string;

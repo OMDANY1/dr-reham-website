@@ -148,7 +148,8 @@ export function KnowledgeTeaser({
                   <Link
                     key={article.slug}
                     href={`/${locale}/journal/${article.slug}`}
-                    className="education-article-card"
+                    className="education-article-card stagger-item"
+                    style={{ "--stagger-index": idx } as React.CSSProperties}
                     data-testid="education-article-card"
                   >
                     <div className="education-article-card__media editorial-photo-wrap">

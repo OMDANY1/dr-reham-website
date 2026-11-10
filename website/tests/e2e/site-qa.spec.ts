@@ -171,7 +171,30 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
       path: `${ARTIFACT_DIR}/before-after-ar-${w}.png`,
     });
 
-    // Capture full-page Arabic screenshot including Before & After section
+    // Verify Follower Testimonials section («آراء المتابعين»)
+    const arTestimonials = page.getByTestId("testimonials-section");
+    await expect(arTestimonials).toBeVisible();
+    await expect(arTestimonials).toContainText("آراء المتابعين");
+    await expect(arTestimonials.getByTestId("testimonial-card")).toHaveCount(4);
+    await expect(page.getByTestId("testimonials-counter")).toHaveText(
+      "01 / 04"
+    );
+    await arTestimonials.scrollIntoViewIfNeeded();
+    await arTestimonials.screenshot({
+      path: `${ARTIFACT_DIR}/testimonials-ar-${w}.png`,
+    });
+
+    // Verify FAQ phone number (+966 580779630) is isolated in <bdi dir="ltr">
+    const firstFaq = page.locator("#faq-how-to-inquire-appointments");
+    await expect(firstFaq).toBeVisible();
+    const faqBdi = firstFaq.locator('bdi[dir="ltr"]');
+    await expect(faqBdi.first()).toHaveText("+966 580779630");
+    await firstFaq.scrollIntoViewIfNeeded();
+    await firstFaq.screenshot({
+      path: `${ARTIFACT_DIR}/faq-phone-ar-${w}.png`,
+    });
+
+    // Capture full-page Arabic screenshot including Before & After and Follower Testimonials
     await page.screenshot({
       path: `${ARTIFACT_DIR}/plum-redesign-ar-home-${w}.png`,
       fullPage: true,
@@ -196,6 +219,15 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await enResults.scrollIntoViewIfNeeded();
     await enResults.screenshot({
       path: `${ARTIFACT_DIR}/before-after-en-${w}.png`,
+    });
+
+    const enTestimonials = page.getByTestId("testimonials-section");
+    await expect(enTestimonials).toBeVisible();
+    await expect(enTestimonials).toContainText("Follower Reflections");
+    await expect(enTestimonials.getByTestId("testimonial-card")).toHaveCount(4);
+    await enTestimonials.scrollIntoViewIfNeeded();
+    await enTestimonials.screenshot({
+      path: `${ARTIFACT_DIR}/testimonials-en-${w}.png`,
     });
 
     await page.screenshot({

@@ -243,6 +243,13 @@ export const homeContentEn = {
       },
     },
   },
+  testimonialsSection: {
+    id: "follower-testimonials",
+    eyebrow: "COMMUNITY IMPRESSIONS",
+    title: "Follower Reflections",
+    subtitle:
+      "Reflections from followers and visitors on our educational approach and calm consultation experience.",
+  },
   faqSection: {
     id: "practical-faq",
     eyebrow: "VISIT & INQUIRY INFO",

@@ -9,6 +9,7 @@ import { isLiveBookingReady, isSupportedLocale } from "@/lib/content-gates";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { getPublicClinicsFromCms } from "@/lib/cms/public-data";
 import { Container } from "@/components/ui/Container";
+import { ScrollReveal } from "@/components/ui/ScrollReveal";
 import { BookingPanel } from "@/components/sections/BookingPanel";
 
 export const dynamic = "force-dynamic";
@@ -105,32 +106,38 @@ export default async function BookPage({
         aria-labelledby="consultation-guidance-heading"
       >
         <Container>
-          <div className="editorial-split">
-            <div className="editorial-split__lead">
-              <span className="eyebrow">
-                {locale === "en" ? "CONSULTATION GUIDE" : "الزيارة الطبية"}
-              </span>
-              <h2 id="consultation-guidance-heading" className="section-title">
-                {copy.consultationGuidance.heading}
-              </h2>
-            </div>
+          <ScrollReveal>
+            <div className="editorial-split">
+              <div className="editorial-split__lead">
+                <span className="eyebrow">
+                  {locale === "en" ? "CONSULTATION GUIDE" : "الزيارة الطبية"}
+                </span>
+                <h2 id="consultation-guidance-heading" className="section-title">
+                  {copy.consultationGuidance.heading}
+                </h2>
+              </div>
 
-            <div className="editorial-split__content">
-              <ol className="numbered-rows">
-                {copy.consultationGuidance.items.map((item) => (
-                  <li key={item.title} className="numbered-row">
-                    <span className="numbered-row__index" aria-hidden="true">
-                      {item.number}
-                    </span>
-                    <div>
-                      <h3 className="numbered-row__title">{item.title}</h3>
-                      <p className="numbered-row__desc">{item.description}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              <div className="editorial-split__content">
+                <ol className="numbered-rows">
+                  {copy.consultationGuidance.items.map((item, idx) => (
+                    <li
+                      key={item.title}
+                      className="numbered-row stagger-item"
+                      style={{ "--stagger-index": idx } as React.CSSProperties}
+                    >
+                      <span className="numbered-row__index" aria-hidden="true">
+                        {item.number}
+                      </span>
+                      <div>
+                        <h3 className="numbered-row__title">{item.title}</h3>
+                        <p className="numbered-row__desc">{item.description}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
         </Container>
       </section>
 

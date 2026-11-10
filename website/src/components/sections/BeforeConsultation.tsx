@@ -56,8 +56,12 @@ export function BeforeConsultation({
           </div>
 
           <ol className="prep-steps-track">
-            {steps.map((step) => (
-              <li key={step.stepNumber} className="prep-step-card">
+            {steps.map((step, idx) => (
+              <li
+                key={step.stepNumber}
+                className="prep-step-card stagger-item"
+                style={{ "--stagger-index": idx } as React.CSSProperties}
+              >
                 <div className="prep-step-card__top">
                   <span className="prep-step-card__number" aria-hidden="true">
                     {step.stepNumber}
