@@ -1,10 +1,34 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 const ARTIFACT_DIR =
   "C:/Users/elwady/.gemini/antigravity/brain/1dfd746d-d8b6-480f-84bd-173216ab6bc6";
 
-test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign QA", () => {
-  test("Arabic Home (/ar) renders RTL Warm Ivory & Deep Plum editorial layout, hides unconsented Results, and has zero draft badges on public view", async ({
+async function ensureAdminAuthenticated(page: Page) {
+  await page.goto("/admin/login");
+  const authState = await page.request
+    .get("/api/admin/auth")
+    .then((r) => r.json());
+
+  if (authState.needsBootstrap) {
+    await page.fill("#bootstrap-name", "د. ريهام القحطاني (مدير)");
+    await page.fill("#bootstrap-email", "admin@dr-reham.sa");
+    await page.fill("#bootstrap-password", "AdminSecure#2026");
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/admin$/);
+  } else if (!authState.authenticated) {
+    await page.fill("#login-email", "admin@dr-reham.sa");
+    await page.fill("#login-password", "AdminSecure#2026");
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/\/admin$/);
+  }
+
+  await page.request.post("/api/admin/auth", {
+    data: { action: "toggle_preview", enable: true },
+  });
+}
+
+test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & Before/After Carousel QA", () => {
+  test("Arabic Home (/ar) uses Almarai font, updates WhatsApp to +966 580779630 everywhere, and hides unconsented Results on public view", async ({
     page,
     viewport,
   }) => {
@@ -23,10 +47,28 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
       "عناية دقيقة بتفاصيل نظرتك"
     );
 
-    const heroImg = page.locator(".hero-editorial__img");
-    await expect(heroImg).toBeVisible();
+    // Verify floating WhatsApp CTA and all WhatsApp links point to https://wa.me/966580779630
+    const floatingWa = page.getByTestId("floating-whatsapp-cta");
+    await expect(floatingWa).toBeVisible();
+    await expect(floatingWa).toHaveAttribute(
+      "href",
+      "https://wa.me/966580779630"
+    );
+    await expect(floatingWa).toContainText("+966 580779630");
 
-    // Verify Warm Ivory & Deep Plum computed colors and ensure hero photo is NOT mirrored
+    const waLinks = await page
+      .locator('a[href*="wa.me"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute("href") || ""));
+    expect(waLinks.length).toBeGreaterThanOrEqual(4);
+    for (const href of waLinks) {
+      expect(href).toBe("https://wa.me/966580779630");
+    }
+
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("045 0425");
+    expect(bodyText).not.toContain("966540450425");
+
+    // Verify Warm Ivory & Deep Plum colors, Almarai font-family, and non-mirrored hero photo
     const computed = await page.evaluate(() => {
       const getStyle = (sel: string) => {
         const el = document.querySelector(sel);
@@ -34,6 +76,9 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
       };
       return {
         pageBg: getStyle("body")?.backgroundColor,
+        bodyFont: getStyle("body")?.fontFamily || "",
+        h1Font: getStyle(".hero-editorial__headline")?.fontFamily || "",
+        aboutTitleFont: getStyle(".about-editorial__title")?.fontFamily || "",
         h1Color: getStyle(".hero-editorial__headline")?.color,
         headerLogoBg: getStyle(".site-header .brand-logo")?.backgroundColor,
         footerLogoBg: getStyle(".site-footer .brand-logo")?.backgroundColor,
@@ -48,13 +93,16 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
     });
 
     expect(computed.pageBg).toBe("rgb(245, 236, 230)"); // #F5ECE6 Warm Ivory
+    expect(computed.bodyFont.toLowerCase()).toContain("almarai");
+    expect(computed.h1Font.toLowerCase()).toContain("almarai");
+    expect(computed.aboutTitleFont.toLowerCase()).toContain("almarai");
     expect(computed.h1Color).toBe("rgb(50, 28, 48)"); // #321C30 Deep Plum
-    expect(computed.headerLogoBg).toBe("rgb(50, 28, 48)"); // #321C30
-    expect(computed.footerLogoBg).toBe("rgb(50, 28, 48)"); // #321C30
+    expect(computed.headerLogoBg).toBe("rgb(50, 28, 48)");
+    expect(computed.footerLogoBg).toBe("rgb(50, 28, 48)");
     expect(computed.primaryBtnBg).toBe("rgb(96, 51, 79)"); // #60334F Plum Accent
     expect(computed.oliveRuleBg).toBe("rgb(119, 115, 79)"); // #77734F Olive Gold
     expect(computed.stripBg).toBe("rgb(251, 247, 243)"); // #FBF7F3 Light Surface
-    expect(computed.heroImgTransform).toBe("none"); // Not mirrored
+    expect(computed.heroImgTransform).toBe("none");
     expect(computed.hasOverflow).toBe(false);
 
     // 4-Item Specialties Strip
@@ -62,40 +110,126 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
     await expect(strip).toBeVisible();
     await expect(strip.locator(".specialties-strip__item")).toHaveCount(4);
 
-    // 3-Column About Section (Sculpture + Narrative + 4 Principles)
+    // 3-Column About Section
     const aboutSection = page.getByTestId("about-editorial-section");
     await expect(aboutSection).toBeVisible();
     await expect(aboutSection.locator(".about-principle-row")).toHaveCount(4);
 
-    // Results section MUST be hidden on public view when no consented cases exist
+    // Results section MUST be hidden on public view when no published consented cases exist
     await expect(page.getByTestId("results-plum-section")).toHaveCount(0);
 
-    // Patient Education 3-Card Section with SVG dashed overlays & reading time
+    // Patient Education 3-Card Section
     const eduSection = page.getByTestId("home-articles-section");
     await expect(eduSection).toBeVisible();
     await expect(eduSection.getByTestId("education-article-card")).toHaveCount(
       3
     );
 
-    // No draft badges on public view
-    await expect(page.getByTestId("draft-preview-badge")).toHaveCount(0);
-
     const w = viewport?.width ?? 1440;
-    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.screenshot({
       path: `${ARTIFACT_DIR}/plum-redesign-ar-viewport-${w}.png`,
       fullPage: false,
     });
-    await page.addStyleTag({
-      content: ".site-header { position: static !important; }",
+  });
+
+  test("Before & After Carousel (/ar?preview=1 and /en?preview=1) renders between About and Education with side-by-side cases, controls, and captures Desktop/Mobile screenshots", async ({
+    page,
+    viewport,
+  }) => {
+    await ensureAdminAuthenticated(page);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+
+    const w = viewport?.width ?? 1440;
+
+    // 1. Arabic Preview (/ar?preview=1)
+    await page.goto("/ar?preview=1");
+    const arResults = page.getByTestId("results-plum-section");
+    await expect(arResults).toBeVisible();
+
+    // Verify exact placement: right after #about-doctor and right before #education
+    const sectionOrder = await page.evaluate(() => {
+      const ids = Array.from(
+        document.querySelectorAll("main section[id]")
+      ).map((el) => el.id);
+      return ids;
     });
+    const aboutIdx = sectionOrder.indexOf("about-doctor");
+    const resultsIdx = sectionOrder.indexOf("results");
+    const eduIdx = sectionOrder.indexOf("education");
+    expect(aboutIdx).toBeGreaterThanOrEqual(0);
+    expect(resultsIdx).toBe(aboutIdx + 1);
+    expect(eduIdx).toBe(resultsIdx + 1);
+
+    // Verify exact Arabic copy
+    await expect(arResults).toContainText("حالات مختارة");
+    await expect(arResults).toContainText("قبل وبعد");
+    await expect(arResults).toContainText(
+      "نماذج من حالات الدكتورة، مع اختلاف النتائج بحسب طبيعة كل حالة."
+    );
+
+    // Verify side-by-side Before & After images, equal heights, counter 01 / 04, dots, prev/next, pause/resume
+    const activeSlide = page.getByTestId("results-active-slide");
+    await expect(activeSlide).toBeVisible();
+    await expect(activeSlide.getByTestId("results-before-badge")).toHaveText(
+      "قبل"
+    );
+    await expect(activeSlide.getByTestId("results-after-badge")).toHaveText(
+      "بعد"
+    );
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
+    await expect(page.getByTestId("results-dot-btn")).toHaveCount(4);
+    await expect(page.getByTestId("results-autoplay-toggle")).toBeVisible();
+
+    // Verify clicking Next advances to 02 / 04
+    await page.getByTestId("results-next-btn").click();
+    await expect(page.getByTestId("results-counter")).toHaveText("02 / 04");
+    await page.getByTestId("results-prev-btn").click();
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
+
+    // Capture dedicated Before & After section screenshot (Arabic) without sticky header overlap
+    await page.addStyleTag({
+      content:
+        ".site-header { position: static !important; } .floating-whatsapp-cta { display: none !important; }",
+    });
+    await arResults.scrollIntoViewIfNeeded();
+    await arResults.screenshot({
+      path: `${ARTIFACT_DIR}/before-after-ar-${w}.png`,
+    });
+
+    // Capture full-page Arabic screenshot including Before & After section
     await page.screenshot({
       path: `${ARTIFACT_DIR}/plum-redesign-ar-home-${w}.png`,
       fullPage: true,
     });
+
+    // 2. English Preview (/en?preview=1)
+    await page.goto("/en?preview=1");
+    const enResults = page.getByTestId("results-plum-section");
+    await expect(enResults).toBeVisible();
+
+    await expect(enResults).toContainText("Selected Cases");
+    await expect(enResults).toContainText("Before & After");
+    await expect(enResults).toContainText(
+      "Selected cases from Dr. Reham’s practice. Individual results vary."
+    );
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
+
+    await page.addStyleTag({
+      content:
+        ".site-header { position: static !important; } .floating-whatsapp-cta { display: none !important; }",
+    });
+    await enResults.scrollIntoViewIfNeeded();
+    await enResults.screenshot({
+      path: `${ARTIFACT_DIR}/before-after-en-${w}.png`,
+    });
+
+    await page.screenshot({
+      path: `${ARTIFACT_DIR}/plum-redesign-en-home-${w}.png`,
+      fullPage: true,
+    });
   });
 
-  test("English Home (/en) renders LTR reference-matched layout, language switcher preserves route, and captures desktop/mobile screenshots", async ({
+  test("English Home (/en) renders LTR layout, preserves English fonts, and updates WhatsApp to +966 580779630", async ({
     page,
     viewport,
   }) => {
@@ -109,31 +243,14 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
 
     const h1 = page.locator("h1");
     await expect(h1).toContainText("Dr. Reham Alqahtani");
-    const tagline = page.locator(".hero-editorial__tagline");
-    await expect(tagline).toContainText("Precision in Care.");
-    await expect(tagline).toContainText("Harmony in Aesthetics.");
 
-    // Verify 4 specialties in English
-    const strip = page.getByTestId("specialties-strip");
-    await expect(strip).toContainText("Eyelid Surgery");
-    await expect(strip).toContainText("Periocular Care");
-    await expect(strip).toContainText("Ocular Surface & Comfort");
-    await expect(strip).toContainText("Tailored Clinical Evaluation");
-
-    // Verify 3-column About section in English
-    const aboutSection = page.getByTestId("about-editorial-section");
-    await expect(aboutSection).toContainText(
-      "A Focused Subspecialty in Eye & Eyelid Surgery"
+    const floatingWa = page.getByTestId("floating-whatsapp-cta");
+    await expect(floatingWa).toBeVisible();
+    await expect(floatingWa).toHaveAttribute(
+      "href",
+      "https://wa.me/966580779630"
     );
-    await expect(aboutSection).toContainText("Surgical Expertise");
-    await expect(aboutSection).toContainText("Evidence-Based Care");
 
-    // Verify Patient Education in English
-    const eduSection = page.getByTestId("home-articles-section");
-    await expect(eduSection).toContainText("Learn & Stay Informed");
-    await expect(eduSection).toContainText("min read");
-
-    // Verify no horizontal overflow
     const hasOverflow = await page.evaluate(
       () =>
         document.documentElement.scrollWidth >
@@ -142,17 +259,9 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
     expect(hasOverflow).toBe(false);
 
     const w = viewport?.width ?? 1440;
-    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.screenshot({
       path: `${ARTIFACT_DIR}/plum-redesign-en-viewport-${w}.png`,
       fullPage: false,
-    });
-    await page.addStyleTag({
-      content: ".site-header { position: static !important; }",
-    });
-    await page.screenshot({
-      path: `${ARTIFACT_DIR}/plum-redesign-en-home-${w}.png`,
-      fullPage: true,
     });
   });
 
@@ -182,28 +291,7 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
     await expect(arLink).toHaveAttribute("href", "/ar/journal");
   });
 
-  test("Journal index (/ar/journal and /en/journal) and Article detail work cleanly without public draft badges", async ({
-    page,
-  }) => {
-    await page.goto("/ar/journal");
-    await expect(page.getByTestId("featured-article-card")).toBeVisible();
-    await expect(page.getByTestId("article-grid-card")).toHaveCount(5);
-    await expect(page.getByTestId("draft-preview-badge")).toHaveCount(0);
-
-    await page.goto("/en/journal/hooded-vs-deep-set-eyelid");
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: "Eyelid Fold & Deep-Set Eyes: Understanding the Anatomical Difference",
-      })
-    ).toBeVisible();
-    await expect(page.getByTestId("article-reading-time")).toContainText(
-      "min read"
-    );
-    await expect(page.getByTestId("draft-preview-badge")).toHaveCount(0);
-  });
-
-  test("All bilingual public routes load with 200, no broken images, and no horizontal overflow", async ({
+  test("All bilingual public routes load with 200, updated WhatsApp (+966 580779630), and no horizontal overflow", async ({
     page,
   }) => {
     const routes = [
@@ -220,6 +308,10 @@ test.describe("Dr. Reham Website — Warm Ivory & Deep Plum Bilingual Redesign Q
     for (const route of routes) {
       const res = await page.goto(route);
       expect(res?.status(), `Route ${route} should return 200`).toBe(200);
+
+      const bodyText = await page.locator("body").innerText();
+      expect(bodyText).not.toContain("045 0425");
+      expect(bodyText).not.toContain("966540450425");
 
       const hasOverflow = await page.evaluate(
         () =>

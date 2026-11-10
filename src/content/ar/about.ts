@@ -1,3 +1,5 @@
+import { siteConfig } from "@/config/site";
+
 export const aboutContent = {
   meta: {
     title: "عن الدكتورة | د. ريهام القحطاني",
@@ -53,8 +55,8 @@ export const aboutContent = {
     },
     {
       label: "واتساب التواصل",
-      value: "+966 54 045 0425",
-      href: "https://wa.me/966540450425",
+      value: siteConfig.whatsappDisplay,
+      href: siteConfig.whatsappUrl,
       isLtr: true,
     },
     {

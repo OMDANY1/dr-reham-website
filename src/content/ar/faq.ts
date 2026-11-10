@@ -1,3 +1,4 @@
+import { siteConfig } from "@/config/site";
 import type { FaqCategory, FaqRecord } from "@/lib/content-gates";
 
 export const faqPageCopy = {
@@ -33,8 +34,7 @@ export const faqRecords: FaqRecord[] = [
   {
     id: "how-to-inquire-appointments",
     question: "كيف يمكنني التواصل للاستفسار عن المواعيد؟",
-    answer:
-      "يتم استقبال الاستفسارات حول المواعيد والزيارات في الرياض عبر الحساب الرسمي الموثق للدكتورة ريهام القحطاني على منصة إنستجرام (@dr.rehamdq)، مع مراعاة عدم إرسال تقارير أو صور طبية خاصة عبر الرسائل العامة.",
+    answer: `يتم استقبال الاستفسارات حول المواعيد والزيارات في الرياض مباشرة عبر واتساب الرسمي (${siteConfig.whatsappDisplay}) أو عبر الحساب الرسمي الموثق للدكتورة ريهام القحطاني على منصة إنستجرام (@dr.rehamdq)، مع مراعاة عدم إرسال تقارير أو صور طبية خاصة عبر الرسائل العامة.`,
     category: "appointments",
     status: "published",
     reviewedBy: "إرشادات التواصل التنظيمية المعتمدة",

@@ -34,6 +34,8 @@ export interface FooterProps {
   footerDisclaimerEn?: string;
   bookingLabel?: string;
   bookingLabelEn?: string;
+  whatsappUrl?: string | null;
+  whatsappDisplay?: string | null;
 }
 
 export function Footer({
@@ -50,6 +52,8 @@ export function Footer({
   footerDisclaimerEn = "Images published on this website are editorial and illustrative and do not represent individual patient cases or clinical outcomes.",
   bookingLabel: bookingLabelProp,
   bookingLabelEn: bookingLabelEnProp,
+  whatsappUrl,
+  whatsappDisplay,
 }: FooterProps = {}) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) {
@@ -73,7 +77,11 @@ export function Footer({
       getBookingCtaLabel(siteConfig, siteConfig.clinics, "ar");
 
   const whatsappHref =
-    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
+    (whatsappUrl && whatsappUrl.startsWith("https://wa.me/")
+      ? whatsappUrl
+      : buildWhatsAppBookingUrl(siteConfig.whatsappE164)) ??
+    siteConfig.whatsappUrl;
+  const activeWhatsappDisplay = whatsappDisplay || siteConfig.whatsappDisplay;
   const instagramHref = validateExternalHttpsUrl(instagramUrl);
   const hasServices = getPublicServices(servicesRecords).length > 0;
   const hasFaqs = getPublicFaqs(faqRecords).length > 0;
@@ -184,7 +192,7 @@ export function Footer({
                       dir="ltr"
                       style={{ marginInlineStart: "0.4rem" }}
                     >
-                      {siteConfig.whatsappDisplay}
+                      {activeWhatsappDisplay}
                     </span>
                   </a>
                 </li>

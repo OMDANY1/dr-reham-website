@@ -85,9 +85,10 @@ function resolveDataDir(): string {
   if (process.env.CMS_DATA_DIR) {
     return path.resolve(process.env.CMS_DATA_DIR);
   }
-  // On Vercel serverless, /tmp is writable if Supabase is not yet connected
+  const envScope = process.env.VERCEL_ENV || "development";
+  // On Vercel serverless, /tmp is writable if Supabase is not yet connected (isolated per environment)
   if (process.env.VERCEL === "1") {
-    return path.join("/tmp", "dr-reham-cms-data");
+    return path.join("/tmp", `dr-reham-cms-data-${envScope}`);
   }
   return path.join(process.cwd(), "data");
 }
@@ -140,11 +141,11 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 2) {
+      if (parsed && parsed.schemaVersion >= 3) {
         return parsed;
       }
-      if (parsed && parsed.schemaVersion === 1) {
-        // Migrate schema v1 -> v2: enrich with bilingual English data & editorial plum imagery while preserving users
+      if (parsed && (parsed.schemaVersion === 1 || parsed.schemaVersion === 2)) {
+        // Migrate schema v1/v2 -> v3: enrich with bilingual English data, updated WhatsApp (+966 580779630), and Before/After section copy while preserving users
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -152,37 +153,75 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 2;
+        parsed.schemaVersion = 3;
         if (parsed.pages?.home) {
+          const prevPub = parsed.pages.home.publishedData;
+          const prevResults = prevPub.resultsSection;
           parsed.pages.home.publishedData = {
             ...freshPage.publishedData,
-            ...parsed.pages.home.publishedData,
+            ...prevPub,
             hero: {
               ...freshPage.publishedData.hero,
-              ...parsed.pages.home.publishedData.hero,
+              ...prevPub.hero,
+              primaryHref:
+                prevPub.hero?.primaryHref?.includes("966540450425")
+                  ? freshPage.publishedData.hero.primaryHref
+                  : prevPub.hero?.primaryHref ??
+                    freshPage.publishedData.hero.primaryHref,
               image: freshPage.publishedData.hero.image,
             },
             specialtiesStrip:
-              parsed.pages.home.publishedData.specialtiesStrip ??
+              prevPub.specialtiesStrip ??
               freshPage.publishedData.specialtiesStrip,
             doctorIntro: {
               ...freshPage.publishedData.doctorIntro,
-              ...parsed.pages.home.publishedData.doctorIntro,
+              ...prevPub.doctorIntro,
               sculptureImage:
-                parsed.pages.home.publishedData.doctorIntro?.sculptureImage ??
+                prevPub.doctorIntro?.sculptureImage ??
                 freshPage.publishedData.doctorIntro.sculptureImage,
               principles:
-                parsed.pages.home.publishedData.doctorIntro?.principles ??
+                prevPub.doctorIntro?.principles ??
                 freshPage.publishedData.doctorIntro.principles,
             },
-            resultsSection:
-              parsed.pages.home.publishedData.resultsSection ??
-              freshPage.publishedData.resultsSection,
-            en:
-              parsed.pages.home.publishedData.en ??
-              freshPage.publishedData.en,
-            statusEn:
-              parsed.pages.home.publishedData.statusEn ?? "published",
+            resultsSection: prevResults
+              ? {
+                  ...freshPage.publishedData.resultsSection!,
+                  ...prevResults,
+                  title:
+                    prevResults.title === "نتائج واقعية"
+                      ? freshPage.publishedData.resultsSection!.title
+                      : prevResults.title,
+                  titleEn:
+                    prevResults.titleEn === "Real Results"
+                      ? freshPage.publishedData.resultsSection!.titleEn
+                      : prevResults.titleEn,
+                  eyebrowEn:
+                    prevResults.eyebrowEn === "SELECTED CASES"
+                      ? freshPage.publishedData.resultsSection!.eyebrowEn
+                      : prevResults.eyebrowEn,
+                  description:
+                    prevResults.description?.includes("نماذج مختارة توضح")
+                      ? freshPage.publishedData.resultsSection!.description
+                      : prevResults.description,
+                  descriptionEn:
+                    prevResults.descriptionEn?.includes(
+                      "A selection of cases demonstrating"
+                    )
+                      ? freshPage.publishedData.resultsSection!.descriptionEn
+                      : prevResults.descriptionEn,
+                }
+              : freshPage.publishedData.resultsSection,
+            finalInquiry: {
+              ...freshPage.publishedData.finalInquiry,
+              ...prevPub.finalInquiry,
+              primaryHref:
+                prevPub.finalInquiry?.primaryHref?.includes("966540450425")
+                  ? freshPage.publishedData.finalInquiry.primaryHref
+                  : prevPub.finalInquiry?.primaryHref ??
+                    freshPage.publishedData.finalInquiry.primaryHref,
+            },
+            en: prevPub.en ?? freshPage.publishedData.en,
+            statusEn: prevPub.statusEn ?? "published",
           };
           parsed.pages.home.draftData = structuredClone(
             parsed.pages.home.publishedData
@@ -207,14 +246,15 @@ function ensureStoreInitialized(): PersistentCmsStore {
           };
         });
 
-        // Backfill FAQ English fields
+        // Backfill FAQ English fields & update old WhatsApp number
         const freshFaqMap = new Map(freshFaqs.map((f) => [f.id, f]));
         parsed.faqs = (parsed.faqs ?? []).map((f) => {
           const fresh = freshFaqMap.get(f.id);
           return {
             ...f,
+            answer: fresh?.answer ?? f.answer,
             questionEn: f.questionEn ?? fresh?.questionEn,
-            answerEn: f.answerEn ?? fresh?.answerEn,
+            answerEn: fresh?.answerEn ?? f.answerEn,
             statusEn: f.statusEn ?? fresh?.statusEn ?? f.status,
           };
         });
@@ -239,10 +279,12 @@ function ensureStoreInitialized(): PersistentCmsStore {
           }
         }
 
-        // Merge settings English fields
+        // Merge settings English fields & updated WhatsApp number
         parsed.settings = {
           ...freshSettings,
           ...parsed.settings,
+          whatsappUrl: freshSettings.whatsappUrl,
+          phone: freshSettings.phone,
           siteNameEn: parsed.settings?.siteNameEn ?? freshSettings.siteNameEn,
           siteDescriptionEn:
             parsed.settings?.siteDescriptionEn ?? freshSettings.siteDescriptionEn,
@@ -268,7 +310,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},
@@ -395,6 +437,15 @@ function syncMediaPublicVisibility(store: PersistentCmsStore): void {
       publicUrls.add(homePub.specialtySection.image.src);
     if (homePub.contentStyleSection?.instagramCard?.image?.src)
       publicUrls.add(homePub.contentStyleSection.instagramCard.image.src);
+    if (homePub.resultsSection?.cases) {
+      for (const c of homePub.resultsSection.cases) {
+        const isPub = c.status ? c.status === "published" : c.published;
+        if (isPub && c.consentConfirmed && c.approvedByDoctor) {
+          if (c.beforeImageSrc) publicUrls.add(c.beforeImageSrc);
+          if (c.afterImageSrc) publicUrls.add(c.afterImageSrc);
+        }
+      }
+    }
   }
 
   // 2. Published articles images
@@ -462,6 +513,17 @@ export function computeMediaUsages(
           id: "home:contentStyle",
           label: `الصفحة الرئيسية — بطاقة أسلوب المحتوى (${suffix})`,
         });
+      }
+      if (data.resultsSection?.cases) {
+        for (const c of data.resultsSection.cases) {
+          if (c.beforeImageSrc === mediaUrl || c.afterImageSrc === mediaUrl) {
+            usages.push({
+              type: "page",
+              id: `home:results:${c.id}`,
+              label: `قسم قبل وبعد — ${c.titleAr || "حالة"} (${suffix})`,
+            });
+          }
+        }
       }
     };
     checkHome(homePage.publishedData, "منشور");

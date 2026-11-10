@@ -51,6 +51,7 @@ export interface HeaderProps {
   specialtyEn?: string;
   bookingLabel?: string;
   bookingLabelEn?: string;
+  whatsappUrl?: string | null;
 }
 
 export function Header({
@@ -62,6 +63,7 @@ export function Header({
   specialtyEn = siteConfig.profile.specialtyEn,
   bookingLabel: bookingLabelProp,
   bookingLabelEn: bookingLabelEnProp,
+  whatsappUrl,
 }: HeaderProps = {}) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -76,7 +78,10 @@ export function Header({
 
   const liveReady = isLiveBookingReady(siteConfig);
   const whatsappHref =
-    buildWhatsAppBookingUrl(siteConfig.whatsappE164) ?? siteConfig.whatsappUrl;
+    (whatsappUrl && whatsappUrl.startsWith("https://wa.me/")
+      ? whatsappUrl
+      : buildWhatsAppBookingUrl(siteConfig.whatsappE164)) ??
+    siteConfig.whatsappUrl;
 
   const bookingLabel = isEn
     ? bookingLabelEnProp ??

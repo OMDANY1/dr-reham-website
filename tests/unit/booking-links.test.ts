@@ -20,6 +20,15 @@ describe("booking-links", () => {
     expect(validateExternalHttpsUrl(null)).toBeNull();
   });
 
+  it("centralizes Dr. Reham WhatsApp single source of truth (+966 580779630)", () => {
+    expect(siteConfig.whatsappE164).toBe("+966580779630");
+    expect(siteConfig.whatsappDisplay).toBe("+966 580779630");
+    expect(siteConfig.whatsappUrl).toBe("https://wa.me/966580779630");
+    expect(buildWhatsAppBookingUrl(siteConfig.whatsappE164)).toBe(
+      "https://wa.me/966580779630"
+    );
+  });
+
   it("validates E.164 WhatsApp numbers strictly without health data", () => {
     expect(buildWhatsAppBookingUrl("+966500000000")).toBe(
       "https://wa.me/966500000000"

@@ -108,10 +108,10 @@ export const homeContent = {
   resultsSection: {
     id: "results",
     eyebrow: "حالات مختارة",
-    title: "نتائج واقعية",
+    title: "قبل وبعد",
     description:
-      "نماذج مختارة توضح التحسن الوظيفي والنتائج الطبيعية المتناغمة مع ملامح الوجه بعد اكتمال المراجعة والموافقة الموثقة.",
-    ctaLabel: "استعراض الحالات",
+      "نماذج من حالات الدكتورة، مع اختلاف النتائج بحسب طبيعة كل حالة.",
+    ctaLabel: "حجز استشارة",
     beforeLabel: "قبل",
     afterLabel: "بعد",
     previewNotice:

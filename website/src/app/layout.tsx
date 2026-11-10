@@ -7,6 +7,7 @@ import { siteConfig, type SupportedLocale } from "@/config/site";
 import { buildRouteMetadata } from "@/lib/metadata";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
 import {
   getCmsSiteSettings,
   getEffectiveHomePageData,
@@ -45,6 +46,8 @@ export default async function RootLayout({
   let city = siteConfig.profile.city;
   let cityEn = siteConfig.profile.cityEn;
   let instagramUrl = siteConfig.instagramUrl;
+  let whatsappUrl = siteConfig.whatsappUrl;
+  let whatsappDisplay = siteConfig.whatsappDisplay;
   let footerDisclaimer =
     "الصور المنشورة في الموقع تعبيرية وتحريرية ولا تمثل حالات مرضى أو نتائج علاجية.";
   let footerDisclaimerEn =
@@ -111,6 +114,8 @@ export default async function RootLayout({
     if (settings?.city) city = settings.city;
     if (settings?.cityEn) cityEn = settings.cityEn;
     if (settings?.instagramUrl) instagramUrl = settings.instagramUrl;
+    if (settings?.whatsappUrl) whatsappUrl = settings.whatsappUrl;
+    if (settings?.phone) whatsappDisplay = settings.phone;
   } catch {
     // Fallback to static defaults if store is initializing
   }
@@ -127,7 +132,7 @@ export default async function RootLayout({
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Noto+Naskh+Arabic:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
         />
       </head>
       <body>
@@ -143,8 +148,13 @@ export default async function RootLayout({
           specialtyEn={specialtyEn}
           bookingLabel={bookingLabel}
           bookingLabelEn={bookingLabelEn}
+          whatsappUrl={whatsappUrl}
         />
         <main id="main-content">{children}</main>
+        <FloatingWhatsApp
+          whatsappUrl={whatsappUrl}
+          whatsappDisplay={whatsappDisplay}
+        />
         <Footer
           navigation={navigation}
           navigationEn={navigationEn}
@@ -159,6 +169,8 @@ export default async function RootLayout({
           footerDisclaimerEn={footerDisclaimerEn}
           bookingLabel={bookingLabel}
           bookingLabelEn={bookingLabelEn}
+          whatsappUrl={whatsappUrl}
+          whatsappDisplay={whatsappDisplay}
         />
       </body>
     </html>

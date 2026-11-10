@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import type {
   CmsRevision,
   HomePageCmsData,
   HomeSectionKey,
+  ResultsCaseItem,
 } from "@/lib/cms/types";
 
 const SECTION_LABELS: Record<HomeSectionKey, string> = {
@@ -79,6 +81,13 @@ export default function AdminPagesEditor() {
 
   useEffect(() => {
     loadData();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam === "resultsSection") {
+        setActiveTab("resultsSection");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -228,6 +237,133 @@ export default function AdminPagesEditor() {
       };
       return prev;
     });
+  };
+
+  const addResultsCase = () => {
+    updateDraft((prev) => {
+      if (!prev.resultsSection) return prev;
+      const cases = [...(prev.resultsSection.cases || [])];
+      const nextIndex = cases.length + 1;
+      const newCase: ResultsCaseItem = {
+        id: `case-${Date.now()}`,
+        titleAr: `حالة جراحة وتجميل الجفون (${nextIndex})`,
+        titleEn: `Eyelid & Oculoplastic Case (${nextIndex})`,
+        captionAr: "تقييم دقيق وتحسّن متوازن يحترم سلامة العين والوظيفة الطبيعية للجفن.",
+        captionEn:
+          "Careful anatomical assessment and balanced improvement respecting ocular safety and natural eyelid function.",
+        beforeImageSrc: "/images/hero-eye-plum-ivory.jpg",
+        afterImageSrc: "/images/article-eyelid-indication.jpg",
+        altAr: `حالة جراحة وتجميل الجفون (${nextIndex})`,
+        altEn: `Eyelid & Oculoplastic Case (${nextIndex})`,
+        beforeAltAr: "صورة الجفن قبل الإجراء العلاجي",
+        beforeAltEn: "Eyelid appearance before treatment",
+        afterAltAr: "صورة الجفن بعد الإجراء العلاجي",
+        afterAltEn: "Eyelid appearance after treatment",
+        beforeFocalPoint: "50% 48%",
+        afterFocalPoint: "50% 48%",
+        sortOrder: nextIndex,
+        status: "draft",
+        consentConfirmed: false,
+        approvedByDoctor: false,
+        published: false,
+      };
+      cases.push(newCase);
+      prev.resultsSection.cases = cases;
+      return prev;
+    });
+  };
+
+  const deleteResultsCase = (caseIdx: number) => {
+    if (!window.confirm("هل تريد حذف هذه الحالة من قائمة قبل وبعد؟")) return;
+    updateDraft((prev) => {
+      if (!prev.resultsSection) return prev;
+      const cases = [...(prev.resultsSection.cases || [])];
+      cases.splice(caseIdx, 1);
+      prev.resultsSection.cases = cases.map((item, idx) => ({
+        ...item,
+        sortOrder: idx + 1,
+      }));
+      return prev;
+    });
+  };
+
+  const moveResultsCase = (caseIdx: number, direction: -1 | 1) => {
+    updateDraft((prev) => {
+      if (!prev.resultsSection) return prev;
+      const cases = [...(prev.resultsSection.cases || [])];
+      const targetIdx = caseIdx + direction;
+      if (targetIdx < 0 || targetIdx >= cases.length) return prev;
+      const temp = cases[caseIdx];
+      cases[caseIdx] = cases[targetIdx];
+      cases[targetIdx] = temp;
+      prev.resultsSection.cases = cases.map((item, idx) => ({
+        ...item,
+        sortOrder: idx + 1,
+      }));
+      return prev;
+    });
+  };
+
+  const handleCaseImageUpload = async (
+    caseIdx: number,
+    slot: "before" | "after",
+    file: File | null
+  ) => {
+    if (!file) return;
+    setSaving(true);
+    setError("");
+    setMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "name",
+        slot === "before"
+          ? `صورة قبل - حالة ${caseIdx + 1}`
+          : `صورة بعد - حالة ${caseIdx + 1}`
+      );
+      formData.append(
+        "alt",
+        slot === "before"
+          ? "صورة الجفن قبل الإجراء"
+          : "صورة الجفن بعد الإجراء"
+      );
+
+      const res = await fetch("/api/admin/media", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.item?.url) {
+        setError(data.error || "تعذر رفع صورة الحالة.");
+        return;
+      }
+
+      const uploadedItem: CmsMediaItem = data.item;
+      setMediaList((prev) => [
+        uploadedItem,
+        ...prev.filter((m) => m.id !== uploadedItem.id),
+      ]);
+
+      updateDraft((d) => {
+        if (!d.resultsSection?.cases?.[caseIdx]) return d;
+        if (slot === "before") {
+          d.resultsSection.cases[caseIdx].beforeImageSrc = uploadedItem.url;
+        } else {
+          d.resultsSection.cases[caseIdx].afterImageSrc = uploadedItem.url;
+        }
+        return d;
+      });
+      setMessage(
+        slot === "before"
+          ? "تم رفع «صورة قبل» وربطها بالحالة بنجاح."
+          : "تم رفع «صورة بعد» وربطها بالحالة بنجاح."
+      );
+    } catch {
+      setError("حدث خطأ أثناء رفع صورة الحالة.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -740,18 +876,37 @@ export default function AdminPagesEditor() {
 
           {activeTab === "resultsSection" && draft.resultsSection ? (
             <section className="admin-card">
-              <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
-                تحرير قسم النتائج الموثقة (قبل / بعد — مشروط بالموافقة الطبية)
-              </h2>
-              <div className="admin-alert">
-                ملاحظة طبية: يظل هذا القسم مخفياً تلقائياً عن الزوار في الموقع
-                العام طالما لم تتم إضافة حالات طبية حقيقية وموثقة ومعتمدة
-                بموافقة نشر صريحة، ويظهر فقط في «وضع المعاينة المحمي» لمعاينة
-                التصميم.
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.75rem",
+                }}
+              >
+                <h2 style={{ fontSize: "1.25rem", margin: 0 }}>
+                  إدارة قسم «قبل وبعد» (حالات مختارة — مشروط بالموافقة الطبية)
+                </h2>
+                <button
+                  type="button"
+                  onClick={addResultsCase}
+                  className="admin-btn admin-btn--primary"
+                >
+                  + إضافة حالة جديدة (قبل وبعد)
+                </button>
               </div>
+
+              <div className="admin-alert">
+                ملاحظة طبية وقانونية: يظل قسم «قبل وبعد» مخفياً تلقائياً عن الزوار
+                في الموقع العام طالما لم تتوفر حالة واحدة على الأقل بحالة «منشور»
+                مع تفعيل إقرار موافقة المريض الصريحة واعتماد الطبيبة، ويظهر في
+                «وضع المعاينة المحمي» لمعاينة الكاروسيل والتقليب التلقائي.
+              </div>
+
               <div className="admin-form-grid admin-form-grid--2">
                 <div className="admin-field">
-                  <label className="admin-label">العنوان الفرعي</label>
+                  <label className="admin-label">العنوان الفرعي (عربي)</label>
                   <input
                     className="admin-input"
                     value={draft.resultsSection.eyebrow}
@@ -766,7 +921,7 @@ export default function AdminPagesEditor() {
                   />
                 </div>
                 <div className="admin-field">
-                  <label className="admin-label">العنوان الرئيسي</label>
+                  <label className="admin-label">العنوان الرئيسي (عربي)</label>
                   <input
                     className="admin-input"
                     value={draft.resultsSection.title}
@@ -780,21 +935,702 @@ export default function AdminPagesEditor() {
                     }
                   />
                 </div>
+                <div className="admin-field">
+                  <label className="admin-label">Eyebrow (English)</label>
+                  <input
+                    dir="ltr"
+                    className="admin-input"
+                    value={draft.resultsSection.eyebrowEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.eyebrowEn = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Title (English)</label>
+                  <input
+                    dir="ltr"
+                    className="admin-input"
+                    value={draft.resultsSection.titleEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.titleEn = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
               </div>
-              <div className="admin-field">
-                <label className="admin-label">الوصف</label>
-                <textarea
-                  className="admin-textarea"
-                  value={draft.resultsSection.description}
-                  onChange={(e) =>
-                    updateDraft((d) => {
-                      if (d.resultsSection) {
-                        d.resultsSection.description = e.target.value;
-                      }
-                      return d;
-                    })
-                  }
-                />
+
+              <div className="admin-form-grid admin-form-grid--2">
+                <div className="admin-field">
+                  <label className="admin-label">وصف القسم (عربي)</label>
+                  <textarea
+                    className="admin-textarea"
+                    value={draft.resultsSection.description}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.description = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+                <div className="admin-field">
+                  <label className="admin-label">Description (English)</label>
+                  <textarea
+                    dir="ltr"
+                    className="admin-textarea"
+                    value={draft.resultsSection.descriptionEn || ""}
+                    onChange={(e) =>
+                      updateDraft((d) => {
+                        if (d.resultsSection) {
+                          d.resultsSection.descriptionEn = e.target.value;
+                        }
+                        return d;
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: "0.75rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
+                {(draft.resultsSection.cases || []).map((c, idx) => {
+                  const isPublished =
+                    (c.status === "published" || c.published) &&
+                    c.consentConfirmed &&
+                    c.approvedByDoctor;
+                  return (
+                    <div
+                      key={c.id || idx}
+                      className="admin-card admin-card--tinted"
+                      style={{
+                        padding: "1.1rem",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "0.95rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flexWrap: "wrap",
+                          gap: "0.65rem",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.65rem",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <strong style={{ fontSize: "1.02rem" }}>
+                            الحالة #{idx + 1}: {c.titleAr || "بدون عنوان"}
+                          </strong>
+                          <span
+                            className={`admin-badge ${
+                              isPublished ? "admin-badge--published" : ""
+                            }`.trim()}
+                          >
+                            {isPublished
+                              ? "منشورة ومعتمدة للعرض العام"
+                              : "مسودة / معاينة داخلية فقط"}
+                          </span>
+                        </div>
+
+                        <div className="admin-btn-group">
+                          <button
+                            type="button"
+                            className="admin-btn"
+                            disabled={idx === 0}
+                            onClick={() => moveResultsCase(idx, -1)}
+                          >
+                            ↑ للأعلى
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn"
+                            disabled={
+                              idx ===
+                              (draft.resultsSection?.cases.length || 1) - 1
+                            }
+                            onClick={() => moveResultsCase(idx, 1)}
+                          >
+                            ↓ للأسفل
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn"
+                            onClick={() => deleteResultsCase(idx)}
+                          >
+                            حذف الحالة
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="admin-form-grid admin-form-grid--2">
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            عنوان الحالة بالعربية (اختياري)
+                          </label>
+                          <input
+                            className="admin-input"
+                            value={c.titleAr}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].titleAr =
+                                    e.target.value;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            Case Title in English (Optional)
+                          </label>
+                          <input
+                            dir="ltr"
+                            className="admin-input"
+                            value={c.titleEn}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].titleEn =
+                                    e.target.value;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            وصف مختصر للحالة بالعربية (اختياري)
+                          </label>
+                          <textarea
+                            className="admin-textarea"
+                            value={c.captionAr || ""}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].captionAr =
+                                    e.target.value;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            Case Description in English (Optional)
+                          </label>
+                          <textarea
+                            dir="ltr"
+                            className="admin-textarea"
+                            value={c.captionEn || ""}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].captionEn =
+                                    e.target.value;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div className="admin-form-grid admin-form-grid--2">
+                        {/* BEFORE IMAGE PANEL */}
+                        <div
+                          className="admin-card"
+                          style={{ padding: "0.95rem", gap: "0.65rem" }}
+                        >
+                          <strong style={{ fontSize: "0.95rem" }}>
+                            ١. صورة «قبل» (Before Image)
+                          </strong>
+
+                          <div
+                            style={{
+                              position: "relative",
+                              aspectRatio: "16 / 10",
+                              borderRadius: "10px",
+                              overflow: "hidden",
+                              background: "#2E1426",
+                              cursor: "crosshair",
+                            }}
+                            title="انقر على الصورة لضبط نقطة التركيز (Focal Point)"
+                            onClick={(e) => {
+                              const rect =
+                                e.currentTarget.getBoundingClientRect();
+                              const x = Math.round(
+                                ((e.clientX - rect.left) / rect.width) * 100
+                              );
+                              const y = Math.round(
+                                ((e.clientY - rect.top) / rect.height) * 100
+                              );
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[
+                                    idx
+                                  ].beforeFocalPoint = `${x}% ${y}%`;
+                                }
+                                return d;
+                              });
+                            }}
+                          >
+                            <img
+                              src={c.beforeImageSrc}
+                              alt={c.beforeAltAr || "صورة قبل"}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                objectPosition:
+                                  c.beforeFocalPoint || "50% 48%",
+                              }}
+                            />
+                            <span
+                              style={{
+                                position: "absolute",
+                                bottom: "0.5rem",
+                                right: "0.5rem",
+                                background: "rgba(119, 115, 79, 0.92)",
+                                color: "#FBF7F3",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                padding: "0.2rem 0.6rem",
+                                borderRadius: "6px",
+                              }}
+                            >
+                              قبل | {c.beforeFocalPoint || "50% 48%"}
+                            </span>
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              رفع صورة «قبل» من جهازك
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="admin-input"
+                              onChange={(e) =>
+                                handleCaseImageUpload(
+                                  idx,
+                                  "before",
+                                  e.target.files?.[0] || null
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              أو اختيار من مكتبة الوسائط
+                            </label>
+                            <select
+                              className="admin-select"
+                              value={c.beforeImageSrc}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].beforeImageSrc =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            >
+                              {mediaList.map((m) => (
+                                <option key={m.id} value={m.url}>
+                                  {m.name} ({m.url})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              نقطة التركيز لصورة قبل (Focal Point)
+                            </label>
+                            <input
+                              dir="ltr"
+                              className="admin-input"
+                              value={c.beforeFocalPoint || "50% 48%"}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[
+                                      idx
+                                    ].beforeFocalPoint = e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              النص البديل لصورة قبل (عربي)
+                            </label>
+                            <input
+                              className="admin-input"
+                              value={c.beforeAltAr || ""}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].beforeAltAr =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              Before Image Alt Text (English)
+                            </label>
+                            <input
+                              dir="ltr"
+                              className="admin-input"
+                              value={c.beforeAltEn || ""}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].beforeAltEn =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* AFTER IMAGE PANEL */}
+                        <div
+                          className="admin-card"
+                          style={{ padding: "0.95rem", gap: "0.65rem" }}
+                        >
+                          <strong style={{ fontSize: "0.95rem" }}>
+                            ٢. صورة «بعد» (After Image)
+                          </strong>
+
+                          <div
+                            style={{
+                              position: "relative",
+                              aspectRatio: "16 / 10",
+                              borderRadius: "10px",
+                              overflow: "hidden",
+                              background: "#2E1426",
+                              cursor: "crosshair",
+                            }}
+                            title="انقر على الصورة لضبط نقطة التركيز (Focal Point)"
+                            onClick={(e) => {
+                              const rect =
+                                e.currentTarget.getBoundingClientRect();
+                              const x = Math.round(
+                                ((e.clientX - rect.left) / rect.width) * 100
+                              );
+                              const y = Math.round(
+                                ((e.clientY - rect.top) / rect.height) * 100
+                              );
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[
+                                    idx
+                                  ].afterFocalPoint = `${x}% ${y}%`;
+                                }
+                                return d;
+                              });
+                            }}
+                          >
+                            <img
+                              src={c.afterImageSrc}
+                              alt={c.afterAltAr || "صورة بعد"}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                objectPosition:
+                                  c.afterFocalPoint || "50% 48%",
+                              }}
+                            />
+                            <span
+                              style={{
+                                position: "absolute",
+                                bottom: "0.5rem",
+                                right: "0.5rem",
+                                background: "rgba(119, 115, 79, 0.92)",
+                                color: "#FBF7F3",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                padding: "0.2rem 0.6rem",
+                                borderRadius: "6px",
+                              }}
+                            >
+                              بعد | {c.afterFocalPoint || "50% 48%"}
+                            </span>
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              رفع صورة «بعد» من جهازك
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              className="admin-input"
+                              onChange={(e) =>
+                                handleCaseImageUpload(
+                                  idx,
+                                  "after",
+                                  e.target.files?.[0] || null
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              أو اختيار من مكتبة الوسائط
+                            </label>
+                            <select
+                              className="admin-select"
+                              value={c.afterImageSrc}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].afterImageSrc =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            >
+                              {mediaList.map((m) => (
+                                <option key={m.id} value={m.url}>
+                                  {m.name} ({m.url})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              نقطة التركيز لصورة بعد (Focal Point)
+                            </label>
+                            <input
+                              dir="ltr"
+                              className="admin-input"
+                              value={c.afterFocalPoint || "50% 48%"}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[
+                                      idx
+                                    ].afterFocalPoint = e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              النص البديل لصورة بعد (عربي)
+                            </label>
+                            <input
+                              className="admin-input"
+                              value={c.afterAltAr || ""}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].afterAltAr =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+
+                          <div className="admin-field">
+                            <label className="admin-label">
+                              After Image Alt Text (English)
+                            </label>
+                            <input
+                              dir="ltr"
+                              className="admin-input"
+                              value={c.afterAltEn || ""}
+                              onChange={(e) =>
+                                updateDraft((d) => {
+                                  if (d.resultsSection?.cases?.[idx]) {
+                                    d.resultsSection.cases[idx].afterAltEn =
+                                      e.target.value;
+                                  }
+                                  return d;
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* STATUS, ORDER & CONSENT GATE */}
+                      <div className="admin-form-grid admin-form-grid--2">
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            حالة النشر (مسودة أو منشور)
+                          </label>
+                          <select
+                            className="admin-select"
+                            value={
+                              c.status === "published" || c.published
+                                ? "published"
+                                : "draft"
+                            }
+                            onChange={(e) => {
+                              const nextStatus = e.target.value as
+                                | "draft"
+                                | "published";
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].status =
+                                    nextStatus;
+                                  d.resultsSection.cases[idx].published =
+                                    nextStatus === "published";
+                                }
+                                return d;
+                              });
+                            }}
+                          >
+                            <option value="draft">مسودة (Draft)</option>
+                            <option value="published">منشور (Published)</option>
+                          </select>
+                        </div>
+
+                        <div className="admin-field">
+                          <label className="admin-label">
+                            ترتيب العرض (Sort Order)
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            dir="ltr"
+                            className="admin-input"
+                            value={c.sortOrder ?? idx + 1}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[idx].sortOrder =
+                                    Number(e.target.value) || idx + 1;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "1.25rem",
+                          paddingTop: "0.35rem",
+                        }}
+                      >
+                        <label
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={Boolean(c.consentConfirmed)}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[
+                                    idx
+                                  ].consentConfirmed = e.target.checked;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                          <span>
+                            إقرار بوجود موافقة خطية صريحة من المريض لنشر الصور
+                          </span>
+                        </label>
+
+                        <label
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={Boolean(c.approvedByDoctor)}
+                            onChange={(e) =>
+                              updateDraft((d) => {
+                                if (d.resultsSection?.cases?.[idx]) {
+                                  d.resultsSection.cases[
+                                    idx
+                                  ].approvedByDoctor = e.target.checked;
+                                }
+                                return d;
+                              })
+                            }
+                          />
+                          <span>اعتماد د. ريهام القحطاني الطبي للنشر</span>
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           ) : null}

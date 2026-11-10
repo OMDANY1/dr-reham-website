@@ -1,3 +1,5 @@
+import { siteConfig } from "@/config/site";
+
 export const bookPageCopy = {
   meta: {
     previewTitle: "التواصل والاستفسار | د. ريهام القحطاني",
@@ -15,7 +17,7 @@ export const bookPageCopy = {
   directInquiryCard: {
     badge: "القناة الرسمية المؤكدة",
     title: "التواصل عبر واتساب وإنستجرام",
-    phoneDisplay: "+966 54 045 0425",
+    phoneDisplay: siteConfig.whatsappDisplay,
     handle: "@dr.rehamdq",
     description:
       "يمكنكم التواصل مباشرة للاستفسار عن المواعيد عبر محادثة واتساب الرسمية، أو متابعة المستجدات عبر الحساب الرسمي للدكتورة ريهام القحطاني في منصة إنستجرام.",

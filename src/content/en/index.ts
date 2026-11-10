@@ -1,3 +1,4 @@
+import { siteConfig } from "@/config/site";
 import type { ArticleLocaleContent, FaqCategory } from "@/lib/content-gates";
 
 export const ARTICLE_CATEGORIES_EN = [
@@ -131,11 +132,11 @@ export const homeContentEn = {
   },
   resultsSection: {
     id: "results",
-    eyebrow: "SELECTED CASES",
-    title: "Real Results",
+    eyebrow: "Selected Cases",
+    title: "Before & After",
     description:
-      "A selection of cases demonstrating functional improvement and natural, harmonious outcomes.",
-    ctaLabel: "View Case Gallery",
+      "Selected cases from Dr. Reham’s practice. Individual results vary.",
+    ctaLabel: "Book a Consultation",
     beforeLabel: "Before",
     afterLabel: "After",
     previewNotice:
@@ -315,8 +316,8 @@ export const aboutContentEn = {
     },
     {
       label: "WhatsApp Inquiry",
-      value: "+966 54 045 0425",
-      href: "https://wa.me/966540450425",
+      value: siteConfig.whatsappDisplay,
+      href: siteConfig.whatsappUrl,
       isLtr: true,
     },
     {
@@ -418,8 +419,7 @@ export const faqTranslationsEn: Record<
 > = {
   "how-to-inquire-appointments": {
     question: "How can I inquire about appointments and clinic visits?",
-    answer:
-      "Appointment inquiries in Riyadh are welcomed directly via our official WhatsApp (+966 54 045 0425) or through Dr. Reham Alqahtani's verified Instagram account (@dr.rehamdq). Please avoid sending private medical reports or clinical photos over public messages.",
+    answer: `Appointment inquiries in Riyadh are welcomed directly via our official WhatsApp (${siteConfig.whatsappDisplay}) or through Dr. Reham Alqahtani's verified Instagram account (@dr.rehamdq). Please avoid sending private medical reports or clinical photos over public messages.`,
   },
   "what-to-prepare-before-consultation": {
     question: "What is helpful to prepare before attending a consultation?",
@@ -456,7 +456,7 @@ export const bookPageCopyEn = {
   directInquiryCard: {
     badge: "VERIFIED OFFICIAL CHANNELS",
     title: "Direct Inquiry via WhatsApp & Instagram",
-    phoneDisplay: "+966 54 045 0425",
+    phoneDisplay: siteConfig.whatsappDisplay,
     handle: "@dr.rehamdq",
     description:
       "You may send your inquiries regarding consultation availability in Riyadh directly via our official WhatsApp conversation, or follow updates on Dr. Reham Alqahtani's verified Instagram profile.",

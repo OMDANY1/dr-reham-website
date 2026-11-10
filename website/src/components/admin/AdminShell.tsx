@@ -19,6 +19,7 @@ const NAV_ITEMS: Array<{
 }> = [
   { href: "/admin", label: "الرئيسية والملخص" },
   { href: "/admin/pages", label: "أقسام الصفحات" },
+  { href: "/admin/pages?tab=resultsSection", label: "قبل وبعد (الحالات)" },
   { href: "/admin/articles", label: "المقالات الطبية" },
   { href: "/admin/media", label: "مكتبة الوسائط والصور" },
   { href: "/admin/faq", label: "الأسئلة الشائعة" },
