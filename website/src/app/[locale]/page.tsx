@@ -411,12 +411,14 @@ export default async function HomePage({
       {/* 3. Three-Column Editorial About Section (Sculptural Artwork + Narrative + 4 Principles) */}
       {renderAboutEditorial()}
 
-      {/* 4. Dark Plum Results Section (Gated: Publicly visible only when consented cases exist; visible in Protected Preview) */}
-      <ResultsSection
-        data={homeData.resultsSection}
-        locale={locale}
-        isPreviewSession={isPreviewSession}
-      />
+      {/* 4. Dark Plum Results Section (Before & After Auto-Advancing Carousel) */}
+      {homeData.sectionVisibility?.resultsSection !== false ? (
+        <ResultsSection
+          data={homeData.resultsSection}
+          locale={locale}
+          isPreviewSession={isPreviewSession}
+        />
+      ) : null}
 
       {/* 5. Patient Education & Articles 3-Card Section */}
       {homeData.sectionVisibility?.knowledgeSection !== false ? (

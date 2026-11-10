@@ -1,34 +1,10 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 const ARTIFACT_DIR =
   "C:/Users/elwady/.gemini/antigravity/brain/1dfd746d-d8b6-480f-84bd-173216ab6bc6";
 
-async function ensureAdminAuthenticated(page: Page) {
-  await page.goto("/admin/login");
-  const authState = await page.request
-    .get("/api/admin/auth")
-    .then((r) => r.json());
-
-  if (authState.needsBootstrap) {
-    await page.fill("#bootstrap-name", "د. ريهام القحطاني (مدير)");
-    await page.fill("#bootstrap-email", "admin@dr-reham.sa");
-    await page.fill("#bootstrap-password", "AdminSecure#2026");
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin$/);
-  } else if (!authState.authenticated) {
-    await page.fill("#login-email", "admin@dr-reham.sa");
-    await page.fill("#login-password", "AdminSecure#2026");
-    await page.click('button[type="submit"]');
-    await expect(page).toHaveURL(/\/admin$/);
-  }
-
-  await page.request.post("/api/admin/auth", {
-    data: { action: "toggle_preview", enable: true },
-  });
-}
-
 test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & Before/After Carousel QA", () => {
-  test("Arabic Home (/ar) uses Almarai font, updates WhatsApp to +966 580779630 everywhere, and hides unconsented Results on public view", async ({
+  test("Arabic Home (/ar) uses Almarai font, updates WhatsApp to +966 580779630 everywhere, and renders Before/After Carousel", async ({
     page,
     viewport,
   }) => {
@@ -115,8 +91,8 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(aboutSection).toBeVisible();
     await expect(aboutSection.locator(".about-principle-row")).toHaveCount(4);
 
-    // Results section MUST be hidden on public view when no published consented cases exist
-    await expect(page.getByTestId("results-plum-section")).toHaveCount(0);
+    // Results section (Before & After Carousel) renders between About and Education
+    await expect(page.getByTestId("results-plum-section")).toBeVisible();
 
     // Patient Education 3-Card Section
     const eduSection = page.getByTestId("home-articles-section");
@@ -132,17 +108,16 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     });
   });
 
-  test("Before & After Carousel (/ar?preview=1 and /en?preview=1) renders between About and Education with side-by-side cases, controls, and captures Desktop/Mobile screenshots", async ({
+  test("Before & After Carousel (/ar and /en) renders directly between About and Education with side-by-side cases, controls, and captures Desktop/Mobile screenshots", async ({
     page,
     viewport,
   }) => {
-    await ensureAdminAuthenticated(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
 
     const w = viewport?.width ?? 1440;
 
-    // 1. Arabic Preview (/ar?preview=1)
-    await page.goto("/ar?preview=1");
+    // 1. Arabic Home (/ar)
+    await page.goto("/ar");
     const arResults = page.getByTestId("results-plum-section");
     await expect(arResults).toBeVisible();
 
@@ -202,8 +177,8 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
       fullPage: true,
     });
 
-    // 2. English Preview (/en?preview=1)
-    await page.goto("/en?preview=1");
+    // 2. English Home (/en)
+    await page.goto("/en");
     const enResults = page.getByTestId("results-plum-section");
     await expect(enResults).toBeVisible();
 

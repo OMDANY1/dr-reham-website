@@ -325,15 +325,6 @@ export function ResultsSection({
       aria-roledescription="carousel"
     >
       <Container>
-        {approvedPublicCases.length === 0 && isPreviewSession ? (
-          <div
-            className="results-plum__preview-banner"
-            data-testid="results-preview-notice"
-          >
-            {baseCopy.previewNotice}
-          </div>
-        ) : null}
-
         <div className="results-plum-grid">
           {/* Narrative Side Column */}
           <div className="results-plum__narrative">

@@ -141,11 +141,16 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 3) {
+      if (parsed && parsed.schemaVersion >= 4) {
         return parsed;
       }
-      if (parsed && (parsed.schemaVersion === 1 || parsed.schemaVersion === 2)) {
-        // Migrate schema v1/v2 -> v3: enrich with bilingual English data, updated WhatsApp (+966 580779630), and Before/After section copy while preserving users
+      if (
+        parsed &&
+        (parsed.schemaVersion === 1 ||
+          parsed.schemaVersion === 2 ||
+          parsed.schemaVersion === 3)
+      ) {
+        // Migrate schema v1/v2/v3 -> v4: enrich with bilingual English data, updated WhatsApp (+966 580779630), and Before/After section copy & initial cases while preserving users
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -153,7 +158,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 3;
+        parsed.schemaVersion = 4;
         if (parsed.pages?.home) {
           const prevPub = parsed.pages.home.publishedData;
           const prevResults = prevPub.resultsSection;
@@ -187,6 +192,10 @@ function ensureStoreInitialized(): PersistentCmsStore {
               ? {
                   ...freshPage.publishedData.resultsSection!,
                   ...prevResults,
+                  cases:
+                    prevResults.cases && prevResults.cases.length > 0
+                      ? prevResults.cases
+                      : freshPage.publishedData.resultsSection!.cases,
                   title:
                     prevResults.title === "نتائج واقعية"
                       ? freshPage.publishedData.resultsSection!.title
@@ -310,7 +319,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 3,
+    schemaVersion: 4,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},
