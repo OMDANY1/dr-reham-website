@@ -141,7 +141,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 5) {
+      if (parsed && parsed.schemaVersion >= 6) {
         return parsed;
       }
       if (
@@ -149,9 +149,10 @@ function ensureStoreInitialized(): PersistentCmsStore {
         (parsed.schemaVersion === 1 ||
           parsed.schemaVersion === 2 ||
           parsed.schemaVersion === 3 ||
-          parsed.schemaVersion === 4)
+          parsed.schemaVersion === 4 ||
+          parsed.schemaVersion === 5)
       ) {
-        // Migrate schema v1..v4 -> v5: enrich with bilingual English data, updated WhatsApp (+966 580779630), Before/After section, and Follower Testimonials section
+        // Migrate schema v1..v5 -> v6: update About doctor photo & real Before/After clinical cases
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -159,7 +160,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 5;
+        parsed.schemaVersion = 6;
         if (parsed.pages?.home) {
           const prevPub = parsed.pages.home.publishedData;
           const prevResults = prevPub.resultsSection;
@@ -198,8 +199,11 @@ function ensureStoreInitialized(): PersistentCmsStore {
               ...freshPage.publishedData.doctorIntro,
               ...prevPub.doctorIntro,
               sculptureImage:
-                prevPub.doctorIntro?.sculptureImage ??
-                freshPage.publishedData.doctorIntro.sculptureImage,
+                !prevPub.doctorIntro?.sculptureImage?.src ||
+                prevPub.doctorIntro?.sculptureImage?.src ===
+                  "/media/about-eyelid-sculpture.jpg"
+                  ? freshPage.publishedData.doctorIntro.sculptureImage
+                  : prevPub.doctorIntro.sculptureImage,
               principles:
                 prevPub.doctorIntro?.principles ??
                 freshPage.publishedData.doctorIntro.principles,
@@ -208,10 +212,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
               ? {
                   ...freshPage.publishedData.resultsSection!,
                   ...prevResults,
-                  cases:
-                    prevResults.cases && prevResults.cases.length > 0
-                      ? prevResults.cases
-                      : freshPage.publishedData.resultsSection!.cases,
+                  cases: freshPage.publishedData.resultsSection!.cases,
                   title:
                     prevResults.title === "نتائج واقعية"
                       ? freshPage.publishedData.resultsSection!.title
@@ -352,7 +353,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 5,
+    schemaVersion: 6,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},

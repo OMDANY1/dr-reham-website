@@ -80,7 +80,7 @@ export default async function AboutPage({
                 style={{
                   borderRadius: "var(--control-radius)",
                   overflow: "hidden",
-                  aspectRatio: "16 / 10",
+                  aspectRatio: "4 / 3.55",
                   border: "1.5px solid var(--color-border)",
                 }}
               >
@@ -92,8 +92,9 @@ export default async function AboutPage({
                       ? homeContentEn.doctorIntro.sculptureImage.alt
                       : homeContent.doctorIntro.sculptureImage.alt
                   }
-                  width={1200}
-                  height={750}
+                  width={680}
+                  height={615}
+                  style={{ objectPosition: "50% 42%" }}
                   className="specialty-photo-img editorial-photo-zoom"
                 />
               </div>

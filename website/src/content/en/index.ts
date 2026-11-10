@@ -96,8 +96,8 @@ export const homeContentEn = {
     leadStatement:
       "Specialized medical practice dedicated to the eyelids and periocular region, balancing vital ocular function with calm, natural facial harmony.",
     sculptureImage: {
-      src: "/media/about-eyelid-sculpture.jpg",
-      alt: "Sculptural artwork inspired by the natural curve of an eyelid in warm ivory and deep plum",
+      src: "/media/dr-reham-about.jpg",
+      alt: "Dr. Reham Alqahtani — Oculoplastic & Eyelid Surgery",
     },
     principles: [
       {

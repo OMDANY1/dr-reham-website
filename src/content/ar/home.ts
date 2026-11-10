@@ -71,8 +71,8 @@ export const homeContent = {
     leadStatement:
       "ممارسة طبية متخصصة في منطقة العين والجفون، تجمع بين الدقة الوظيفية والحس التجميلي الهادئ الذي يحترم الملامح الطبيعية لكل وجه.",
     sculptureImage: {
-      src: "/media/about-eyelid-sculpture.jpg",
-      alt: "عمل فني نحتي مستوحى من انحناءة الجفن بخامات عاجية وبرقوقية دافئة",
+      src: "/media/dr-reham-about.jpg",
+      alt: "د. ريهام القحطاني — طب وجراحة تجميل العيون والجفون",
     },
     principles: [
       {

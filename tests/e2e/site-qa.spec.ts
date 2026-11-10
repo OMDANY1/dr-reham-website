@@ -86,10 +86,14 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(strip).toBeVisible();
     await expect(strip.locator(".specialties-strip__item")).toHaveCount(4);
 
-    // 3-Column About Section
+    // 3-Column About Section with Dr. Reham's cropped photo
     const aboutSection = page.getByTestId("about-editorial-section");
     await expect(aboutSection).toBeVisible();
     await expect(aboutSection.locator(".about-principle-row")).toHaveCount(4);
+    await expect(aboutSection.locator("img.about-editorial__img")).toHaveAttribute(
+      "src",
+      "/media/dr-reham-about.jpg"
+    );
 
     // Results section (Before & After Carousel) renders between About and Education
     await expect(page.getByTestId("results-plum-section")).toBeVisible();
@@ -142,7 +146,7 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
       "نماذج من حالات الدكتورة، مع اختلاف النتائج بحسب طبيعة كل حالة."
     );
 
-    // Verify side-by-side Before & After images, equal heights, counter 01 / 04, dots, prev/next, pause/resume
+    // Verify side-by-side Before & After images, equal heights, counter 01 / 03, dots, prev/next, pause/resume
     const activeSlide = page.getByTestId("results-active-slide");
     await expect(activeSlide).toBeVisible();
     await expect(activeSlide.getByTestId("results-before-badge")).toHaveText(
@@ -151,25 +155,52 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(activeSlide.getByTestId("results-after-badge")).toHaveText(
       "بعد"
     );
-    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
-    await expect(page.getByTestId("results-dot-btn")).toHaveCount(4);
+    await expect(activeSlide).toContainText(
+      "تجميل جفون سفلية مع إعادة توزيع الدهون"
+    );
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 03");
+    await expect(page.getByTestId("results-dot-btn")).toHaveCount(3);
     await expect(page.getByTestId("results-autoplay-toggle")).toBeVisible();
 
-    // Verify clicking Next advances to 02 / 04
-    await page.getByTestId("results-next-btn").click();
-    await expect(page.getByTestId("results-counter")).toHaveText("02 / 04");
-    await page.getByTestId("results-prev-btn").click();
-    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
-
-    // Capture dedicated Before & After section screenshot (Arabic) without sticky header overlap
+    // Capture dedicated About & Before/After section screenshots (Arabic) without sticky header overlap
     await page.addStyleTag({
       content:
         ".site-header { position: static !important; } .floating-whatsapp-cta { display: none !important; }",
     });
+
+    const arAbout = page.getByTestId("about-editorial-section");
+    await arAbout.scrollIntoViewIfNeeded();
+    await arAbout.screenshot({
+      path: `${ARTIFACT_DIR}/about-doctor-ar-${w}.png`,
+    });
+
     await arResults.scrollIntoViewIfNeeded();
     await arResults.screenshot({
       path: `${ARTIFACT_DIR}/before-after-ar-${w}.png`,
     });
+
+    // Verify clicking Next advances to 02 / 03 (Case 2) and 03 / 03 (Case 3)
+    await page.getByTestId("results-next-btn").click();
+    await expect(page.getByTestId("results-counter")).toHaveText("02 / 03");
+    await expect(page.getByTestId("results-active-slide")).toContainText(
+      "تجميل الجفون العلوية والجفون السفلية مع إعادة توزيع الدهون بجرح مخفي + توسيع العيون من الزوايا الخارجية"
+    );
+    await arResults.screenshot({
+      path: `${ARTIFACT_DIR}/before-after-case2-ar-${w}.png`,
+    });
+
+    await page.getByTestId("results-next-btn").click();
+    await expect(page.getByTestId("results-counter")).toHaveText("03 / 03");
+    await expect(page.getByTestId("results-active-slide")).toContainText(
+      "تجميل الجفون العلوية مع رفع الحواجب وتعديل التناسق فيما بينهم"
+    );
+    await arResults.screenshot({
+      path: `${ARTIFACT_DIR}/before-after-case3-ar-${w}.png`,
+    });
+
+    // Return to 01 / 03
+    await page.getByTestId("results-next-btn").click();
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 03");
 
     // Verify Follower Testimonials section («آراء المتابعين»)
     const arTestimonials = page.getByTestId("testimonials-section");
@@ -210,7 +241,7 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(enResults).toContainText(
       "Selected cases from Dr. Reham’s practice. Individual results vary."
     );
-    await expect(page.getByTestId("results-counter")).toHaveText("01 / 04");
+    await expect(page.getByTestId("results-counter")).toHaveText("01 / 03");
 
     await page.addStyleTag({
       content:

@@ -198,9 +198,13 @@ export default async function HomePage({
       return null;
     }
 
-    const sculptureSrc =
+    const rawSculptureSrc =
       homeData.doctorIntro?.sculptureImage?.src ||
       baseAr.doctorIntro.sculptureImage.src;
+    const sculptureSrc =
+      rawSculptureSrc === "/media/about-eyelid-sculpture.jpg"
+        ? "/media/dr-reham-about.jpg"
+        : rawSculptureSrc;
     const sculptureAlt = isEn
       ? homeData.doctorIntro?.sculptureImage?.altEn ||
         baseEn.doctorIntro.sculptureImage.alt
@@ -249,7 +253,7 @@ export default async function HomePage({
                   alt={sculptureAlt}
                   className="about-editorial__img editorial-photo-zoom"
                   width={680}
-                  height={540}
+                  height={615}
                 />
               </div>
 
