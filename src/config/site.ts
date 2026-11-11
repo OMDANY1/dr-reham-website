@@ -79,8 +79,10 @@ export const siteConfig: SiteConfig = {
   profile: {
     nameAr: "د. ريهام القحطاني",
     nameEn: "Dr. Reham Alqahtani",
-    specialtyAr: "طب وجراحة تجميل العيون والجفون",
-    specialtyEn: "Oculoplastic & Eyelid Surgery",
+    specialtyAr:
+      "استشاري طب وجراحة العيون، وجراحة تجميل وترميم الجفون ومحجر العين والقنوات الدمعية.",
+    specialtyEn:
+      "Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital & Lacrimal Surgeon.",
     city: "الرياض",
     cityEn: "Riyadh",
     professionalRank: null,

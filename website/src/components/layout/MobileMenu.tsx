@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { SupportedLocale } from "@/config/site";
@@ -34,6 +35,7 @@ export function MobileMenu({
   enHref = "/en",
 }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -41,6 +43,10 @@ export function MobileMenu({
   const wasOpenRef = useRef(false);
 
   const isEn = locale === "en";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setIsOpen(false);
@@ -135,15 +141,16 @@ export function MobileMenu({
         </svg>
       </button>
 
-      {isOpen ? (
-        <div
-          className="mobile-menu-backdrop"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setIsOpen(false);
-            }
-          }}
-        >
+      {isOpen && mounted
+        ? createPortal(
+            <div
+              className="mobile-menu-backdrop"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setIsOpen(false);
+                }
+              }}
+            >
           <div
             ref={dialogRef}
             id="mobile-navigation-dialog"
@@ -280,8 +287,10 @@ export function MobileMenu({
               </Button>
             </div>
           </div>
-        </div>
-      ) : null}
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }

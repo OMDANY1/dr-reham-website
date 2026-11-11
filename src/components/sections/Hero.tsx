@@ -31,7 +31,10 @@ export function Hero({ data, enOverride, locale = "ar" }: HeroProps = {}) {
 
   const specialtyEyebrow = isEn
     ? enOverride?.specialtyTag || baseHero.specialtyTag
-    : data?.specialtyTag || baseHero.specialtyTag;
+    : !data?.specialtyTag ||
+      data.specialtyTag === "طب وجراحة تجميل العيون والجفون"
+    ? baseHero.specialtyTag
+    : data.specialtyTag;
 
   const nameLine1 = isEn
     ? enOverride?.headlineLine1 || baseHero.headlineLine1
@@ -54,8 +57,15 @@ export function Hero({ data, enOverride, locale = "ar" }: HeroProps = {}) {
     .filter(Boolean);
 
   const supportText = isEn
-    ? enOverride?.support || baseHero.support
-    : data?.support || baseHero.support;
+    ? !enOverride?.support ||
+      enOverride.support.includes("Specialized medical and aesthetic care")
+      ? baseHero.support
+      : enOverride.support
+    : !data?.support ||
+      data.support === "طب وجراحة تجميل العيون والجفون في الرياض." ||
+      data.support === "طب وجراحة تجميل العيون والجفون"
+    ? baseHero.support
+    : data.support;
 
   const primaryCtaLabel = isEn
     ? enOverride?.primaryCta || baseHero.primaryCta
@@ -141,9 +151,11 @@ export function Hero({ data, enOverride, locale = "ar" }: HeroProps = {}) {
 
       <div className="hero-editorial__layout">
         <div className="hero-editorial__copy">
-          <span className="hero-editorial__eyebrow reveal-hero-1">
-            {specialtyEyebrow}
-          </span>
+          {specialtyEyebrow && specialtyEyebrow !== supportText ? (
+            <span className="hero-editorial__eyebrow reveal-hero-1">
+              {specialtyEyebrow}
+            </span>
+          ) : null}
 
           <h1
             id="hero-headline"

@@ -14,7 +14,7 @@ export interface ResultsSectionProps {
   isPreviewSession?: boolean;
 }
 
-const AUTOPLAY_INTERVAL_MS = 6000;
+const AUTOPLAY_INTERVAL_MS = 2800;
 
 const PREVIEW_PLACEHOLDER_CASES: ResultsCaseItem[] = [
   {
@@ -114,7 +114,6 @@ export function ResultsSection({
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPausedByUser, setIsPausedByUser] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [isFocusedWithin, setIsFocusedWithin] = useState(false);
   const [isInViewport, setIsInViewport] = useState(true);
   const [isTabVisible, setIsTabVisible] = useState(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -199,7 +198,6 @@ export function ResultsSection({
     hasMultipleCases &&
     !isPausedByUser &&
     !isHovered &&
-    !isFocusedWithin &&
     !prefersReducedMotion &&
     isInViewport &&
     isTabVisible;
@@ -210,24 +208,21 @@ export function ResultsSection({
       setActiveIndex((prev) => (prev + 1) % totalCount);
     }, AUTOPLAY_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [canAutoPlay, totalCount]);
+  }, [canAutoPlay, totalCount, activeIndex]);
 
   const goToNextManual = useCallback(() => {
     if (!hasMultipleCases) return;
-    setIsPausedByUser(true);
     setActiveIndex((prev) => (prev + 1) % totalCount);
   }, [hasMultipleCases, totalCount]);
 
   const goToPrevManual = useCallback(() => {
     if (!hasMultipleCases) return;
-    setIsPausedByUser(true);
     setActiveIndex((prev) => (prev - 1 + totalCount) % totalCount);
   }, [hasMultipleCases, totalCount]);
 
   const goToIndexManual = useCallback(
     (idx: number) => {
       if (!hasMultipleCases) return;
-      setIsPausedByUser(true);
       setActiveIndex(idx);
     },
     [hasMultipleCases]
@@ -333,14 +328,15 @@ export function ResultsSection({
           {/* Side-by-Side Before & After Carousel Gallery */}
           <div
             className="results-carousel"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onFocusCapture={() => setIsFocusedWithin(true)}
-            onBlurCapture={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
-                setIsFocusedWithin(false);
+            onMouseEnter={() => {
+              if (
+                typeof window !== "undefined" &&
+                window.matchMedia?.("(hover: hover) and (pointer: fine)").matches
+              ) {
+                setIsHovered(true);
               }
             }}
+            onMouseLeave={() => setIsHovered(false)}
             onKeyDown={handleKeyDown}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}

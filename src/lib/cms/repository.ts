@@ -141,7 +141,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
     try {
       const raw = fs.readFileSync(dbFile, "utf8");
       const parsed = JSON.parse(raw) as PersistentCmsStore;
-      if (parsed && parsed.schemaVersion >= 7) {
+      if (parsed && parsed.schemaVersion >= 8) {
         return parsed;
       }
       if (
@@ -151,9 +151,10 @@ function ensureStoreInitialized(): PersistentCmsStore {
           parsed.schemaVersion === 3 ||
           parsed.schemaVersion === 4 ||
           parsed.schemaVersion === 5 ||
-          parsed.schemaVersion === 6)
+          parsed.schemaVersion === 6 ||
+          parsed.schemaVersion === 7)
       ) {
-        // Migrate schema v1..v6 -> v7: update About doctor photo, real Before/After clinical cases, Favicon & OpenGraph preview image
+        // Migrate schema v1..v7 -> v8: update consultant specialty title & 4 numbered pillars in About section
         const freshPage = buildInitialPageRecord();
         const freshArticles = buildInitialArticles();
         const freshMedia = buildInitialMediaItems();
@@ -161,7 +162,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
         const freshClinics = buildInitialClinics();
         const freshSettings = buildInitialSettings();
 
-        parsed.schemaVersion = 7;
+        parsed.schemaVersion = 8;
         if (parsed.pages?.home) {
           const prevPub = parsed.pages.home.publishedData;
           const prevResults = prevPub.resultsSection;
@@ -186,6 +187,8 @@ function ensureStoreInitialized(): PersistentCmsStore {
             hero: {
               ...freshPage.publishedData.hero,
               ...prevPub.hero,
+              specialtyTag: freshPage.publishedData.hero.specialtyTag,
+              support: freshPage.publishedData.hero.support,
               primaryHref:
                 prevPub.hero?.primaryHref?.includes("966540450425")
                   ? freshPage.publishedData.hero.primaryHref
@@ -199,6 +202,8 @@ function ensureStoreInitialized(): PersistentCmsStore {
             doctorIntro: {
               ...freshPage.publishedData.doctorIntro,
               ...prevPub.doctorIntro,
+              specialty: freshPage.publishedData.doctorIntro.specialty,
+              pillars: freshPage.publishedData.doctorIntro.pillars,
               sculptureImage:
                 !prevPub.doctorIntro?.sculptureImage?.src ||
                 prevPub.doctorIntro?.sculptureImage?.src ===
@@ -264,7 +269,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
                   : prevPub.finalInquiry?.primaryHref ??
                     freshPage.publishedData.finalInquiry.primaryHref,
             },
-            en: prevPub.en ?? freshPage.publishedData.en,
+            en: freshPage.publishedData.en,
             statusEn: prevPub.statusEn ?? "published",
           };
           parsed.pages.home.draftData = structuredClone(
@@ -323,17 +328,17 @@ function ensureStoreInitialized(): PersistentCmsStore {
           }
         }
 
-        // Merge settings English fields & updated WhatsApp number
+        // Merge settings English fields & updated WhatsApp number + specialty titles
         parsed.settings = {
           ...freshSettings,
           ...parsed.settings,
           whatsappUrl: freshSettings.whatsappUrl,
           phone: freshSettings.phone,
+          specialtyTitle: freshSettings.specialtyTitle,
+          specialtyTitleEn: freshSettings.specialtyTitleEn,
           siteNameEn: parsed.settings?.siteNameEn ?? freshSettings.siteNameEn,
-          siteDescriptionEn:
-            parsed.settings?.siteDescriptionEn ?? freshSettings.siteDescriptionEn,
-          specialtyTitleEn:
-            parsed.settings?.specialtyTitleEn ?? freshSettings.specialtyTitleEn,
+          siteDescription: freshSettings.siteDescription,
+          siteDescriptionEn: freshSettings.siteDescriptionEn,
           cityEn: parsed.settings?.cityEn ?? freshSettings.cityEn,
           faviconPath: freshSettings.faviconPath,
           defaultOgImage: freshSettings.defaultOgImage,
@@ -355,7 +360,7 @@ function ensureStoreInitialized(): PersistentCmsStore {
   const initialSettings = buildInitialSettings();
 
   const initialStore: PersistentCmsStore = {
-    schemaVersion: 7,
+    schemaVersion: 8,
     seededAt: new Date().toISOString(),
     users: [],
     loginAttempts: {},

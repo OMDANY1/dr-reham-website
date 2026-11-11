@@ -235,6 +235,12 @@ export default async function HomePage({
       ? homeData.doctorIntro.principles
       : baseAr.doctorIntro.principles;
 
+    const pillars = isEn
+      ? baseEn.doctorIntro.pillars
+      : homeData.doctorIntro?.pillars?.length === 4
+      ? homeData.doctorIntro.pillars
+      : baseAr.doctorIntro.pillars;
+
     return (
       <section
         key="doctorIntro"
@@ -293,6 +299,39 @@ export default async function HomePage({
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div
+              className="about-pillars-grid"
+              data-testid="about-pillars-grid"
+            >
+              {pillars.map((pillar, idx) => {
+                const num = String(idx + 1).padStart(2, "0");
+                return (
+                  <article
+                    key={`${num}-${pillar.title}`}
+                    className="about-pillar-card stagger-item"
+                    data-testid="about-pillar-card"
+                    style={{ "--stagger-index": idx } as React.CSSProperties}
+                  >
+                    <div className="about-pillar-card__header">
+                      <span className="about-pillar-card__num" dir="ltr">
+                        {num}
+                      </span>
+                      <span
+                        className="about-pillar-card__sep"
+                        aria-hidden="true"
+                      >
+                        |
+                      </span>
+                      <h3 className="about-pillar-card__title">
+                        {pillar.title}
+                      </h3>
+                    </div>
+                    <p className="about-pillar-card__desc">{pillar.text}</p>
+                  </article>
+                );
+              })}
             </div>
           </ScrollReveal>
         </Container>

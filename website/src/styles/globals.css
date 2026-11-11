@@ -445,15 +445,24 @@ html[lang="en"] .site-header__brand-name {
 }
 
 .site-header__brand-sub {
+  display: none;
   font-size: 0.68rem;
   color: var(--color-secondary);
   font-weight: 500;
+  line-height: 1.35;
+  max-inline-size: 42ch;
+}
+
+@media (min-width: 640px) {
+  .site-header__brand-sub {
+    display: block;
+  }
 }
 
 html[lang="en"] .site-header__brand-sub {
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-size: 0.62rem;
+  font-size: 0.6rem;
 }
 
 .site-header__nav {
@@ -599,15 +608,21 @@ html[lang="en"] .site-header__brand-sub {
 .mobile-menu-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 150;
-  background-color: rgba(50, 28, 48, 0.42);
+  z-index: 999;
+  inline-size: 100vw;
+  block-size: 100dvh;
+  min-block-size: 100vh;
+  background-color: rgba(50, 28, 48, 0.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   justify-content: flex-start;
 }
 
 .mobile-menu-dialog {
   inline-size: min(100%, 24rem);
-  block-size: 100%;
+  block-size: 100dvh;
+  min-block-size: 100vh;
   background-color: var(--color-surface-light);
   border-inline-end: 1px solid var(--color-border);
   box-shadow: var(--overlay-shadow);
@@ -712,11 +727,13 @@ html[dir="rtl"] .hero-editorial__palm-shadow {
 
 .hero-editorial__eyebrow {
   display: block;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
   font-weight: 600;
   color: var(--color-paragraph);
   text-transform: uppercase;
   margin-block-end: 0.9rem;
+  max-inline-size: 46ch;
 }
 
 html[lang="en"] .hero-editorial__eyebrow {
@@ -779,11 +796,11 @@ html[lang="ar"] .hero-editorial__tagline {
 }
 
 .hero-editorial__support {
-  font-size: 0.98rem;
-  line-height: 1.62;
+  font-size: 1rem;
+  line-height: 1.72;
   color: var(--color-paragraph);
-  max-inline-size: 36ch;
-  font-weight: 400;
+  max-inline-size: 46ch;
+  font-weight: 500;
 }
 
 .hero-editorial__photo-stage {
@@ -1124,6 +1141,90 @@ html[lang="en"] .about-editorial__principle-title {
     padding-inline-start: 2rem;
     border-inline-start: 1px solid var(--color-border);
   }
+}
+
+/* 4 Numbered Pillars inside About Section (01 | ... — 04 | ...) */
+.about-pillars-grid {
+  margin-block-start: clamp(2rem, 3.5vw, 3rem);
+  padding-block-start: clamp(1.75rem, 3vw, 2.5rem);
+  border-block-start: 1px solid #E2D5CC;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+}
+
+@media (min-width: 768px) {
+  .about-pillars-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.35rem;
+  }
+}
+
+.about-pillar-card {
+  background-color: var(--color-surface-light);
+  border: 1px solid #E2D5CC;
+  border-radius: 0.65rem;
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  box-shadow: 0 8px 22px -12px rgba(50, 28, 48, 0.08);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.about-pillar-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-plum);
+  box-shadow: 0 14px 28px -12px rgba(50, 28, 48, 0.14);
+}
+
+.about-pillar-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.about-pillar-card__num {
+  font-family: var(--font-sans-en), system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-plum);
+  background-color: rgba(96, 51, 79, 0.09);
+  padding: 0.18rem 0.52rem;
+  border-radius: 0.3rem;
+}
+
+.about-pillar-card__sep {
+  color: var(--color-olive);
+  font-weight: 600;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.about-pillar-card__title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--color-plum-dark);
+  line-height: 1.35;
+  margin: 0;
+}
+
+html[lang="en"] .about-pillar-card__title {
+  font-family: var(--font-serif-en);
+  font-size: 1.18rem;
+  font-weight: 600;
+}
+
+.about-pillar-card__desc {
+  font-size: 0.94rem;
+  line-height: 1.72;
+  color: var(--color-paragraph);
+  margin: 0;
 }
 
 /* ==========================================================================

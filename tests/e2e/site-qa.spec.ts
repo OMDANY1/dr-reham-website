@@ -32,6 +32,9 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(page.locator(".hero-editorial__tagline")).toContainText(
       "عناية دقيقة بتفاصيل نظرتك"
     );
+    await expect(page.locator(".hero-editorial__support")).toContainText(
+      "استشاري طب وجراحة العيون، وجراحة تجميل وترميم الجفون ومحجر العين والقنوات الدمعية."
+    );
 
     // Verify floating WhatsApp CTA and all WhatsApp links point to https://wa.me/966580779630
     const floatingWa = page.getByTestId("floating-whatsapp-cta");
@@ -96,7 +99,7 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
     await expect(strip).toBeVisible();
     await expect(strip.locator(".specialties-strip__item")).toHaveCount(4);
 
-    // 3-Column About Section with Dr. Reham's cropped photo
+    // 3-Column About Section with Dr. Reham's cropped photo + 4 numbered pillars
     const aboutSection = page.getByTestId("about-editorial-section");
     await expect(aboutSection).toBeVisible();
     await expect(aboutSection.locator(".about-principle-row")).toHaveCount(4);
@@ -104,6 +107,31 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
       "src",
       "/media/dr-reham-about.jpg"
     );
+    const pillarsGrid = page.getByTestId("about-pillars-grid");
+    await expect(pillarsGrid).toBeVisible();
+    await expect(pillarsGrid.getByTestId("about-pillar-card")).toHaveCount(4);
+    await expect(pillarsGrid).toContainText("الدقة في أدق التفاصيل");
+    await expect(pillarsGrid).toContainText("الحفاظ على الجمال الطبيعي");
+    await expect(pillarsGrid).toContainText("الخبرة الجراحية والرؤية الجمالية");
+    await expect(pillarsGrid).toContainText("الرعاية الشاملة والمخصصة");
+
+    const w = viewport?.width ?? 1440;
+    if (w < 960) {
+      const trigger = page.locator(".mobile-menu-trigger");
+      await expect(trigger).toBeVisible();
+      await trigger.click();
+      const dialog = page.locator("#mobile-navigation-dialog");
+      await expect(dialog).toBeVisible();
+      const box = await dialog.boundingBox();
+      expect(box?.height).toBeGreaterThanOrEqual(700);
+      await expect(dialog.locator(".mobile-menu-dialog__link")).toHaveCount(6);
+      await page.screenshot({
+        path: `${ARTIFACT_DIR}/mobile-menu-open-ar-${w}.png`,
+        fullPage: false,
+      });
+      await dialog.locator('button[aria-label]').click();
+      await expect(dialog).toHaveCount(0);
+    }
 
     // Results section (Before & After Carousel) renders between About and Education
     await expect(page.getByTestId("results-plum-section")).toBeVisible();
@@ -115,7 +143,6 @@ test.describe("Dr. Reham Website — Almarai Font, WhatsApp (+966 580779630) & B
       3
     );
 
-    const w = viewport?.width ?? 1440;
     await page.screenshot({
       path: `${ARTIFACT_DIR}/plum-redesign-ar-viewport-${w}.png`,
       fullPage: false,

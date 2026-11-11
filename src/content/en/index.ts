@@ -50,7 +50,7 @@ export const homeContentEn = {
     headlineLine2: "Alqahtani",
     tagline: "Precision in Care.\nHarmony in Aesthetics.",
     support:
-      "Specialized medical and aesthetic care for the eyelids and periocular region in Riyadh.",
+      "Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital & Lacrimal Surgeon.",
     primaryCta: "Book a Consultation",
     secondaryCta: "About Dr. Reham",
     secondaryHref: "/en/about",
@@ -91,7 +91,8 @@ export const homeContentEn = {
     eyebrow: "ABOUT",
     name: "Dr. Reham Alqahtani",
     heading: "A Focused Subspecialty in Eye & Eyelid Surgery",
-    specialty: "Oculoplastic & Eyelid Surgery",
+    specialty:
+      "Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital & Lacrimal Surgeon.",
     city: "Riyadh",
     leadStatement:
       "Specialized medical practice dedicated to the eyelids and periocular region, balancing vital ocular function with calm, natural facial harmony.",
@@ -119,12 +120,20 @@ export const homeContentEn = {
     ],
     pillars: [
       {
-        title: "Thoughtful Individual Evaluation",
-        text: "Every consultation begins with a careful examination of eyelid anatomy and periocular balance, discussing realistic options with clarity.",
+        title: "Precision in the Finest Details",
+        text: "Meticulous care at every surgical stage, from pre-operative planning and marking to the finest details of wound closure.",
       },
       {
-        title: "Function & Aesthetics in Balance",
-        text: "Caring for the eyelids requires deep respect for ocular surface comfort, tear film stability, and natural facial expression.",
+        title: "Preserving Natural Beauty",
+        text: "Commitment to natural outcomes that preserve facial identity and highlight the beauty of the eyes in harmony with the face.",
+      },
+      {
+        title: "Surgical Expertise & Aesthetic Vision",
+        text: "Combining surgical skill with a balanced aesthetic sense to achieve results tailored to each face's contours and details.",
+      },
+      {
+        title: "Comprehensive, Personalized Care",
+        text: "Providing an integrated care plan that begins with periocular health and extends to surgical intervention when needed, tailored to each individual case.",
       },
     ],
     moreLinkLabel: "About Dr. Reham",
@@ -277,14 +286,15 @@ export const aboutContentEn = {
   header: {
     eyebrow: "PROFESSIONAL PROFILE",
     name: "Dr. Reham Alqahtani",
-    specialty: "Oculoplastic & Eyelid Surgery",
+    specialty:
+      "Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital & Lacrimal Surgeon.",
     city: "Riyadh",
     lead: "Specialized medical care focused on the delicate anatomy of the eyelids and periocular region, guided by respect for natural facial harmony and vital ocular function.",
   },
   introduction: {
     heading: "Subspecialty Focus & Clinical Philosophy",
     paragraphs: [
-      "Dr. Reham Alqahtani practices Oculoplastic and Eyelid Surgery in Riyadh, a dedicated subspecialty addressing both the functional and aesthetic evaluation of the eyelids and periocular contour.",
+      "Dr. Reham Alqahtani practices as a Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital and Lacrimal Surgeon in Riyadh, addressing both the functional and aesthetic evaluation of the eyelids and periocular contour.",
       "Her philosophy of care rests on the conviction that the eye region never lends itself to formulaic solutions; every face carries its own anatomical nuances, requiring an unhurried consultation and transparent communication that place ocular safety first.",
     ],
   },
@@ -293,18 +303,23 @@ export const aboutContentEn = {
     items: [
       {
         number: "01",
-        title: "Careful Anatomical Assessment",
-        text: "Dedicating sufficient time to understand what the patient notices around the eyes and eyelids, paired with a direct examination that balances function and aesthetics.",
+        title: "Precision in the Finest Details",
+        text: "Meticulous care at every surgical stage, from pre-operative planning and marking to the finest details of wound closure.",
       },
       {
         number: "02",
-        title: "Clarity & Transparency",
-        text: "Explaining suitable options in calm, evidence-informed language, free from exaggerated promises or generalized assumptions.",
+        title: "Preserving Natural Beauty",
+        text: "Commitment to natural outcomes that preserve facial identity and highlight the beauty of the eyes in harmony with the face.",
       },
       {
         number: "03",
-        title: "Respecting Natural Facial Identity",
-        text: "Focusing on balanced outcomes that preserve natural facial expressions and harmonize with the individual's gaze.",
+        title: "Surgical Expertise & Aesthetic Vision",
+        text: "Combining surgical skill with a balanced aesthetic sense to achieve results tailored to each face's contours and details.",
+      },
+      {
+        number: "04",
+        title: "Comprehensive, Personalized Care",
+        text: "Providing an integrated care plan that begins with periocular health and extends to surgical intervention when needed, tailored to each individual case.",
       },
     ],
   },
@@ -315,7 +330,8 @@ export const aboutContentEn = {
     },
     {
       label: "Specialty",
-      value: "Oculoplastic & Eyelid Surgery",
+      value:
+        "Consultant Ophthalmologist, Oculoplastic, Reconstructive Eyelid, Orbital & Lacrimal Surgeon.",
     },
     {
       label: "City",
